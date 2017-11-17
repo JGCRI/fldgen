@@ -13,5 +13,6 @@ Imports:
 	assertthat (>= 0.2.0),
 	dplyr (>= 0.7),
 	ncdf4 (>= 1.16)
-Suggests: testthat
+Suggests: testthat,
+    covr
 RoxygenNote: 6.0.1
