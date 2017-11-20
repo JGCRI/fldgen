@@ -6,7 +6,7 @@ context('Field generation')
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 
-griddata <- readdata('data/tann1.nc')
+griddata <- read.ncdf('data/tann1.nc')
 tgav <- readtgav('data/wgttann1.nc')
 pscl <- pscl_analyze(griddata$tas, tgav)
 reof <- eof_analyze(pscl$r, griddata$tgop)

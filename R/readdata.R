@@ -15,7 +15,7 @@
 #' The data at each time is represented as a flattened vector of grid cells.
 #' The flattening is performed by transposing to lon, lat ordering, so that lon
 #' will once again be the most rapidly varying index (because R uses
-#' Fortran-style indexing).  Then the lat/lon dimensions are discarded,
+#' Fortran-style indexing).  Then the spatial dimensions are discarded,
 #' resulting in a 1D vector.  The time dimension is kept, resulting in a matrix
 #' with years in rows and grid cells in columns.  The dimensions of the matrix
 #' will be Nyear x Ngrid, where Nyear is the number of years in the data set,
@@ -25,6 +25,11 @@
 #' the area-weighted global mean for the grid.  It is stored as a column vector,
 #' so \code{tas \%*\% tgop} is the time series of global mean temperatures.
 #'
+#' The lat and lon dimension variables from the input file  are also
+#' stored in the structure.  These are primarily useful for writing out
+#' generated grids as netCDF files.  The time dimension variable is converted to
+#' integer years, starting at 0.
+#'
 #' Conventionally, we refer to the output list as \code{griddata}.  Notably, any
 #' other function with a \code{griddata} argument is expecting one of these
 #' structures.
@@ -33,7 +38,7 @@
 #' @return A \code{griddata} list (see details).
 #' @importFrom assertthat assert_that
 #' @export
-readdata <- function(filename)
+read.ncdf <- function(filename)
 {
     tann <- ncdf4::nc_open(filename)
 
@@ -46,6 +51,7 @@ readdata <- function(filename)
     nlon <- length(lon)
     time <- ncdf4::ncvar_get(tann, var='time')
     ntime <- length(time)
+    timeout <- seq_along(time) - 1
     ncdf4::nc_close(tann)
 
     assert_that(all(dim(tas3d) == c(nlon, nlat, ntime)))
@@ -65,7 +71,7 @@ readdata <- function(filename)
     ## normalize areafac so that sum(area*grid) is the global weighted average
     areafac <- areafac/sum(areafac)
 
-    list(tas=as.matrix(tas), tgop=as.matrix(areafac))
+    list(tas=as.matrix(tas), tgop=as.matrix(areafac), lat=lat, lon=lon, time=timeout)
 }
 
 

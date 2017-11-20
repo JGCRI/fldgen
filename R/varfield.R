@@ -26,7 +26,7 @@
 #' @param resids A matrix [ntime x ngrid] of residuals from the mean field
 #' @param tgop A column vector [ngrid x 1] containing the global mean operator.
 #' This is produced as the \code{tgop} field of the structure returned by
-#' \code{\link{readdata}}.
+#' \code{\link{read.ncdf}}.
 #' @importFrom stats prcomp sd
 #' @export
 eof_analyze <- function(resids, tgop)

@@ -11,7 +11,7 @@ eof_analyze(resids, tgop)
 
 \item{tgop}{A column vector [ngrid x 1] containing the global mean operator.
 This is produced as the \code{tgop} field of the structure returned by
-\code{\link{readdata}}.}
+\code{\link{read.ncdf}}.}
 }
 \description{
 Decompose residuals from the mean field into orthogonal components.  One of
