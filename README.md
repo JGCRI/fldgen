@@ -21,11 +21,11 @@ tgav <- readtgav('data/wgttann1.nc')
 pscl <- pscl_analyze(griddata$tas, tgav)
 reof <- eof_analyze(pscl$r, griddata$tgop)
 Fx <- mvfft(reof$x)                     # Fourier transforms of the coordinates
-                                        # of the basis functions
+                                        # in the orthogonal basis.
 Fxmag <- abs(Fx)
 Fxphase <- atan2(Im(Fx), Re(Fx))
 tempgrids <- list()                     # Empty list to hold the temperature
-                                        # realizations
+                                        # realizations we are about to create.
 length(tempgrids) <- 4
 
 ##  Run with the phases of the actual time series
