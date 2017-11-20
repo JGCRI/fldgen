@@ -1,7 +1,7 @@
 Package: fieldgenr
 Type: Package
 Title: Generate Temperature Fields with Spatial and Temporal Correlation
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Robert", "Link", email = "robert.link@pnnl.gov", role = c("aut", "cre"))
 Description: Provides functions to learn the spatial and temporal correlation of the
     variability in an ESM and generate random temperature fields with equivalent
