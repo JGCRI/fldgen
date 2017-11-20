@@ -1,4 +1,4 @@
-Package: fieldgenr
+Package: fldgen
 Type: Package
 Title: Generate Temperature Fields with Spatial and Temporal Correlation
 Version: 0.2.0

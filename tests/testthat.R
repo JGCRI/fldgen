@@ -1,4 +1,4 @@
 library(testthat)
-library(fieldgenr)
+library(fldgen)
 
-test_check("fieldgenr")
+test_check("fldgen")

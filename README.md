@@ -1,7 +1,7 @@
-# fieldgenr: Generate temperature fields with spatial and temporal correlation.
-[![Travis-CI Build Status](https://travis-ci.org/JGCRI/fieldgenr.svg?branch=master)](https://travis-ci.org/JGCRI/fieldgenr)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/JGCRI/fieldgenr?branch=master&svg=true)](https://ci.appveyor.com/project/JGCRI/fieldgenr)
-[![Coverage Status](https://img.shields.io/codecov/c/github/JGCRI/fieldgenr/master.svg)](https://codecov.io/github/JGCRI/fieldgenr?branch=master)
+# fldgen: Generate temperature fields with spatial and temporal correlation.
+[![Travis-CI Build Status](https://travis-ci.org/JGCRI/fldgen.svg?branch=master)](https://travis-ci.org/JGCRI/fldgen)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/JGCRI/fldgen?branch=master&svg=true)](https://ci.appveyor.com/project/JGCRI/fldgen)
+[![Coverage Status](https://img.shields.io/codecov/c/github/JGCRI/fldgen/master.svg)](https://codecov.io/github/JGCRI/fldgen?branch=master)
 
 
 
@@ -14,7 +14,7 @@ temperature fields with equivalent properties.
 The data used in this example can be found in `tests/testthat/data`.
 
 ```R
-library(fieldgenr)
+library(fldgen)
 
 griddata <- readdata('data/tann1.nc')
 tgav <- readtgav('data/wgttann1.nc')
