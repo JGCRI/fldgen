@@ -1,0 +1,67 @@
+#### functions for plotting fields
+
+#' Reorganize a spatial field into a data frame
+#'
+#' The easiest way to plot this sort of data in ggplot is to organize it into a
+#' frame with lat, lon, and value columns.  To do this you have to replicate the
+#' latitude and longitude values as required.  These functions convert the
+#' matrix representation of fields into a data frame with variables suitable for
+#' plotting.  \code{fld2df} operates on a single time slice, while
+#' \code{fldts2df} works on an entire time sequence.
+#'
+#' In addition to reformatting the data as a data frame, these functions remap
+#' 0-360 longitude to -180, 180.
+#'
+#' @param fld Vector of ngrid=nlat*nlon values: a single time slice of the
+#' field.
+#' @param griddata The griddata structure returned from
+#' \code{\link{read.ncdf}}.
+#' @param ti The time index.  The time variable in the output will be set to
+#' \code{griddata$time[ti]}.  If the time index is omitted, then the time
+#' variable will be omitted from the output.
+#' @return Data frame with variables lat, lon, value, and optionally t.
+#' @export
+fld2df <- function(fld, griddata, ti=NULL)
+{
+    nlat <- length(griddata$lat)
+    nlon <- length(griddata$lon)
+    assert_that(is.vector(fld))
+    assert_that(length(fld) == nlat*nlon)
+
+    ## Odds are
+    if(all(griddata$lon >= 0) && any(griddata$lon > 180)) {
+        loncorrect <- dplyr::if_else(griddata$lon > 180, griddata$lon - 360,
+                                  griddata$lon)
+    }
+    else {
+        loncorrect <- griddata$lon
+    }
+
+    ## The fields are in lat, lon order; i.e., lat varies most rapidly.
+    lat <- rep(griddata$lat, times=nlon)
+    lon <- as.vector(matrix(rep(loncorrect, times=nlat), nrow=nlat,
+                            byrow=TRUE))
+    if(is.null(ti)) {
+        tibble::tibble(lat=lat, lon=lon, value=as.vector(fld))
+    }
+    else {
+        tibble::tibble(lat=lat, lon=lon, t=griddata$time[ti], value=as.vector(fld))
+    }
+}
+
+
+#' Reorganize a time sequence of spatial fields into a data frame
+#'
+#'
+#' @rdname fld2df
+#' @param fldts Matrix [ntime, ngrid] of spatial fields
+#' @export
+fldts2df <- function(fldts, griddata)
+{
+    ntime <- dim(fldts)[1]
+    assert_that(ntime == length(griddata$time))
+
+    tidxs <- 1:ntime
+    dplyr::bind_rows(
+        lapply(tidxs, function(i) {fld2df(fldts[i,], griddata, i)}) )
+}

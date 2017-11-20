@@ -1,7 +1,7 @@
 Package: fldgen
 Type: Package
 Title: Generate Temperature Fields with Spatial and Temporal Correlation
-Version: 0.2.0
+Version: 0.2.0.9000
 Authors@R: person("Robert", "Link", email = "robert.link@pnnl.gov", role = c("aut", "cre"))
 Description: Provides functions to learn the spatial and temporal correlation of the
     variability in an ESM and generate random temperature fields with equivalent
@@ -12,7 +12,10 @@ LazyData: true
 Imports:
 	assertthat (>= 0.2.0),
 	dplyr (>= 0.7),
+	tibble (>= 1.3.4),
 	ncdf4 (>= 1.16)
-Suggests: testthat,
+Suggests:
+    testthat,
+    gcammaptools (>= 0.4),
     covr
 RoxygenNote: 6.0.1
