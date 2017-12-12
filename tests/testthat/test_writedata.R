@@ -1,6 +1,6 @@
 context('Writing data')
 
-griddata <- read.ncdf('data/tann1.nc')
+griddata <- read.ncdf(system.file('extdata/tann1.nc', package='fldgen'))
 
 test_that('data written to netCDF is identical to original.',
 {

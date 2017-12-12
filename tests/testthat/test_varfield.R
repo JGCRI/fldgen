@@ -6,8 +6,8 @@ context('Field generation')
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 
-griddata <- read.ncdf('data/tann1.nc')
-tgav <- readtgav('data/wgttann1.nc')
+griddata <- read.ncdf(system.file('extdata/tann1.nc', package='fldgen'))
+tgav <- readtgav(system.file('extdata/wgttann1.nc', package='fldgen'))
 pscl <- pscl_analyze(griddata$tas, tgav)
 reof <- eof_analyze(pscl$r, griddata$tgop)
 Fx <- mvfft(reof$x)                     # Fourier transforms of the coordinates
