@@ -120,6 +120,11 @@ for(i in 2:ngen) {
 residgrids <- lapply(tempgrids, function(g) {
     g - meanfield
 })
+
+## We will also want a grand matrix of all of the generated fields.  We'll leave
+## out the one that is an exact reproduction of the input, so as to avoid
+## biasing the statistics.
+allresidgrids <- do.call(rbind, residgrids[-1])
 ```
 
 ### Plotting the fields
@@ -191,6 +196,21 @@ print(fracfail)
 In other words the number of grid cells that appear to show significant
 differences in variance is well within what we would expect by chance alone.
 
+An alternate version of this calculation is to look at the variances of the grid
+cells in all of the field realizations, treating the variance as an operation
+across both time and alternate realizations.  We'll do that here and see what if
+any difference it makes.
+```{r fstatsall}
+fstats.all <- apply(allresidgrids, 2, var) / cellvar[[1]]
+df.all <- dim(allresidgrids)[1] - 1    # More degrees of freedom in the merged version
+fq.all <- qf(pv, df.all, df.all)
+fracfail.all <- sum(fstats.all < fq.all[1] | fstats.all > fq.all[2]) / length(fstats.all)
+print(fracfail.all)
+```
+Once again, the number of grid cells that fail is negligible.  We'll probably
+use this version in the paper.
+
+
 ### Grid cell normality
 
 We also need to establish that the data are normally distributed.  (Technically
@@ -209,7 +229,7 @@ kstestpvals <- lapply(residgrids, function(g) {
     })
 })
 
-fracfailst <- sapply(kstestpvals, function(pv) {
+fracfailks <- sapply(kstestpvals, function(pv) {
     sum(pv < siglvl) / length(pv)
     })
 print(fracfailst)
@@ -219,3 +239,20 @@ non-normality.  This is what we would expect, even if the original data were
 _not_ normally distributed because the the process is essentially summing up a
 collection of random variables, and the Central Limit Theorem tells us that such
 sums approach a normal distribution as the number of terms in the sum increases.
+
+As with the variance, we can do this test on the merged dataset.
+```{r kstestall}
+kspvals.all <- apply(allresidgrids, 2, function(x) {
+    mu <- mean(x)
+    sig <- sd(x)
+    nulldist <- function(q) {pnorm(q, mu, sig)}
+    ks.test(x, nulldist)$p.value
+})
+
+fracfailks.all <- sum(kspvals.all < siglvl) / length(kspvals.all)
+print(fracfailks.all)
+summary(kspvals.all)
+```
+None of the grid cells fails this K-S test.  The smallest $p$-value in the grid
+is over 0.02.
+
