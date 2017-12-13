@@ -13,8 +13,12 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   fig.width=8,
+  cache=TRUE,
   comment = "#>"
 )
+library('fldgen')
+library('dplyr')
+library('ggplot2')
 ```
 
 The fldgen package allows you to ingest temperature output from an earth system
@@ -38,6 +42,8 @@ that reads the netCDF temperature fields.
 ## parameters for the code below.
 ngen <- 4             # number of fields to generate
 exfld <- 20           # example field to plot from the time series
+set.seed(8675309)     # Set RNG seed so results will be reproducible
+siglvl <- 0.01        # significance level for statistical tests
 ```
 
 All of the data needed for this tutorial is installed with the package.
@@ -109,6 +115,11 @@ tempgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag, Fxphase), meanfi
 for(i in 2:ngen) {
   tempgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag), meanfield)
 }
+
+## Subtract off the mean field.  Save these because we will want to use them later
+residgrids <- lapply(tempgrids, function(g) {
+    g - meanfield
+})
 ```
 
 ### Plotting the fields
@@ -117,12 +128,7 @@ We can extract a single field from each time series and plot them all for
 comparision.  We will be able to see a lot more detail if we subtract out the
 mean field from each one, so that's what we will do.
 
-```{r plotfields, fig.show='hold'}
-## Subtract off the mean field.  Save these because we will want to use them later
-residgrids <- lapply(tempgrids, function(g) {
-    g - meanfield
-})
-
+```{r plotfields, fig.show='hold', eval=TRUE}
 ## Extract a single example field from each series and create a plot
 fieldplots <- lapply(residgrids, function(g) {
     suppressWarnings(
@@ -135,3 +141,81 @@ for (plt in fieldplots) {
     print(plt)
 }
 ```
+
+## Analysis
+
+### Global mean temperatures
+
+The global mean temperature should be close to zero for all of the residual
+fields, but it probably won't be exact.  The differences here tell us something
+about the performance of the mean response algorithm.  If the global mean of the
+mean response field for input temperature $T_g$ is something other than $T_g$,
+then the algorithm isn't consistent.
+
+```{r glblmn}
+meantemps <- lapply(seq_along(residgrids), function(i) {
+    residgrids[[i]] %*% griddata$tgop
+    }) 
+for(mt in meantemps)
+    print(as.vector(summary(mt)))
+```
+
+### Grid cell variance
+
+We also expect the variance in each grid cell to be the same as the variance in
+the original ESM data.  We can test this by calculating the $F$ statistic.  We
+don't want to do an F-test on each grid cell, and some of them are bound to fail
+anyhow, since there are `r dim(griddata$tgop[1])` grid cells.  Instead, we'll
+calculate all the $F$ values and see how many would fail at the `r siglvl`
+level.  Also, note that `residgrids[[1]]` is identical to the original (this is
+tested in the package unit tests).  Therefore, we will compare the other grids
+to that one.
+
+```{r fstats}
+cellvar <- lapply(residgrids, function(g) {
+    apply(g, 2, var)   # calculate variance in each grid cell across time slices.
+    })
+fstats <- lapply(cellvar[-1], function(cvg) {
+    cvg / cellvar[[1]]     # F = var(x) / var(y)
+    })
+
+pv <- c(siglvl/2, 1-siglvl/2)      # This is a two-tailed test, so the p-vals are half the sig level
+df1 <- length(griddata$time) - 1  # degrees of freedom is N-1
+fq <- qf(pv, df1, df1)
+fracfail <- sapply(fstats, function(f) {
+    sum(f<fq[1] | f>fq[2]) / length(f)
+})
+print(fracfail)
+```
+
+In other words the number of grid cells that appear to show significant
+differences in variance is well within what we would expect by chance alone.
+
+### Grid cell normality
+
+We also need to establish that the data are normally distributed.  (Technically
+we should do this before we apply the F-test.)  We'll use the Kolmogorov-Smirnov
+statistic for this test.  We don't have a separate quantile function for null
+hypothesis distribution of this statistic, so we'll just use the p-values
+produced by `ks.test`.
+
+```{r kstest}
+kstestpvals <- lapply(residgrids, function(g) {
+    apply(g, 2, function(x) {
+        mu <- mean(x)
+        sig <- sd(x)
+        nulldist <- function(q) {pnorm(q, mu, sig)}
+        ks.test(x, nulldist)$p.value
+    })
+})
+
+fracfailst <- sapply(kstestpvals, function(pv) {
+    sum(pv < siglvl) / length(pv)
+    })
+print(fracfailst)
+```
+The residuals constructed by the Fourier process show no significant evidence of
+non-normality.  This is what we would expect, even if the original data were
+_not_ normally distributed because the the process is essentially summing up a
+collection of random variables, and the Central Limit Theorem tells us that such
+sums approach a normal distribution as the number of terms in the sum increases.
