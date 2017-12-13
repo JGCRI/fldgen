@@ -81,8 +81,12 @@ fldts2df <- function(fldts, griddata)
 #' \code{\link{read.ncdf}}.
 #' @param nb Number of breaks in the color scale.  If nb < 2, use a smooth
 #' gradient.
+#' @param minval Lower limit of the color scale.  The default value was chosen
+#' to work well for fields of residuals from the mean temperature response.
+#' @param maxval Upper limit of the color scale.  The default value was chosen
+#' to work well for fields of residuals from the mean temperature response.
 #' @export
-plot_field <- function(fld, griddata, nb=6)
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5)
 {
     if(requireNamespace('gcammaptools')) {
         tdf <- fld2df(fld, griddata)
@@ -90,13 +94,16 @@ plot_field <- function(fld, griddata, nb=6)
         if(nb < 2) {
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1)
+              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1,
+                                            limits=c(minval, maxval), oob=scales::squish)
         }
         else {
-            tdf$value <- as.integer(cut(tdf$value, nb))
+            ## Discretize the output values.
+            tdf$value <- minval +
+              findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1)
+              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval))
         }
     }
     else {

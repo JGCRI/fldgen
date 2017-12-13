@@ -137,7 +137,7 @@ mean field from each one, so that's what we will do.
 ## Extract a single example field from each series and create a plot
 fieldplots <- lapply(residgrids, function(g) {
     suppressWarnings(
-        plot_field(g[exfld,], griddata, 13)
+        plot_field(g[exfld,], griddata, 14)
     )
 })
 
@@ -146,6 +146,8 @@ for (plt in fieldplots) {
     print(plt)
 }
 ```
+
+Incidentally, the second field looks like it's mostly positive deviations from the mean response, but that's just an artifact of the discretization used to emphasize 
 
 ## Analysis
 

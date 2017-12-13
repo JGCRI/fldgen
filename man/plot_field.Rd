@@ -4,7 +4,7 @@
 \alias{plot_field}
 \title{Plot a single field in matrix form}
 \usage{
-plot_field(fld, griddata, nb = 6)
+plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5)
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
@@ -15,6 +15,12 @@ field.}
 
 \item{nb}{Number of breaks in the color scale.  If nb < 2, use a smooth
 gradient.}
+
+\item{minval}{Lower limit of the color scale.  The default value was chosen
+to work well for fields of residuals from the mean temperature response.}
+
+\item{maxval}{Upper limit of the color scale.  The default value was chosen
+to work well for fields of residuals from the mean temperature response.}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot
