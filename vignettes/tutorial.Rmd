@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 library('fldgen')
 library('dplyr')
 library('ggplot2')
+library('reshape2')
 ```
 
 The fldgen package allows you to ingest temperature output from an earth system
@@ -234,7 +235,7 @@ kstestpvals <- lapply(residgrids, function(g) {
 fracfailks <- sapply(kstestpvals, function(pv) {
     sum(pv < siglvl) / length(pv)
     })
-print(fracfailst)
+print(fracfailks)
 ```
 The residuals constructed by the Fourier process show no significant evidence of
 non-normality.  This is what we would expect, even if the original data were
@@ -257,4 +258,48 @@ summary(kspvals.all)
 ```
 None of the grid cells fails this K-S test.  The smallest $p$-value in the grid
 is over 0.02.
+
+### EOF Characteristics
+
+Start by constructing a heatmap of the power spectrum for the EOFs.  Technically we will be plotting the square root of the power spectrum, which is fine for getting a sense of what trends exist in the data, but we'll need to keep that in mind if we decide to do anything quantitative with the power.
+
+```{r heatmap}
+nt <- length(griddata$time)
+## There is no additional information in the negative frequencies, so keep only
+## the positive ones.
+np <- 
+    if(nt %% 2 == 1) { 
+        (nt+1)/2
+    } else {
+        nt/2 + 1
+    }
+
+hmdata <- reshape2::melt(Fxmag[1:np,])
+hmdata$freq <- (hmdata$Var1 - 1) / nt
+hmdata$EOF <- as.integer(substring(hmdata$Var2, 3))
+## discretize the power so we can isolate structure more easily
+nbrk <- 10
+hmdata$discval <- findInterval(hmdata$value / max(hmdata$value), seq(0.01, 0.99, length.out=nbrk)) / nbrk
+hmdata <- dplyr::select(hmdata, EOF, freq, value, discval) %>% as_tibble()
+
+hmplt <- ggplot(hmdata, aes(x=freq, y=EOF, fill=discval)) + geom_raster() + scale_fill_distiller(palette='YlOrRd', direction=1, name='sqrt(Relative Power)')
+
+print(hmplt)
+```
+
+Evidently, the power drops off quite a bit after the first few EOFs.
+```{r eofpwr}
+eofpwr <- group_by(hmdata, EOF) %>% summarise(totpwr=sum(value*value)) %>% mutate(relpwr=totpwr/max(totpwr)) %>% select(EOF, relpwr)
+eofpwrplt <- ggplot(eofpwr, aes(x=EOF, y=relpwr)) + geom_col() + ylab('Relative Power')
+print(eofpwrplt)
+```
+More importantly, the power spectrum whitens after the first few EOFs, so those
+early EOFs represent periodic signals, while the later ones don't.  Here are the
+smoothed power spectra for the first 9 EOFs.
+
+```{r pwrspectra}
+eofspectra <- filter(hmdata, EOF>0, EOF<10) %>% mutate(EOF=factor(EOF))
+eofspectraplt <- ggplot(eofspectra, aes(x=freq, y=value, color=EOF)) + geom_smooth(se=FALSE) + scale_color_brewer(palette='Set1')
+print(eofspectraplt)
+```
 
