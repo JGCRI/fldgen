@@ -261,6 +261,7 @@ is over 0.02.
 
 ### EOF Characteristics
 
+#### Time behavior
 Start by constructing a heatmap of the power spectrum for the EOFs.  Technically we will be plotting the square root of the power spectrum, which is fine for getting a sense of what trends exist in the data, but we'll need to keep that in mind if we decide to do anything quantitative with the power.
 
 ```{r heatmap}
@@ -275,7 +276,7 @@ np <-
     }
 
 hmdata <- reshape2::melt(Fxmag[1:np,])
-hmdata$freq <- (hmdata$Var1 - 1) / nt
+hmdata$freq <- (hmdata$Var1 - 1) / nt    # The - 1 is due to R's unit-indexed arrays.
 hmdata$EOF <- as.integer(substring(hmdata$Var2, 3))
 ## discretize the power so we can isolate structure more easily
 nbrk <- 10
@@ -299,7 +300,47 @@ smoothed power spectra for the first 9 EOFs.
 
 ```{r pwrspectra}
 eofspectra <- filter(hmdata, EOF>0, EOF<10) %>% mutate(EOF=factor(EOF))
-eofspectraplt <- ggplot(eofspectra, aes(x=freq, y=value, color=EOF)) + geom_smooth(se=FALSE) + scale_color_brewer(palette='Set1')
+eofspectraplt <- ggplot(eofspectra, aes(x=freq, y=value, color=EOF)) + geom_smooth(se=FALSE) + scale_color_brewer(palette='Set1') + ylab('freq (1/yr)')
 print(eofspectraplt)
 ```
 
+#### Spatial behavior
+
+We will make spatial plots of the 9 EOFs shown in the plot above.  We'll also
+plot EOFs 25 and 50, just to get an idea of what's happening in those lower
+power modes.
+
+```{r eofspatial}
+### Plotting global maps is still a little slow, so expect this to take some time.
+## The EOFs are in reof$rotation.  Each column is the grid cell values for an EOF.
+## Also, the EOFs are scaled to unit norm.  We'll rescale them to unit max value
+
+eofcols <- c(2:10, 26, 51)  # EOF numbering starts at 0, but array numbering starts at 1
+eofvis <- t(reof$rotation[,eofcols])   # EOFs are now in rows, not columns
+eofvis <- eofvis / max(abs(eofvis))
+
+eofplts <- lapply(seq_along(eofcols), function(i) {
+    suppressWarnings(plot_field(eofvis[i,], griddata, 14, -0.9, 0.9))
+})
+    
+for(i in seq_along(eofcols)) {
+    title <- paste0('EOF-', eofcols[i]-1)
+    print(eofplts[[i]] + ggtitle(title))
+}
+```
+
+There is a lot to chew on here.  EOF-4 looks plausibly related to the PDO, and
+EOF-3 seems consistent with ENSO.  We don't expect any of these modes to
+correspond _exactly_ with the classic oscillations, both because we're learning
+the behavior from a relatively small amount of data and because many of those
+phenomena are observed in sea surface temperature, and we're looking at
+near-surface air temperature.
+
+EOF-25 and EOF-50 are also interesting.  They show progressively smaller spatial
+scale for fluctuations.  Since the power also decreases as we go further down
+the list, we can conclude that most of the power in the random fluctuations is
+at longer spatial scales, particularly those associated with periodic phenomena.
+In fact, the majority of the power is in those first 10 modes:
+```{r powerfrac}
+sum(eofpwr$relpwr[eofpwr$EOF < 10]) / sum(eofpwr$relpwr)
+```
