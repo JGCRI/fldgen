@@ -205,8 +205,8 @@ across both time and alternate realizations.  We'll do that here and see what if
 any difference it makes.
 ```{r fstatsall}
 fstats.all <- apply(allresidgrids, 2, var) / cellvar[[1]]
-df.all <- dim(allresidgrids)[1] - 1    # More degrees of freedom in the merged version
-fq.all <- qf(pv, df.all, df.all)
+df.all <- dim(allresidgrids)[1] - 1    # More degrees of freedom in the merged version.
+fq.all <- qf(pv, df.all, df1)          # Original dataset still has same number of df.
 fracfail.all <- sum(fstats.all < fq.all[1] | fstats.all > fq.all[2]) / length(fstats.all)
 print(fracfail.all)
 ```
