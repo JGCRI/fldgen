@@ -65,3 +65,48 @@ fldts2df <- function(fldts, griddata)
     dplyr::bind_rows(
         lapply(tidxs, function(i) {fld2df(fldts[i,], griddata, i)}) )
 }
+
+
+
+#' Plot a single field in matrix form
+#'
+#' Transform the field into a data frame using \code{\link{fld2df}} and plot
+#' using the \code{\link{gcammaptools}} package.  If \code{gcammaptools} isn't
+#' available, return \code{NULL}.  (TODO: make an ersatz plot if gcammaptools
+#' isn't there)
+#'
+#' @param fld Vector of ngrid=nlat*nlon values: a single time slice of the
+#' field.
+#' @param griddata The griddata structure returned from
+#' \code{\link{read.ncdf}}.
+#' @param nb Number of breaks in the color scale.  If nb < 2, use a smooth
+#' gradient.
+#' @param minval Lower limit of the color scale.  The default value was chosen
+#' to work well for fields of residuals from the mean temperature response.
+#' @param maxval Upper limit of the color scale.  The default value was chosen
+#' to work well for fields of residuals from the mean temperature response.
+#' @export
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5)
+{
+    if(requireNamespace('gcammaptools')) {
+        tdf <- fld2df(fld, griddata)
+        ## TODO: make these options a little more customizable
+        if(nb < 2) {
+            gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
+                                         legend=TRUE) +
+              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1,
+                                            limits=c(minval, maxval), oob=scales::squish)
+        }
+        else {
+            ## Discretize the output values.
+            tdf$value <- minval +
+              findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
+            gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
+                                         legend=TRUE) +
+              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval))
+        }
+    }
+    else {
+        NULL
+    }
+}

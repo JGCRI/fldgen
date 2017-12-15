@@ -42,6 +42,7 @@
 build/
 vignettes/*.R
 vignettes/*.html
+vignettes/*_cache
 DerivedData
 ## Various settings
 *.pbxuser
