@@ -4,10 +4,18 @@
 \alias{read.ncdf}
 \title{Read ESM data}
 \usage{
-read.ncdf(filename)
+read.ncdf(filename, len = NULL, varname = "tas")
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}
+
+\item{len}{Maximum length of the time series to read.  If the data read is
+longer, it will be trimmed.  (Default: read entire time series, regardless of
+length.)}
+
+\item{varname}{Name of the variable to read from the netcdf file.
+Irrespective of the name in the netcdf file, it will be called 'tas' in the
+return data.}
 }
 \value{
 A \code{griddata} list (see details).

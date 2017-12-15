@@ -35,16 +35,22 @@
 #' structures.
 #'
 #' @param filename Name of the input netCDF file
+#' @param len Maximum length of the time series to read.  If the data read is
+#' longer, it will be trimmed.  (Default: read entire time series, regardless of
+#' length.)
+#' @param varname Name of the variable to read from the netcdf file.
+#' Irrespective of the name in the netcdf file, it will be called 'tas' in the
+#' return data.
 #' @return A \code{griddata} list (see details).
 #' @importFrom assertthat assert_that
 #' @export
-read.ncdf <- function(filename)
+read.ncdf <- function(filename, len=NULL, varname='tas')
 {
     tann <- ncdf4::nc_open(filename)
 
     ## tas3d should have dimensions of time x lat x lon in the netcdf file.
     ## Because R uses Fortran array layout, this gets reversed to lon x lat x time.
-    tas3d <- ncdf4::ncvar_get(tann, var='tas')
+    tas3d <- ncdf4::ncvar_get(tann, var=varname)
     lat <- ncdf4::ncvar_get(tann, var='lat')
     nlat <- length(lat)
     lon <- ncdf4::ncvar_get(tann, var='lon')
@@ -55,6 +61,19 @@ read.ncdf <- function(filename)
     ncdf4::nc_close(tann)
 
     assert_that(all(dim(tas3d) == c(nlon, nlat, ntime)))
+
+    if(!is.null(len)) {
+        ## Trim the input to the requested length.
+        if(ntime < len) {
+            warning('Input time series shorter than requested length.  Requested: ', len, ' Read: ', ntime)
+        }
+        else {
+            ntime <- len
+            time <- time[1:ntime]
+            timeout <- timeout[1:ntime]
+            tas3d <- tas3d[ , , 1:ntime]
+        }
+    }
 
 
     ## reorganize and flatten the 3-D array into a 2d array of ntime x ngrid
