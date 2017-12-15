@@ -4,7 +4,7 @@
 \alias{read.ncdf}
 \title{Read ESM data}
 \usage{
-read.ncdf(filename, len = NULL, varname = "tas")
+read.ncdf(filename, len = NULL, tag = basename(filename), varname = "tas")
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}
@@ -12,6 +12,9 @@ read.ncdf(filename, len = NULL, varname = "tas")
 \item{len}{Maximum length of the time series to read.  If the data read is
 longer, it will be trimmed.  (Default: read entire time series, regardless of
 length.)}
+
+\item{tag}{A string identifying the name of the scenario.  If omitted, the
+tag will default to the filename.}
 
 \item{varname}{Name of the variable to read from the netcdf file.
 Irrespective of the name in the netcdf file, it will be called 'tas' in the
@@ -28,15 +31,27 @@ The temperature data should be a netCDF file of annual grid values.  The data
 is assumed to have its dimensions of time, lat, lon, where lon is the most
 rapidly varying index, and time is the least.
 
-The output will be a list with two fields:
+The output will be a list with six fields:
 \describe{
   \item{\strong{tas}}{Matrix of temperature data.}
   \item{\strong{tgop}}{Vector operator for global mean temperature.}
+  \item{\strong{lat}}{Vector of latitude values.  These are only replicated
+once, so their length is nlat, not ngrid.  You have to use \code{rep(lat,
+nlon)} to get latitudes for each grid cell.}
+  \item{\strong{lon}}{Vector of longitude values.  These are only replicated
+once, so their lingth is nlon, not ngrid.  Getting longitudes for each grid
+cell is tricksy.  Try \code{as.vector(matrix(rep(lon, nlat), nrow=nlat,
+byrow=TRUE))}.  Fortunately, you don't need them very often.}
+  \item{\strong{time}}{Vector of time values, given as years since the base
+year of the dataset.}
+  \item{\strong{tags}}{A list of datasets that were concatenated to get this
+structure.  The names of the list are the tags given to the dataset, and the
+values are a vector of start-row, end-row pairs.}
 }
 
 The data at each time is represented as a flattened vector of grid cells.
-The flattening is performed by transposing to lon, lat ordering, so that lon
-will once again be the most rapidly varying index (because R uses
+The flattening is performed by transposing to lat, lon ordering, so that lat
+will be the most rapidly varying index (because R uses
 Fortran-style indexing).  Then the spatial dimensions are discarded,
 resulting in a 1D vector.  The time dimension is kept, resulting in a matrix
 with years in rows and grid cells in columns.  The dimensions of the matrix

@@ -6,15 +6,27 @@
 #' is assumed to have its dimensions of time, lat, lon, where lon is the most
 #' rapidly varying index, and time is the least.
 #'
-#' The output will be a list with two fields:
+#' The output will be a list with six fields:
 #' \describe{
 #'   \item{\strong{tas}}{Matrix of temperature data.}
 #'   \item{\strong{tgop}}{Vector operator for global mean temperature.}
+#'   \item{\strong{lat}}{Vector of latitude values.  These are only replicated
+#' once, so their length is nlat, not ngrid.  You have to use \code{rep(lat,
+#' nlon)} to get latitudes for each grid cell.}
+#'   \item{\strong{lon}}{Vector of longitude values.  These are only replicated
+#' once, so their lingth is nlon, not ngrid.  Getting longitudes for each grid
+#' cell is tricksy.  Try \code{as.vector(matrix(rep(lon, nlat), nrow=nlat,
+#' byrow=TRUE))}.  Fortunately, you don't need them very often.}
+#'   \item{\strong{time}}{Vector of time values, given as years since the base
+#' year of the dataset.}
+#'   \item{\strong{tags}}{A list of datasets that were concatenated to get this
+#' structure.  The names of the list are the tags given to the dataset, and the
+#' values are a vector of start-row, end-row pairs.}
 #' }
 #'
 #' The data at each time is represented as a flattened vector of grid cells.
-#' The flattening is performed by transposing to lon, lat ordering, so that lon
-#' will once again be the most rapidly varying index (because R uses
+#' The flattening is performed by transposing to lat, lon ordering, so that lat
+#' will be the most rapidly varying index (because R uses
 #' Fortran-style indexing).  Then the spatial dimensions are discarded,
 #' resulting in a 1D vector.  The time dimension is kept, resulting in a matrix
 #' with years in rows and grid cells in columns.  The dimensions of the matrix
@@ -41,10 +53,12 @@
 #' @param varname Name of the variable to read from the netcdf file.
 #' Irrespective of the name in the netcdf file, it will be called 'tas' in the
 #' return data.
+#' @param tag A string identifying the name of the scenario.  If omitted, the
+#' tag will default to the filename.
 #' @return A \code{griddata} list (see details).
 #' @importFrom assertthat assert_that
 #' @export
-read.ncdf <- function(filename, len=NULL, varname='tas')
+read.ncdf <- function(filename, len=NULL, tag=basename(filename), varname='tas')
 {
     tann <- ncdf4::nc_open(filename)
 
@@ -90,7 +104,16 @@ read.ncdf <- function(filename, len=NULL, varname='tas')
     ## normalize areafac so that sum(area*grid) is the global weighted average
     areafac <- areafac/sum(areafac)
 
-    list(tas=as.matrix(tas), tgop=as.matrix(areafac), lat=lat, lon=lon, time=timeout)
+    ## The tag element of the output is a named list of 2-element vectors,
+    ## giving the start and end of the data in the output.  When datasets are
+    ## concatenated, this allows us to recover the originals
+    tagout <- list(c(1,ntime))
+    names(tagout) <- tag
+
+    gd <- list(tas=as.matrix(tas), tgop=as.matrix(areafac), lat=lat, lon=lon,
+               time=timeout, tags=tagout)
+    class(gd) <- 'griddata'
+    gd
 }
 
 
@@ -122,3 +145,87 @@ readtgav <- function(tgavfilename)
 }
 
 
+#' Concatenate a list of griddata objects
+#'
+#' Griddata objects are concatenated by appending their temperature observations
+#' into a single grand matrix with all the time sices from the concatenated
+#' objects.
+#'
+#' The time indices are likewise concatenated so that they will give accurate
+#' time values.  The tags are concatenated and updated so that they point to the
+#' new location of their original data.  Lat and lon values and the tgop
+#' operator are unchanged, and they must be the same for all of the concatenated
+#' grids, or an error is raised.
+#'
+#' Note: Time values are given as years since the start year for the data set.
+#' If you concatenate data sets with different start years, the time values will
+#' not be compatible.  For \emph{most} of what we do in this package, the
+#' difference won't matter, but it's something to be aware of.
+#'
+#' @param gridlist List of grids to concatenate
+#' @return A griddata (q.v. \code{link{read.ncdf}}) object with the concatenated
+#' grid values.
+#' @export
+concatGrids <- function(gridlist)
+{
+    tasl <- lapply(gridlist, function(x){x$tas})
+    tgopl <- lapply(gridlist, function(x){x$tgop})
+    latl <- lapply(gridlist, function(x){x$lat})
+    lonl <- lapply(gridlist, function(x){x$lon})
+    timel <- lapply(gridlist, function(x){x$time})
+    tagsl <- lapply(gridlist, function(x){x$tags})
+
+    ## verify that tgop, lat, and lon are compatible.
+    checkfun <- function(cmpval) {
+        function(x) {isTRUE(all.equal(x, cmpval))}
+    }
+    all(sapply(tgopl, checkfun(tgopl[[1]]))) ||
+      stop('tgop values not compatible')
+    all(sapply(latl, checkfun(latl[[1]]))) || stop('lat values not compatible')
+    all(sapply(lonl, checkfun(lonl[[1]]))) || stop('lon values not compatible')
+
+    ## Concatenate tas matrix by rows
+    tas <- do.call(rbind, tasl)
+    ## Concatenate time vectors
+    time <- do.call(c, timel)
+
+    ## the tags are a little trickier because we need to update the start and
+    ## end rows.  On top of that, we have to deal with the case where some of
+    ## the inputs were themselves concatenated.
+
+    ## First, flatten the tags list
+    tagsl <- flatten_tags(tagsl)
+    ## find the cumulative number of rows to the start of each data set
+    n <- cumsum(sapply(tagsl, function(x) {1+x[2]-x[1]}))
+    length(n) <- length(n) -1
+    n <- c(0,n)
+    ## add the cumulative row count to each set
+    tags <- Map(`+`, tagsl, n)
+
+    ## Now reconstruct the output structure.
+    gd <- list(tas=tas, tgop=tgopl[[1]], lat=latl[[1]], lon=lonl[[1]], time=time, tags=tags)
+    class(gd) <- 'griddata'
+    gd
+}
+
+#' Flatten a list of tags, restoring their start/end rows
+#'
+#' @param taglist List of tags, possibly nested
+#' @keywords internal
+flatten_tags <- function(taglist)
+{
+    taglist <- rlang::flatten(taglist)
+    lapply(taglist, function(x) {
+               diff <- x[1]-1
+               x - diff
+           })
+}
+
+#' c operator for griddata objects
+#'
+#' @param ... One or more griddata objects
+#' @export
+c.griddata <- function(...)
+{
+    concatGrids(list(...))
+}
