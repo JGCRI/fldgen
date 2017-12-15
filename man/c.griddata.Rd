@@ -10,5 +10,6 @@
 \item{...}{One or more griddata objects}
 }
 \description{
-c operator for griddata objects
+Writing \code{c(g1,g2)} is equivalent to
+\code{\link{concatGrids}(list(g1,g2))}.
 }

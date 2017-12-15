@@ -208,6 +208,36 @@ concatGrids <- function(gridlist)
     gd
 }
 
+#' Split a concatenated griddata object into its constituent grids
+#'
+#' This function undoes the effect of \code{\link{concatGrids}}.  It does not,
+#' however, remember the path you took to get the concatenated grid, so
+#' \code{splitGrids(c(g1, c(g2,g3)))} will give you \code{list(g1,g2,g3)}
+#' instead of \code{list(g1, c(g2,g3))}, as you might have expected.
+#'
+#' @param griddata A griddata structure to split
+#' @return A list of griddata structures, each containing a single data set
+#' (i.e., a time series read in from a single file)
+#' @export
+splitGrids <- function(griddata)
+{
+    lapply(names(griddata$tags),
+           function(tname) {
+               tag <- griddata$tags[[tname]] # tag is a vector of (startrow, stoprow)
+               modtag <- tag - (tag[1]-1)
+               out <-
+                   list(tas = griddata$tas[tag[1]:tag[2], ],
+                        tgop = griddata$tgop,
+                        lat = griddata$lat,
+                        lon = griddata$lon,
+                        time = griddata$time[tag[1]:tag[2]],
+                        tags = setNames(list(modtag), tname))
+               class(out) <- 'griddata'
+               out
+           })
+}
+
+
 #' Flatten a list of tags, restoring their start/end rows
 #'
 #' @param taglist List of tags, possibly nested
@@ -222,6 +252,9 @@ flatten_tags <- function(taglist)
 }
 
 #' c operator for griddata objects
+#'
+#' Writing \code{c(g1,g2)} is equivalent to
+#' \code{\link{concatGrids}(list(g1,g2))}.
 #'
 #' @param ... One or more griddata objects
 #' @export

@@ -41,7 +41,7 @@ test_that('Trim time series length works.',
 })
 
 
-test_that('Grids can be concatenated',
+test_that('Grids can be concatenated and split',
 {
     g1 <- read.ncdf(inputfile, 2, tag='g1')
     g2 <- read.ncdf(inputfile, 3, tag='g2')
@@ -64,4 +64,11 @@ test_that('Grids can be concatenated',
     expect_equal(g123$time, c(g1$time, g2$time, g3$time))
     expect_equal(g123$tags,
                  list(g1=c(1,2), g2=c(3,5), g3=c(6,9)))
+
+    sg <- splitGrids(g123)
+    expect_equal(length(sg), 3)
+    expect_equal(sg[[1]], g1)
+    expect_equal(sg[[2]], g2)
+    expect_equal(sg[[3]], g3)
 })
+
