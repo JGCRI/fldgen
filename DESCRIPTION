@@ -20,3 +20,5 @@ Suggests:
     gcammaptools (>= 0.4),
     covr
 RoxygenNote: 6.0.1
+Remotes:
+    JGCRI/gcammaptools
