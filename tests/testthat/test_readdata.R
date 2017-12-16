@@ -72,3 +72,10 @@ test_that('Grids can be concatenated and split',
     expect_equal(sg[[3]], g3)
 })
 
+
+test_that('Splitting a grid with a single element is ok.',
+{
+    gdl <- splitGrids(griddata)
+    expect_equal(length(gdl), 1)
+    expect_equal(gdl[[1]], griddata)
+})
