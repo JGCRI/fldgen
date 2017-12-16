@@ -4,7 +4,8 @@
 \alias{read.ncdf}
 \title{Read ESM data}
 \usage{
-read.ncdf(filename, len = NULL, tag = basename(filename), varname = "tas")
+read.ncdf(filename, len = NULL, tag = basename(filename), varname = "tas",
+  latvar = "lat", lonvar = "lon", timevar = "time")
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}
@@ -19,6 +20,12 @@ tag will default to the filename.}
 \item{varname}{Name of the variable to read from the netcdf file.
 Irrespective of the name in the netcdf file, it will be called 'tas' in the
 return data.}
+
+\item{latvar}{Name of the latitude dimension variable in the input file.}
+
+\item{lonvar}{Name of the longitude dimension variable in the input file.}
+
+\item{timevar}{Name of the time dimension variable in the input file.}
 }
 \value{
 A \code{griddata} list (see details).

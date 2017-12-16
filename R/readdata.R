@@ -55,21 +55,25 @@
 #' return data.
 #' @param tag A string identifying the name of the scenario.  If omitted, the
 #' tag will default to the filename.
+#' @param latvar Name of the latitude dimension variable in the input file.
+#' @param lonvar Name of the longitude dimension variable in the input file.
+#' @param timevar Name of the time dimension variable in the input file.
 #' @return A \code{griddata} list (see details).
 #' @importFrom assertthat assert_that
 #' @export
-read.ncdf <- function(filename, len=NULL, tag=basename(filename), varname='tas')
+read.ncdf <- function(filename, len=NULL, tag=basename(filename), varname='tas',
+                      latvar='lat', lonvar='lon', timevar='time')
 {
     tann <- ncdf4::nc_open(filename)
 
     ## tas3d should have dimensions of time x lat x lon in the netcdf file.
     ## Because R uses Fortran array layout, this gets reversed to lon x lat x time.
     tas3d <- ncdf4::ncvar_get(tann, var=varname)
-    lat <- ncdf4::ncvar_get(tann, var='lat')
+    lat <- ncdf4::ncvar_get(tann, var=latvar)
     nlat <- length(lat)
-    lon <- ncdf4::ncvar_get(tann, var='lon')
+    lon <- ncdf4::ncvar_get(tann, var=lonvar)
     nlon <- length(lon)
-    time <- ncdf4::ncvar_get(tann, var='time')
+    time <- ncdf4::ncvar_get(tann, var=timevar)
     ntime <- length(time)
     timeout <- seq_along(time) - 1
     ncdf4::nc_close(tann)
