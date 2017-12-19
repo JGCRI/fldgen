@@ -202,3 +202,59 @@ mkcorrts <- function(Fxmag, phase=NULL, complexout=FALSE)
     else
         Re(xout) / N
 }
+
+#' Estimate the power spectral density from a list of ESM runs
+#'
+#' This is a simplistic estimate of the PSD; it's just the mean of the
+#' squared-magnitude of the DFT, averaged across the runs in the dataset.  There
+#' are more sophisticated things you could do, but a crude estimate is more than
+#' good enough for what we are trying to do here.
+#'
+#' The matrix returned contains the PSD estimates for \emph{all}
+#' frequencies (including negative frequencies).  Each column corresponds to one of the
+#' principal components (PC0, PC1, ... PCN), and each row corresponds to a
+#' frequency bin ($0, 1/N_t, 2/N_t, \ldots, 1/(2N_t), \ldots, -2/N_t, -1/N_t$,
+#' in units of yr$^{-1}$).  The \emph{square root} of this matrix should be passed
+#' as the first argument to \code{\link{mkcorrts}}.
+#'
+#' When doing the averaging we assume that all of the input time series have the
+#' same lengths, so that all of the frequency bins correspond.  Passing series
+#' of unequal length is an error.
+#'
+#' In early versions of this analysis we would perform the analysis manually,
+#' which allowed us to keep the phase information.  Using the recovered phases,
+#' we could force the output fields to replicate the input fields, if we wanted
+#' to.  It doesn't really make sense to do that when we're dealing with multiple
+#' input fields, so we haven't tried to preserve the phases on output.  You can
+#' get the phases for any single prcomp structure by running:
+#' \verb{
+#' Fx <- mvfft(pc$x)
+#' Fxphase <- atan2(Im(Fx), Re(Fx))
+#' }
+#'
+#' @param prcomp_l A list of principal components structures returned by
+#' eof_analyze, or a single such structure.
+#' @return A matrix [ntime, numPC] of PSD estimates (see details).
+#' @export
+psdest <- function(prcomp_l)
+{
+    if(inherits(prcomp_l, 'prcomp')) {
+        ## User passed a single griddata instead of a list.  Wrap it in a list
+        ## and continue.
+        prcomp_l <- list(prcomp_l)
+    }
+
+    ## Check to see that all time series are the same length.
+    lens <- sapply(prcomp_l, function(pc) {nrow(pc$x)})
+    if(any(lens != lens[1])) {
+        stop('All input prcomp structures must have equal length')
+    }
+
+    psds <- lapply(prcomp_l,
+                   function(pc) {
+                       fx <- stats::mvfft(pc$x)
+                       Mod(fx)^2
+                   })
+
+    Reduce(`+`, psds) / length(psds)
+}
