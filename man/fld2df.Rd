@@ -14,7 +14,7 @@ fldts2df(fldts, griddata)
 field.}
 
 \item{griddata}{The griddata structure returned from
-\code{\link{read.ncdf}}.}
+\code{\link{read.temperatures}}.}
 
 \item{ti}{The time index.  The time variable in the output will be set to
 \code{griddata$time[ti]}.  If the time index is omitted, then the time

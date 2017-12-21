@@ -15,7 +15,7 @@
 #' @param fld Vector of ngrid=nlat*nlon values: a single time slice of the
 #' field.
 #' @param griddata The griddata structure returned from
-#' \code{\link{read.ncdf}}.
+#' \code{\link{read.temperatures}}.
 #' @param ti The time index.  The time variable in the output will be set to
 #' \code{griddata$time[ti]}.  If the time index is omitted, then the time
 #' variable will be omitted from the output.
@@ -71,14 +71,14 @@ fldts2df <- function(fldts, griddata)
 #' Plot a single field in matrix form
 #'
 #' Transform the field into a data frame using \code{\link{fld2df}} and plot
-#' using the \code{\link{gcammaptools}} package.  If \code{gcammaptools} isn't
+#' using the \code{gcammaptools} package.  If \code{gcammaptools} isn't
 #' available, return \code{NULL}.  (TODO: make an ersatz plot if gcammaptools
 #' isn't there)
 #'
 #' @param fld Vector of ngrid=nlat*nlon values: a single time slice of the
 #' field.
 #' @param griddata The griddata structure returned from
-#' \code{\link{read.ncdf}}.
+#' \code{\link{read.temperatures}}.
 #' @param nb Number of breaks in the color scale.  If nb < 2, use a smooth
 #' gradient.
 #' @param minval Lower limit of the color scale.  The default value was chosen

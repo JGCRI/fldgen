@@ -11,7 +11,7 @@
 #' \verb{
 #' library(fldgen)
 #'
-#' griddata <- read.ncdf('data/tann1.nc')
+#' griddata <- read.temperatures('data/tann1.nc')
 #' tgav <- readtgav('data/wgttann1.nc')
 #' pscl <- pscl_analyze(griddata$tas, tgav)
 #' reof <- eof_analyze(pscl$r, griddata$tgop)

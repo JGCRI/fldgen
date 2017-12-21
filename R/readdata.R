@@ -1,6 +1,4 @@
-#' Read ESM data
-#'
-#' Read temperature data from the ESM that we are going to emulate.
+#' Read ESM temperature data
 #'
 #' The temperature data should be a netCDF file of annual grid values.  The data
 #' is assumed to have its dimensions of time, lat, lon, where lon is the most
@@ -61,8 +59,8 @@
 #' @return A \code{griddata} list (see details).
 #' @importFrom assertthat assert_that
 #' @export
-read.ncdf <- function(filename, len=NULL, tag=basename(filename), varname='tas',
-                      latvar='lat', lonvar='lon', timevar='time')
+read.temperatures <- function(filename, len=NULL, tag=basename(filename), varname='tas',
+                              latvar='lat', lonvar='lon', timevar='time')
 {
     tann <- ncdf4::nc_open(filename)
 
@@ -167,7 +165,7 @@ readtgav <- function(tgavfilename)
 #' difference won't matter, but it's something to be aware of.
 #'
 #' @param gridlist List of grids to concatenate
-#' @return A griddata (q.v. \code{link{read.ncdf}}) object with the concatenated
+#' @return A griddata (q.v. \code{link{read.temperatures}}) object with the concatenated
 #' grid values.
 #' @export
 concatGrids <- function(gridlist)
@@ -235,7 +233,7 @@ splitGrids <- function(griddata)
                         lat = griddata$lat,
                         lon = griddata$lon,
                         time = griddata$time[tag[1]:tag[2]],
-                        tags = setNames(list(modtag), tname))
+                        tags = stats::setNames(list(modtag), tname))
                class(out) <- 'griddata'
                out
            })

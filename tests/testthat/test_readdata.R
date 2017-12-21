@@ -7,7 +7,7 @@ nlon <- 288
 ngrid <- nlat*nlon
 
 ## This will be used in two tests below
-griddata <- read.ncdf(inputfile)
+griddata <- read.temperatures(inputfile)
 
 test_that('Full data read works.',
 {
@@ -26,7 +26,7 @@ test_that('Full data read works.',
 test_that('Trim time series length works.',
 {
     ntime.trim <- 10
-    gdtrim <- read.ncdf(inputfile, ntime.trim)
+    gdtrim <- read.temperatures(inputfile, ntime.trim)
 
     expect_equal(dim(gdtrim$tas), c(ntime.trim, ngrid))
     expect_equal(dim(gdtrim$tgop), c(ngrid, 1))
@@ -43,9 +43,9 @@ test_that('Trim time series length works.',
 
 test_that('Grids can be concatenated and split',
 {
-    g1 <- read.ncdf(inputfile, 2, tag='g1')
-    g2 <- read.ncdf(inputfile, 3, tag='g2')
-    g3 <- read.ncdf(inputfile, 4, tag='g3')
+    g1 <- read.temperatures(inputfile, 2, tag='g1')
+    g2 <- read.temperatures(inputfile, 3, tag='g2')
+    g3 <- read.temperatures(inputfile, 4, tag='g3')
 
     g23 <- c(g2, g3)
     expect_equal(g23$tas, rbind(g2$tas, g3$tas))

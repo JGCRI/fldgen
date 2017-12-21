@@ -1,6 +1,6 @@
 context('Writing data')
 
-griddata <- read.ncdf(system.file('extdata/tann1.nc', package='fldgen'))
+griddata <- read.temperatures(system.file('extdata/tann1.nc', package='fldgen'))
 
 test_that('data written to netCDF is identical to original.',
 {
@@ -8,7 +8,7 @@ test_that('data written to netCDF is identical to original.',
     write.ncdf(griddata$tas, file, griddata)
     expect_true(file.exists(file))
 
-    griddata2 <- read.ncdf(file)
+    griddata2 <- read.temperatures(file)
     expect_equal(griddata2$tas, griddata$tas)
 
     unlink(file)
@@ -27,7 +27,7 @@ test_that('clobber argument to write.ncdf works',
     expect_silent(write.ncdf(griddata$tas, file, griddata, clobber=TRUE))
 
     ## verify that we can read the result
-    expect_silent(read.ncdf(file))
+    expect_silent(read.temperatures(file))
 
     unlink(file)
 

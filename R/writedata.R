@@ -9,7 +9,7 @@
 #' @param fld A matrix [ntime x ngrid] containing the field to write out.
 #' @param file Name of the output file.
 #' @param griddata A griddata structure returned from the
-#' \code{\link{read.ncdf}} function.
+#' \code{\link{read.temperatures}} function.
 #' @param varname Name to use for the variable in the output file.
 #' @param varunit Units of the variable in the field.
 #' @param vardesc Description string to write into the \code{longname} attribute

@@ -13,7 +13,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   fig.width=8,
-  cache=TRUE,
+  cache=FALSE,
   comment = "#>"
 )
 library('fldgen')
@@ -34,7 +34,7 @@ All of the functions used here are documented in R's help system.  Since our
 purpose here is to outline what functions have to be called, and in what
 sequence, to perform the analysis, we haven't repeated material from the help
 files.  If you're confused about how a function is supposed to work, consult the
-help files.  For example, `help(read.ncdf)` will print the docs for the function
+help files.  For example, `help(read.temperatures)` will print the docs for the function
 that reads the netCDF temperature fields.
 
 ## Using the field generator
@@ -59,7 +59,7 @@ information about the grid, such as the latitude, longitude, and time
 coordinates and the vector of area weights needed to compute grid averages.
 
 ```{r readdata}
-griddata <- read.ncdf(file.path(datadir, 'tann1.nc'))
+griddata <- read.temperatures(file.path(datadir, 'tann1.nc'))
 tgav <- griddata$tas %*% griddata$tgop
 ```
 Here, we have read in the netCDF data and used the global average operator to 

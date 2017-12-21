@@ -10,7 +10,7 @@ concatGrids(gridlist)
 \item{gridlist}{List of grids to concatenate}
 }
 \value{
-A griddata (q.v. \code{link{read.ncdf}}) object with the concatenated
+A griddata (q.v. \code{link{read.temperatures}}) object with the concatenated
 grid values.
 }
 \description{

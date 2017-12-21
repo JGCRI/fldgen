@@ -11,7 +11,7 @@ plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5)
 field.}
 
 \item{griddata}{The griddata structure returned from
-\code{\link{read.ncdf}}.}
+\code{\link{read.temperatures}}.}
 
 \item{nb}{Number of breaks in the color scale.  If nb < 2, use a smooth
 gradient.}
@@ -24,7 +24,7 @@ to work well for fields of residuals from the mean temperature response.}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot
-using the \code{\link{gcammaptools}} package.  If \code{gcammaptools} isn't
+using the \code{gcammaptools} package.  If \code{gcammaptools} isn't
 available, return \code{NULL}.  (TODO: make an ersatz plot if gcammaptools
 isn't there)
 }

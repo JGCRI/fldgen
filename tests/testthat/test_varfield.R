@@ -6,7 +6,7 @@ context('Field generation')
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 
-griddata <- read.ncdf(system.file('extdata/tann1.nc', package='fldgen'))
+griddata <- read.temperatures(system.file('extdata/tann1.nc', package='fldgen'))
 tgav <- readtgav(system.file('extdata/wgttann1.nc', package='fldgen'))
 pscl <- pscl_analyze(griddata$tas, tgav)
 reof <- eof_analyze(pscl$r, griddata$tgop)

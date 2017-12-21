@@ -14,7 +14,7 @@ write.ncdf(fld, file, griddata, varname = "tas", varunit = "K",
 \item{file}{Name of the output file.}
 
 \item{griddata}{A griddata structure returned from the
-\code{\link{read.ncdf}} function.}
+\code{\link{read.temperatures}} function.}
 
 \item{varname}{Name to use for the variable in the output file.}
 
