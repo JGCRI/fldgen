@@ -86,7 +86,7 @@ fldts2df <- function(fldts, griddata)
 #' @param maxval Upper limit of the color scale.  The default value was chosen
 #' to work well for fields of residuals from the mean temperature response.
 #' @export
-plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5)
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, titlestr="Temperature (K)")
 {
     if(requireNamespace('gcammaptools')) {
         tdf <- fld2df(fld, griddata)
@@ -95,7 +95,8 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5)
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
               ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1,
-                                            limits=c(minval, maxval), oob=scales::squish)
+                                            limits=c(minval, maxval), oob=scales::squish,
+                                            guide=ggplot2::guide_colorbar(title=titlestr, title.position='top'))
         }
         else {
             ## Discretize the output values.
@@ -103,7 +104,8 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5)
               findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval))
+              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval),
+                                            guide=ggplot2::guide_colorbar(title=titlestr, title.position='top'))
         }
     }
     else {

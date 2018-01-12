@@ -4,7 +4,8 @@
 \alias{plot_field}
 \title{Plot a single field in matrix form}
 \usage{
-plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5)
+plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5,
+  titlestr = "Temperature (K)")
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
