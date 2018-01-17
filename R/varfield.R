@@ -287,3 +287,26 @@ split_eof <- function(reof, griddata)
                rr
            })
 }
+
+
+################################################################
+#### Utility Functions
+################################################################
+
+## In a 1D FFT grid, given the i coordinate of a positive frequency f,
+## find the i' coordinate corresponding to -f.  As with all R arrays, the
+## coordinates are unit-offset.
+##
+## i == the input coordinates.  A vector of values may be given
+## N == the length of the FFT dimension.
+find_minusf_coord <- function(i, N)
+{
+    dplyr::if_else(i==1, 1, N-i+2)
+}
+
+## Find the number of independent phases for an FFT of length N
+nphase <- function(N)
+{
+    N <- as.numeric(N)   # N-1 will be numeric, even if N is integer, so make sure types will agree.
+    dplyr::if_else(N %% 2 == 0, N, N-1) / 2 + 1
+}
