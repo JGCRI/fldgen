@@ -6,14 +6,17 @@ context('Field generation')
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 
-griddata <- read.temperatures(system.file('extdata/tann1.nc', package='fldgen'))
-tgav <- readtgav(system.file('extdata/wgttann1.nc', package='fldgen'))
-pscl <- pscl_analyze(griddata$tas, tgav)
-reof <- eof_analyze(pscl$r, griddata$tgop)
-Fx <- mvfft(reof$x)                     # Fourier transforms of the coordinates
-                                        # of the basis functions
-Fxmag <- abs(Fx)
-Fxphase <- atan2(Im(Fx), Re(Fx))
+tann1 <- train_fldgen(system.file('extdata/tann1.nc', package='fldgen'))
+
+griddata <- tann1$griddata
+tgav <- tann1$tgav
+pscl <- tann1$pscl
+reof <- tann1$reof
+
+Fx <- tann1$fx$fx
+Fxmag <- tann1$fx$mag
+Fxphase <- tann1$fx$phase
+
 tempgrids <- list()                     # Empty list to hold the temperature
                                         # realizations
 length(tempgrids) <- 4
