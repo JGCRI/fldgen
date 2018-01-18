@@ -27,8 +27,6 @@ model (ESM) and generate randomized temperature fields that have the same space
 and time correlation properties as the original ESM data.  This tutorial focuses
 on how to use the functions in the package to generate and analyze temperature
 fields.  The details of how the method works are covered in a companion paper. 
-The statistics and analysis from that paper are used as the case study in this
-tutorial.
 
 All of the functions used here are documented in R's help system.  Since our
 purpose here is to outline what functions have to be called, and in what
@@ -44,7 +42,6 @@ that reads the netCDF temperature fields.
 ngen <- 4             # number of fields to generate
 exfld <- 20           # example field to plot from the time series
 set.seed(8675309)     # Set RNG seed so results will be reproducible
-siglvl <- 0.01        # significance level for statistical tests
 ```
 
 All of the data needed for this tutorial is installed with the package.
@@ -122,10 +119,6 @@ residgrids <- lapply(tempgrids, function(g) {
     g - meanfield
 })
 
-## We will also want a grand matrix of all of the generated fields.  We'll leave
-## out the one that is an exact reproduction of the input, so as to avoid
-## biasing the statistics.
-allresidgrids <- do.call(rbind, residgrids[-1])
 ```
 
 ### Plotting the fields
@@ -138,7 +131,7 @@ mean field from each one, so that's what we will do.
 ## Extract a single example field from each series and create a plot
 fieldplots <- lapply(residgrids, function(g) {
     suppressWarnings(
-        plot_field(g[exfld,], griddata, 14)
+        plot_field(g[exfld,], griddata, 14, titlestr='delta-T (K)')
     )
 })
 
@@ -148,121 +141,15 @@ for (plt in fieldplots) {
 }
 ```
 
-Incidentally, the second field looks like it's mostly positive deviations from the mean response, but that's just an artifact of the discretization used to emphasize 
+## EOF Characteristics
 
-## Analysis
+### Time behavior
 
-### Global mean temperatures
-
-The global mean temperature should be close to zero for all of the residual
-fields, but it probably won't be exact.  The differences here tell us something
-about the performance of the mean response algorithm.  If the global mean of the
-mean response field for input temperature $T_g$ is something other than $T_g$,
-then the algorithm isn't consistent.
-
-```{r glblmn}
-meantemps <- lapply(seq_along(residgrids), function(i) {
-    residgrids[[i]] %*% griddata$tgop
-    }) 
-for(mt in meantemps)
-    print(as.vector(summary(mt)))
-```
-
-### Grid cell variance
-
-We also expect the variance in each grid cell to be the same as the variance in
-the original ESM data.  We can test this by calculating the $F$ statistic.  We
-don't want to do an F-test on each grid cell, and some of them are bound to fail
-anyhow, since there are `r dim(griddata$tgop[1])` grid cells.  Instead, we'll
-calculate all the $F$ values and see how many would fail at the `r siglvl`
-level.  Also, note that `residgrids[[1]]` is identical to the original (this is
-tested in the package unit tests).  Therefore, we will compare the other grids
-to that one.
-
-```{r fstats}
-cellvar <- lapply(residgrids, function(g) {
-    apply(g, 2, var)   # calculate variance in each grid cell across time slices.
-    })
-fstats <- lapply(cellvar[-1], function(cvg) {
-    cvg / cellvar[[1]]     # F = var(x) / var(y)
-    })
-
-pv <- c(siglvl/2, 1-siglvl/2)      # This is a two-tailed test, so the p-vals are half the sig level
-df1 <- length(griddata$time) - 1  # degrees of freedom is N-1
-fq <- qf(pv, df1, df1)
-fracfail <- sapply(fstats, function(f) {
-    sum(f<fq[1] | f>fq[2]) / length(f)
-})
-print(fracfail)
-```
-
-In other words the number of grid cells that appear to show significant
-differences in variance is well within what we would expect by chance alone.
-
-An alternate version of this calculation is to look at the variances of the grid
-cells in all of the field realizations, treating the variance as an operation
-across both time and alternate realizations.  We'll do that here and see what if
-any difference it makes.
-```{r fstatsall}
-fstats.all <- apply(allresidgrids, 2, var) / cellvar[[1]]
-df.all <- dim(allresidgrids)[1] - 1    # More degrees of freedom in the merged version.
-fq.all <- qf(pv, df.all, df1)          # Original dataset still has same number of df.
-fracfail.all <- sum(fstats.all < fq.all[1] | fstats.all > fq.all[2]) / length(fstats.all)
-print(fracfail.all)
-```
-Once again, the number of grid cells that fail is negligible.  We'll probably
-use this version in the paper.
-
-
-### Grid cell normality
-
-We also need to establish that the data are normally distributed.  (Technically
-we should do this before we apply the F-test.)  We'll use the Kolmogorov-Smirnov
-statistic for this test.  We don't have a separate quantile function for null
-hypothesis distribution of this statistic, so we'll just use the p-values
-produced by `ks.test`.
-
-```{r kstest}
-kstestpvals <- lapply(residgrids, function(g) {
-    apply(g, 2, function(x) {
-        mu <- mean(x)
-        sig <- sd(x)
-        nulldist <- function(q) {pnorm(q, mu, sig)}
-        ks.test(x, nulldist)$p.value
-    })
-})
-
-fracfailks <- sapply(kstestpvals, function(pv) {
-    sum(pv < siglvl) / length(pv)
-    })
-print(fracfailks)
-```
-The residuals constructed by the Fourier process show no significant evidence of
-non-normality.  This is what we would expect, even if the original data were
-_not_ normally distributed because the the process is essentially summing up a
-collection of random variables, and the Central Limit Theorem tells us that such
-sums approach a normal distribution as the number of terms in the sum increases.
-
-As with the variance, we can do this test on the merged dataset.
-```{r kstestall}
-kspvals.all <- apply(allresidgrids, 2, function(x) {
-    mu <- mean(x)
-    sig <- sd(x)
-    nulldist <- function(q) {pnorm(q, mu, sig)}
-    ks.test(x, nulldist)$p.value
-})
-
-fracfailks.all <- sum(kspvals.all < siglvl) / length(kspvals.all)
-print(fracfailks.all)
-summary(kspvals.all)
-```
-None of the grid cells fails this K-S test.  The smallest $p$-value in the grid
-is over 0.02.
-
-### EOF Characteristics
-
-#### Time behavior
-Start by constructing a heatmap of the power spectrum for the EOFs.  Technically we will be plotting the square root of the power spectrum, which is fine for getting a sense of what trends exist in the data, but we'll need to keep that in mind if we decide to do anything quantitative with the power.
+Start by constructing a heatmap of the power spectrum for the EOFs.
+Technically we will be plotting the square root of the power spectrum,
+which is fine for getting a sense of what trends exist in the data,
+but we'll need to keep that in mind if we decide to do anything
+quantitative with the power.
 
 ```{r heatmap}
 nt <- length(griddata$time)
@@ -304,7 +191,7 @@ eofspectraplt <- ggplot(eofspectra, aes(x=freq, y=value, color=EOF)) + geom_smoo
 print(eofspectraplt)
 ```
 
-#### Spatial behavior
+### Spatial behavior
 
 We will make spatial plots of the 9 EOFs shown in the plot above.  We'll also
 plot EOFs 25 and 50, just to get an idea of what's happening in those lower
@@ -320,27 +207,11 @@ eofvis <- t(reof$rotation[,eofcols])   # EOFs are now in rows, not columns
 eofvis <- eofvis / max(abs(eofvis))
 
 eofplts <- lapply(seq_along(eofcols), function(i) {
-    suppressWarnings(plot_field(eofvis[i,], griddata, 14, -0.9, 0.9))
+    suppressWarnings(plot_field(eofvis[i,], griddata, 14, -0.9, 0.9, titlestr='delta-T (K)'))
 })
     
 for(i in seq_along(eofcols)) {
     title <- paste0('EOF-', eofcols[i]-1)
     print(eofplts[[i]] + ggtitle(title))
 }
-```
-
-There is a lot to chew on here.  EOF-4 looks plausibly related to the PDO, and
-EOF-3 seems consistent with ENSO.  We don't expect any of these modes to
-correspond _exactly_ with the classic oscillations, both because we're learning
-the behavior from a relatively small amount of data and because many of those
-phenomena are observed in sea surface temperature, and we're looking at
-near-surface air temperature.
-
-EOF-25 and EOF-50 are also interesting.  They show progressively smaller spatial
-scale for fluctuations.  Since the power also decreases as we go further down
-the list, we can conclude that most of the power in the random fluctuations is
-at longer spatial scales, particularly those associated with periodic phenomena.
-In fact, the majority of the power is in those first 10 modes:
-```{r powerfrac}
-sum(eofpwr$relpwr[eofpwr$EOF < 10]) / sum(eofpwr$relpwr)
 ```
