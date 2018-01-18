@@ -5,7 +5,7 @@
 \title{Plot a single field in matrix form}
 \usage{
 plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5,
-  titlestr = "Temperature (K)")
+  legendstr = "Temperature (K)")
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
@@ -22,6 +22,8 @@ to work well for fields of residuals from the mean temperature response.}
 
 \item{maxval}{Upper limit of the color scale.  The default value was chosen
 to work well for fields of residuals from the mean temperature response.}
+
+\item{legendstr}{String to use for the title of the graph legend}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot

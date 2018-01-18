@@ -131,7 +131,7 @@ mean field from each one, so that's what we will do.
 ## Extract a single example field from each series and create a plot
 fieldplots <- lapply(residgrids, function(g) {
     suppressWarnings(
-        plot_field(g[exfld,], griddata, 14, titlestr='delta-T (K)')
+        plot_field(g[exfld,], griddata, 14, legendstr='delta-T (K)')
     )
 })
 
@@ -207,7 +207,7 @@ eofvis <- t(reof$rotation[,eofcols])   # EOFs are now in rows, not columns
 eofvis <- eofvis / max(abs(eofvis))
 
 eofplts <- lapply(seq_along(eofcols), function(i) {
-    suppressWarnings(plot_field(eofvis[i,], griddata, 14, -0.9, 0.9, titlestr='delta-T (K)'))
+    suppressWarnings(plot_field(eofvis[i,], griddata, 14, -0.9, 0.9, legendstr='delta-T (K)'))
 })
     
 for(i in seq_along(eofcols)) {

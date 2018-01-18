@@ -85,8 +85,9 @@ fldts2df <- function(fldts, griddata)
 #' to work well for fields of residuals from the mean temperature response.
 #' @param maxval Upper limit of the color scale.  The default value was chosen
 #' to work well for fields of residuals from the mean temperature response.
+#' @param legendstr String to use for the title of the graph legend
 #' @export
-plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, titlestr="Temperature (K)")
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)")
 {
     if(requireNamespace('gcammaptools')) {
         tdf <- fld2df(fld, griddata)
@@ -96,7 +97,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, titlestr="T
                                          legend=TRUE) +
               ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1,
                                             limits=c(minval, maxval), oob=scales::squish,
-                                            guide=ggplot2::guide_colorbar(title=titlestr, title.position='top'))
+                                            guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
         else {
             ## Discretize the output values.
@@ -105,7 +106,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, titlestr="T
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
               ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval),
-                                            guide=ggplot2::guide_colorbar(title=titlestr, title.position='top'))
+                                            guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
     }
     else {
