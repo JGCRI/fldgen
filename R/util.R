@@ -59,7 +59,7 @@ phase_eqn_coef <- function(Fx, i=2)
     A <- Fx$mag[krows,] * x
 
     ## Now, each column of A needs to be multiplied by a_k^i.
-    broadcast_apply_col(A, Fx$mag[krows,i], `*`)
+    A <- broadcast_apply_col(A, Fx$mag[krows,i], `*`)
 
     ## The rows that are neither f=0 nor f=fc need to be multiplied by 2.  There
     ## may or may not be a row for fc, depending on the parity of Nt
@@ -72,4 +72,6 @@ phase_eqn_coef <- function(Fx, i=2)
         plusrows <- seq(2, Nf)
     }
     A[plusrows,] <- 2.0 * A[plusrows,]
+
+    A/Nt^2
 }
