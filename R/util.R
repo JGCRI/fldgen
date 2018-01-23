@@ -49,31 +49,27 @@ broadcast_apply_col<- function(A, v, func)
 phase_eqn_coef <- function(Fx, i=2)
 {
     Nt <- nrow(Fx$mag)
-    Nc <- nphase(Nt)
-    krows <- 1:Nc
+    Nf <- nphase(Nt)
+    krows <- 1:Nf
 
     ## TODO: We only want the coefficients here, not the x values.
     ## Find the x values, x_k^j = cos(phase(k,j)-phase(k,i))
     x <- cos(broadcast_apply_col(Fx$phase[krows,], Fx$phase[krows,i], `-`))
-    ## The j,k dependence is a_k^j * x_k^j.  The a are in Fx$mag.
+    ## The j,k dependence is a_k^j * x_k^j.  The a's are in Fx$mag.
     A <- Fx$mag[krows,] * x
 
-    ## The other terms have k-dependence only.  f_k is 2pi *k/Nt; however, there
-    ## is a factor of pi that cancels, so we're going to use f_k = 2*k/Nt.
-    ## NB: These k values are numbered starting at 0.
-    k <- seq(0,Nc-1)
-    fk <- 2*k/Nt
-    ## Also, k=0 is special.  Its coefficient is a fixed value of 2.  Since fk
-    ## will appear in the denominator, fk(0) = 1/2.  (k=0 is in array slot 1)
-    fk[1] <- 0.5
+    ## Now, each column of A needs to be multiplied by a_k^i.
+    broadcast_apply_col(A, Fx$mag[krows,i], `*`)
 
-    ## There is a factor of 1/Nt^3 in the equations that doesn't affect anything
-    ## (because these equations will all be set equal to zero and solved), but
-    ## including it makes the magnitudes of the coefficients more reasonable.
-    ## Since fk goes in the denominator, we multiply by Nt^3
-    fk <- fk*(Nt^3)
-
-    ## Now, each column of A needs to be multiplied by a_k^i/fk.  This will be our
-    ## return value.
-    broadcast_apply_col(A, Fx$mag[krows,i]/fk, `*`)
+    ## The rows that are neither f=0 nor f=fc need to be multiplied by 2.  There
+    ## may or may not be a row for fc, depending on the parity of Nt
+    if(Nt%%2 == 0) {
+        ## even N => there is an fc
+        plusrows <- seq(2, Nf-1)
+    }
+    else {
+        ## odd N => no row for fc
+        plusrows <- seq(2, Nf)
+    }
+    A[plusrows,] <- 2.0 * A[plusrows,]
 }
