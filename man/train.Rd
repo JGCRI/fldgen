@@ -4,7 +4,8 @@
 \alias{train}
 \title{Train the emulator on a set of input ESM data.}
 \usage{
-train(dat, latvar = "lat", lonvar = "lon")
+train(dat, latvar = "lat", lonvar = "lon", meanfield = pscl_analyze,
+  record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
@@ -15,6 +16,12 @@ Normally this is \code{'lat'}, but occasionally it will be something
 different, such as \code{'lat_2'}.}
 
 \item{lonvar}{Name of the longitude coordinate variable in the netCDF files.}
+
+\item{meanfield}{Function to compute the mean temperature response field.
+The default is a linear pattern scaling algorithm.}
+
+\item{record_absolute}{If \code{TRUE}, record absolute paths for the input
+files; otherwise, record relative paths.}
 }
 \value{
 A \code{fldgen} object.
@@ -37,4 +44,12 @@ At present the field generation functions still take as arguments the
 individual components of the structure; however, in the next version they
 will expect a \code{fldgen} object, which can be constructed manually using
 \code{\link{fldgen_object}}.
+
+The names of the input files are recorded in the \code{infiles} field of the
+returned object.  This is for the your information only; none of the code
+here does anything with the recorded filenames.  You have the choice of
+recording either absolute filenames (useful for determining exactly which
+dataset was used) or relative filenames (useful if you might distribute a
+saved model to other users who might not have the same directory structure as
+you).
 }

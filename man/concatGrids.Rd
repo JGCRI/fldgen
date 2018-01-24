@@ -30,3 +30,4 @@ If you concatenate data sets with different start years, the time values will
 not be compatible.  For \emph{most} of what we do in this package, the
 difference won't matter, but it's something to be aware of.
 }
+\keyword{internal}

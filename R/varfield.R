@@ -29,6 +29,7 @@
 #' \code{\link{read.temperatures}}.
 #' @importFrom stats prcomp sd
 #' @export
+#' @keywords internal
 eof_analyze <- function(resids, tgop)
 {
     ## pull the residuals from the pattern scaling.  Also, set xh0 to be the
@@ -236,6 +237,7 @@ mkcorrts <- function(Fxmag, phase=NULL, complexout=FALSE)
 #' eof_analyze, or a single such structure.
 #' @return A matrix [ntime, numPC] of PSD estimates (see details).
 #' @export
+#' @keywords internal
 psdest <- function(prcomp_l)
 {
     if(inherits(prcomp_l, 'prcomp')) {
@@ -276,6 +278,7 @@ psdest <- function(prcomp_l)
 #' @return List of residual EOF structures, with one element for each input ESM
 #' run.
 #' @export
+#' @keywords internal
 split_eof <- function(reof, griddata)
 {
     lapply(griddata$tags,
@@ -289,3 +292,51 @@ split_eof <- function(reof, griddata)
 }
 
 
+
+#' Generate the coefficients in the equations that determine the phase constraints.
+#'
+#' The result will be a structure containing:
+#' \describe{
+#'   \item{A}{A matrix [Nf x Nb], where Nf is the number of
+#' nonnegative frequencies in the Fourier transform and Nb is the number of
+#' basis functions (i.e., EOFs).  A[k,j] = (a_k^i a_k^j), where i
+#' is the index of the basis function used for the reference (conventionally 2,
+#' which is the first spatial basis function.  Don't use the time-like basis
+#' function, i=1, since it will generally have small coefficients).}
+#'   \item{i}{The index of the reference basis function.}
+#' }
+#'
+#' These equations are given as equation XX in the paper.
+#'
+#' @param Fx The Fourier transform of the EOF projection coefficients.
+#' @param i  The index of the basis function to use for the reference.  Don't use
+#' EOF-0 (i=1).
+#' @export
+#' @keywords internal
+phase_eqn_coef <- function(Fx, i=2)
+{
+    Fxmag <- abs(Fx)
+    Nt <- nrow(Fxmag)
+    Nf <- nphase(Nt)
+    krows <- 1:Nf
+
+    ## The j,k dependence is a_k^j.  The a's are in Fxmag.
+    A <- Fxmag[krows,]
+
+    ## Now, each column of A needs to be multiplied by a_k^i.
+    A <- broadcast_apply_col(A, Fxmag[krows,i], `*`)
+
+    ## The rows that are neither f=0 nor f=fc need to be multiplied by 2.  There
+    ## may or may not be a row for fc, depending on the parity of Nt
+    if(Nt%%2 == 0) {
+        ## even N => there is an fc
+        plusrows <- seq(2, Nf-1)
+    }
+    else {
+        ## odd N => no row for fc
+        plusrows <- seq(2, Nf)
+    }
+    A[plusrows,] <- 2.0 * A[plusrows,]
+
+    list(A=A/Nt^2, i=i)
+}

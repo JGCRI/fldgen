@@ -37,3 +37,4 @@ returned by \code{\link[stats]{princomp}}.  The most important fields are:
 }
 }
 
+\keyword{internal}

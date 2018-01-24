@@ -17,20 +17,40 @@
 #' will expect a \code{fldgen} object, which can be constructed manually using
 #' \code{\link{fldgen_object}}.
 #'
+#' The names of the input files are recorded in the \code{infiles} field of the
+#' returned object.  This is for the your information only; none of the code
+#' here does anything with the recorded filenames.  You have the choice of
+#' recording either absolute filenames (useful for determining exactly which
+#' dataset was used) or relative filenames (useful if you might distribute a
+#' saved model to other users who might not have the same directory structure as
+#' you).
+#'
 #' @param dat A single directory name, or a list of netCDF files.  If a
 #' directory name is given, all netCDF files in the directory will be used.
 #' @param latvar Name of the latitude coordinate variable in the netCDF files.
 #' Normally this is \code{'lat'}, but occasionally it will be something
 #' different, such as \code{'lat_2'}.
 #' @param lonvar Name of the longitude coordinate variable in the netCDF files.
+#' @param meanfield Function to compute the mean temperature response field.
+#' The default is a linear pattern scaling algorithm.
+#' @param record_absolute If \code{TRUE}, record absolute paths for the input
+#' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @export
-train <- function(dat, latvar='lat', lonvar='lon')
+train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
+                  record_absolute=FALSE)
 {
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
         ## within.
         dat <- list.files(dat, '\\.nc$', full.names=TRUE)
+    }
+
+    if(record_absolute) {
+        infiles <- normalizePath(dat)
+    }
+    else {
+        infiles <- dat
     }
 
     readin <- function(fn) {read.temperatures(fn, latvar=latvar, lonvar=lonvar)}
@@ -46,7 +66,7 @@ train <- function(dat, latvar='lat', lonvar='lon')
 
     phasecoef <- phase_eqn_coef(Fx)
 
-    fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef)
+    fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef, infiles)
 }
 
 #' Create a \code{fldgen} object from constituent parts
@@ -61,15 +81,17 @@ train <- function(dat, latvar='lat', lonvar='lon')
 #' @param reof Object returned from \code{\link{eof_analyze}}.
 #' @param ftran The Fourier transform of the EOF projection coefficients.
 #' @param phasecoef Object returned from \code{\link{phase_eqn_coef}}.
+#' @param infiles Names of input files used to construct the data.
 #' @export
 #' @keywords internal
-fldgen_object <- function(griddata, tgav, pscl, reof, ftran, phasecoef)
+fldgen_object <- function(griddata, tgav, pscl, reof, ftran, phasecoef, infiles)
 {
     Fx <- list(
         fx = ftran,
         mag = abs(ftran),
         phase = atan2(Im(ftran), Re(ftran)))
-    fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx, phasecoef=phasecoef)
+    fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx,
+               phasecoef=phasecoef, infiles=infiles)
     class(fg) <- 'fldgen'
     fg
 }

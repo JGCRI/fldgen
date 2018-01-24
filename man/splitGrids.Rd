@@ -19,3 +19,4 @@ however, remember the path you took to get the concatenated grid, so
 \code{splitGrids(c(g1, c(g2,g3)))} will give you \code{list(g1,g2,g3)}
 instead of \code{list(g1, c(g2,g3))}, as you might have expected.
 }
+\keyword{internal}

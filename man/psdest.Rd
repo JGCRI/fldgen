@@ -42,3 +42,4 @@ Fx <- mvfft(pc$x)
 Fxphase <- atan2(Im(Fx), Re(Fx))
 }
 }
+\keyword{internal}

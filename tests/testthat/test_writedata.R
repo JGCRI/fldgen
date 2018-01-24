@@ -9,7 +9,7 @@ test_that('data written to netCDF is identical to original.',
     if(file.exists(file)) {
         unlink(file)
     }
-    write.ncdf(griddata$tas, file, griddata)
+    write.temperature(griddata$tas, file, griddata)
     expect_true(file.exists(file))
 
     griddata2 <- read.temperatures(file)
@@ -19,7 +19,7 @@ test_that('data written to netCDF is identical to original.',
 })
 
 
-test_that('clobber argument to write.ncdf works',
+test_that('clobber argument to write.temperature works',
 {
     ## create a dummy file
     d <- tempdir()
@@ -27,9 +27,9 @@ test_that('clobber argument to write.ncdf works',
     write('NOT to leave the room, even if you come and get him.',
           file)
 
-    expect_error(write.ncdf(griddata$tas, file, griddata), 'exists and clobber')
+    expect_error(write.temperature(griddata$tas, file, griddata), 'exists and clobber')
 
-    expect_silent(write.ncdf(griddata$tas, file, griddata, clobber=TRUE))
+    expect_silent(write.temperature(griddata$tas, file, griddata, clobber=TRUE))
 
     ## verify that we can read the result
     expect_silent(read.temperatures(file))

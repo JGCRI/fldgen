@@ -1,6 +1,6 @@
 #### Output functions
 
-#' Write a field as a netcdf file.
+#' Write a temperature field as a netcdf file.
 #'
 #' Format a field as a netcdf file and write it to the specified file.  The lat,
 #' lon, and time variables from the griddata input are used to recover the
@@ -18,9 +18,9 @@
 #' @param clobber If \code{TRUE}, overwrite the file if it exists; otherwise
 #' trying to write  a file that already exists is an error.
 #' @export
-write.ncdf <- function(fld, file, griddata, varname='tas', varunit='K',
-                       vardesc='2m air temperature', tunit = 'years since 2006',
-                       clobber=FALSE)
+write.temperature <- function(fld, file, griddata, varname='tas', varunit='K',
+                              vardesc='2m air temperature', tunit = 'years since 2006',
+                              clobber=FALSE)
 {
     ## TODO: support writing multiple fields to a file and adding to (instead of
     ## overwriting) an existing file.
@@ -57,3 +57,29 @@ write.ncdf <- function(fld, file, griddata, varname='tas', varunit='K',
     ncdf4::nc_close(ncout)
 }
 
+#' Load and save emulator training data
+#'
+#' \code{savemodel} saves the results of training an emulator in a portable
+#' format.  \code{loadmodel} loads a model from a file created this way and
+#' returns it as a \code{fldgen} object.
+#'
+#' @param modeldata A \code{fldgen} object returned by either
+#' \code{\link{train}} or \code{\link{fldgen_object}}.
+#' @param file Name of the file to write the data to.
+#' @param clobber Flag indicating whether it's ok to overwrite an existing file
+#' @name saving_and_restoring
+NULL
+
+#' @rdname saving_and_restoring
+#' @export
+savemodel <- function(modeldata, file, clobber=FALSE)
+{
+    if(!inherits(modeldata, 'fldgen')) {
+        stop('modeldata must be a fldgen object.')
+    }
+
+    if(!clobber && file.exists(file)) {
+        stop('File ', file, ' exists, and noclobber is set.')
+    }
+    save(modeldata, file=file, compress='bzip2', compression_level=9)
+}

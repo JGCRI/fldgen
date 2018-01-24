@@ -42,5 +42,5 @@ ts <- ts + matrix(cos(4*x - pi/4), nrow=nt) %*% matrix(v4, nrow=1)
 ## visualization software.
 griddata <- list(tas=ts, tgop=v1, lat=rep(0,nlat), lon=seq(1,nlon), time=t)
 
-write.ncdf(ts, fn, griddata, clobber=TRUE)
+write.temperature(ts, fn, griddata, clobber=TRUE)
 

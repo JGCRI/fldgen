@@ -119,6 +119,22 @@ read.temperatures <- function(filename, len=NULL, tag=basename(filename), varnam
 }
 
 
+#' @rdname saving_and_restoring
+#' @export
+loadmodel <- function(file)
+{
+    load(file)
+    if(!exists('modeldata', inherits=FALSE)) {
+        stop('No model data in file.')
+    }
+    if(!inherits(modeldata, 'fldgen')) {
+        stop('Object loaded from file is not of type "fldgen".')
+    }
+
+    modeldata
+}
+
+
 #' Read and format global mean temperature
 #'
 #' Read global mean temperature from an input netCDF file and format for use
@@ -168,6 +184,7 @@ readtgav <- function(tgavfilename)
 #' @return A griddata (q.v. \code{link{read.temperatures}}) object with the concatenated
 #' grid values.
 #' @export
+#' @keywords internal
 concatGrids <- function(gridlist)
 {
     tasl <- lapply(gridlist, function(x){x$tas})
@@ -221,6 +238,7 @@ concatGrids <- function(gridlist)
 #' @return A list of griddata structures, each containing a single data set
 #' (i.e., a time series read in from a single file)
 #' @export
+#' @keywords internal
 splitGrids <- function(griddata)
 {
     lapply(names(griddata$tags),
@@ -260,6 +278,7 @@ flatten_tags <- function(taglist)
 #'
 #' @param ... One or more griddata objects
 #' @export
+#' @keywords internal
 c.griddata <- function(...)
 {
     concatGrids(list(...))
