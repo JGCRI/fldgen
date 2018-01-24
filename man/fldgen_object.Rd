@@ -4,7 +4,7 @@
 \alias{fldgen_object}
 \title{Create a \code{fldgen} object from constituent parts}
 \usage{
-fldgen_object(griddata, tgav, pscl, reof, ftran)
+fldgen_object(griddata, tgav, pscl, reof, ftran, phasecoef)
 }
 \arguments{
 \item{griddata}{An object returned from \code{\link{read.temperatures}} or
@@ -17,6 +17,8 @@ fldgen_object(griddata, tgav, pscl, reof, ftran)
 \item{reof}{Object returned from \code{\link{eof_analyze}}.}
 
 \item{ftran}{The Fourier transform of the EOF projection coefficients.}
+
+\item{phasecoef}{Object returned from \code{\link{phase_eqn_coef}}.}
 }
 \description{
 Normally this code will be called internally, but it is available for

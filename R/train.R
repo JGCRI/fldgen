@@ -44,7 +44,9 @@ train_fldgen <- function(dat, latvar='lat', lonvar='lon')
 
     Fx <- mvfft(reof$x)
 
-    fldgen_object(griddata, tgav, pscl, reof, Fx)
+    phasecoef <- phase_eqn_coef(Fx)
+
+    fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef)
 }
 
 #' Create a \code{fldgen} object from constituent parts
@@ -58,15 +60,16 @@ train_fldgen <- function(dat, latvar='lat', lonvar='lon')
 #' @param pscl Object returned from \code{\link{pscl_analyze}}.
 #' @param reof Object returned from \code{\link{eof_analyze}}.
 #' @param ftran The Fourier transform of the EOF projection coefficients.
+#' @param phasecoef Object returned from \code{\link{phase_eqn_coef}}.
 #' @export
 #' @keywords internal
-fldgen_object <- function(griddata, tgav, pscl, reof, ftran)
+fldgen_object <- function(griddata, tgav, pscl, reof, ftran, phasecoef)
 {
     Fx <- list(
         fx = ftran,
         mag = abs(ftran),
         phase = atan2(Im(ftran), Re(ftran)))
-    fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx)
+    fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx, phasecoef=phasecoef)
     class(fg) <- 'fldgen'
     fg
 }
