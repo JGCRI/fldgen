@@ -4,41 +4,38 @@
 \alias{mkcorrts}
 \title{Make time series with specified autocorrelation properties}
 \usage{
-mkcorrts(Fxmag, phase = NULL, complexout = FALSE)
+mkcorrts(fldgen, phase = NULL, complexout = FALSE)
 }
 \arguments{
-\item{Fxmag}{A matrix [ntime x N] in which each column is the absolute value
-of the fourier transform of a (real-valued) time series.  This should include
-the entire Fourier transform, both positive and negative frequencies.}
+\item{fldgen}{A \code{\link[=train]{fldgen}} object.}
 
-\item{phase}{An optional matrix of phases.  These should be uniform random
-deviates in [0,2pi).  We only need phases for the positive frequencies.  For
-an even number of samples, that's N/2.  For an odd number, that's (N-1)/2.
-Excess phases will be ignored, so it's ok to just dimension phase the same as
-Fxmag.  If phase is omitted, then it will be generated using runif.}
+\item{phase}{An optional matrix of phases.  See notes in the Details section.}
 
 \item{complexout}{The inverse FFT produces complex-valued results; however,
 the imaginary parts should all be zero.  By default we return Re(rslt), but
-setting this flag causes the result to be left in complex form.}
+setting this flag causes the result to be left in complex form.  This is
+mostly useful for testing.}
 }
 \description{
 The time series produced will have the power spectrum given in the columns of
 \code{Fxmag}.
 }
 \details{
-It usually will not be necesary to provide the \code{phase} input, since the
-intent is usually to generate random phases; however, it is occasionally
-useful to the input ESM data, or some other data set for which the phases are
-known.  To make this sort of exercise easier, the function will accept a
-matrix containing phases for all frequencies, including the negative ones,
-despite the fact that only the phases for positive frequencies are needed.
+The \code{phase} argument allows a user to provide fixed phases to be used in
+the field construction.  This \emph{usually} is not desirable because an
+arbitrary set of phases will not generally produce properly uncorrelated
+outputs.  However, it may occasionally be useful to reproduce the input ESM
+data, or some other data set for which the phases are known.  To make this
+sort of exercise easier, the function will accept a matrix containing phases
+for all frequencies, including the negative ones, despite the fact that only
+the phases for positive frequencies are needed.
 }
 \section{ToDo}{
 
 
 It should be possible to supply a partial matrix of phases, with some values
 specified and the rest set to NA.  This would allow us, for example, to
-specify phases for the global mean component while the other components are
-randomized.
+specify phases for the global mean component (EOF-0) while the other
+components are randomized.
 }
 

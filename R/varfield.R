@@ -93,6 +93,10 @@ eof_analyze <- function(resids, tgop)
 #' matrix of coefficients.  If meanfield is supplied, add the residual field
 #' to the mean field to get a reconstituted temperature field.
 #'
+#' For a mean field generated using the default linear pattern scaling, one can
+#' get the mean field by running \code{\link{pscl_apply}} on the \code{pscl}
+#' member of a \code{\link[=train]{fldgen}} object.
+#'
 #' @param basis A matrix [ngrid x N] of basis vectors, one vector per column.
 #' @param bcoord A matrix [ntime x N] of basis coordinates, one time step in
 #' each row, with coordinates across the columns.
@@ -117,66 +121,66 @@ reconst_fields <- function(basis, bcoord, meanfield=NULL)
 #' The time series produced will have the power spectrum given in the columns of
 #' \code{Fxmag}.
 #'
-#' It usually will not be necesary to provide the \code{phase} input, since the
-#' intent is usually to generate random phases; however, it is occasionally
-#' useful to the input ESM data, or some other data set for which the phases are
-#' known.  To make this sort of exercise easier, the function will accept a
-#' matrix containing phases for all frequencies, including the negative ones,
-#' despite the fact that only the phases for positive frequencies are needed.
+#'
+#' The \code{phase} argument allows a user to provide fixed phases to be used in
+#' the field construction.  This \emph{usually} is not desirable because an
+#' arbitrary set of phases will not generally produce properly uncorrelated
+#' outputs.  However, it may occasionally be useful to reproduce the input ESM
+#' data, or some other data set for which the phases are known.  To make this
+#' sort of exercise easier, the function will accept a matrix containing phases
+#' for all frequencies, including the negative ones, despite the fact that only
+#' the phases for positive frequencies are needed.
 #'
 #' @section ToDo:
 #'
 #' It should be possible to supply a partial matrix of phases, with some values
 #' specified and the rest set to NA.  This would allow us, for example, to
-#' specify phases for the global mean component while the other components are
-#' randomized.
+#' specify phases for the global mean component (EOF-0) while the other
+#' components are randomized.
 #'
-#' @param Fxmag A matrix [ntime x N] in which each column is the absolute value
-#' of the fourier transform of a (real-valued) time series.  This should include
-#' the entire Fourier transform, both positive and negative frequencies.
-#' @param phase An optional matrix of phases.  These should be uniform random
-#' deviates in [0,2pi).  We only need phases for the positive frequencies.  For
-#' an even number of samples, that's N/2.  For an odd number, that's (N-1)/2.
-#' Excess phases will be ignored, so it's ok to just dimension phase the same as
-#' Fxmag.  If phase is omitted, then it will be generated using runif.
+#' @param fldgen A \code{\link[=train]{fldgen}} object.
+#' @param phase An optional matrix of phases.  See notes in the Details section.
 #' @param complexout The inverse FFT produces complex-valued results; however,
 #' the imaginary parts should all be zero.  By default we return Re(rslt), but
-#' setting this flag causes the result to be left in complex form.
+#' setting this flag causes the result to be left in complex form.  This is
+#' mostly useful for testing.
 #' @importFrom stats mvfft runif
 #' @export
-mkcorrts <- function(Fxmag, phase=NULL, complexout=FALSE)
+mkcorrts <- function(fldgen, phase=NULL, complexout=FALSE)
 {
-    N <- nrow(Fxmag)
+    Fxmag <- fldgen$fx$mag
+
+    Nt <- nrow(Fxmag)
+    Nf <- nphase(Nt)
     M <- ncol(Fxmag)
-    if(N %% 2 == 0) {
-        ## even number of samples
-        Nplus <- N/2 - 1                # number of +ve frequencies
-        plusrows <- seq(2, length.out=Nplus) # rows containing +ve frequencies
-        Nc <- N/2 + 1                   # row containing the Nyquist frequency
-        Nphase <- Nc                    # number of phases
-        minusrows <- seq(Nc+1, length.out=Nplus) # rows containing -ve frequencies
-        ## total rows:  N/2-1 (+ve) + N/2-1 (-ve) + 1 (zero) + 1 (Nyquist) == N
-    }
-    else {
-        ## odd number of rows
-        Nplus <- (N-1)/2                # number of +ve frequencies
-        Nphase <- Nplus + 1
-        plusrows <- seq(2, length.out=Nplus) # rows containing +ve freqs
-        minusrows <- seq(Nplus+2, length.out=Nplus) # rows containing -ve freqs
-        ## total rows: (N-1)/2 (+ve) + (N-1)/2 (-ve) + 1 (zero) == N
-    }
+
+    plusrows <- 1:Nf
+    minusrows <- find_minusf_coord(plusrows,Nt)
 
     if(is.null(phase)) {
-        phase <- matrix(2*pi*runif(Nphase*M), ncol=M)
+        ## generate phase differences between EOF components
+        deltaij <- gen_random_delta(fldgen$phasecoef, Nt)
+        ## generate phase values for the ith component.
+        thetai <- runif(Nf, 0, 2*pi)
+        if(abs(thetai[1]-pi) < pi/2) {
+            thetai[1] <- pi
+        }
+        else {
+            thetai[1] <- 0
+        }
+        if(Nt %% 2 == 0) {
+            if(abs(thetai[Nf]-pi) < pi/2) {
+                thetai[Nf] <- pi
+            }
+            else {
+                thetai[Nf] <- 0
+            }
+        }
+        ## add thetai to each column to get the final
+        phase <- broadcast_apply_col(deltaij, thetai, `+`)
     }
-    else if(nrow(phase) > Nphase) {
-        ## We need Nplus phases for each time series.  We also need to look at
-        ## the phases for the zero and (if present) Nyquist components.
-        ## However, one thing we might do occasionally is to copy the phases
-        ## from another time series.  If the number of rows is greater than
-        ## Nplus, assume that's what we are doing and copy just the relevant
-        ## phases.
-        phase <- phase[1:Nphase,]
+    else {
+        phase <- phase[1:Nf,]
     }
 
     ## Assign the magnitudes to the output array.  Force them to be complex.
@@ -184,24 +188,18 @@ mkcorrts <- function(Fxmag, phase=NULL, complexout=FALSE)
     ## The zero and Nyquist components don't get a phase as such, but they can
     ## be either positive or negative.  If the phase is between pi/2 and 3pi/2,
     ## we make them negative; otherwise they are positive.
-    Fxout[1,] = Fxout[1,]*dplyr::if_else(abs(phase[1,]-pi) < pi/2, -1.0, 1.0)
-    if(N %% 2 == 0) {
-        ## The Nyquist frequency is only present if N is even.
-        Fxout[Nc,] = Fxout[Nc,]*dplyr::if_else(abs(phase[Nc,]-pi) < pi/2, -1.0,
-             1.0)
-    }
 
     ## plus rows get new phases
     Fxout[plusrows,] <- Fxout[plusrows,] * (cos(phase[plusrows,]) +
                                                   1i*sin(phase[plusrows,]))
     ## minus rows have to be the conjugates of the plus rows
-    Fxout[minusrows,] <- Conj(Fxout[rev(plusrows),])
+    Fxout[minusrows,] <- Conj(Fxout[plusrows,])
 
     xout <- mvfft(Fxout, inverse=TRUE)
     if(complexout)
-        xout / N
+        xout / Nt
     else
-        Re(xout) / N
+        Re(xout) / Nt
 }
 
 #' Estimate the power spectral density from a list of ESM runs

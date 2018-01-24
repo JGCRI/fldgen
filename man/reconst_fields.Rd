@@ -25,3 +25,8 @@ Reconstitute temperature residual fields from the basis vectors and a
 matrix of coefficients.  If meanfield is supplied, add the residual field
 to the mean field to get a reconstituted temperature field.
 }
+\details{
+For a mean field generated using the default linear pattern scaling, one can
+get the mean field by running \code{\link{pscl_apply}} on the \code{pscl}
+member of a \code{\link[=train]{fldgen}} object.
+}

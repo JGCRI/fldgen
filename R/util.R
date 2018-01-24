@@ -58,10 +58,9 @@ gen_random_delta <- function(Astruct, Nt)
     ## perform the calculation for a single j
     delta1j <- function(j) {
         if(j==1) {
-            ## The first component (EOF-0) is special and shouldn't be used with
-            ## this procedure.  We'll fill the column with zeros so that the
-            ## other column lines up right.
-            return(rep(0,Nf))
+            ## The first component (EOF-0) is special; it is not required to be
+            ## uncorrelated to the others.  Give it uniform random phase deltas.
+            return(runif(Nf, 0, 2.0*pi))
         }
         if(j==i) {
             ## For j==i, the deltaij are zero, by definition

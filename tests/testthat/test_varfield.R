@@ -23,12 +23,12 @@ length(tempgrids) <- 4
 
 ##  Run with the phases of the actual time series
 meanfield <- pscl_apply(pscl, tgav)
-tempgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag, Fxphase) , meanfield)
+tempgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(tann1, Fxphase) , meanfield)
 ## Run the rest with random phases
 for(i in 2:4)
     ## If you wanted to use only 50 PCs, like in the previous demo, you could
     ## use reof$rotation[,1:50] and Fxmag[,1:50] in the next call.
-    tempgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag), meanfield)
+    tempgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(tann1), meanfield)
 
 
 
@@ -103,12 +103,12 @@ validate_mkcorrts <- function(testts=NULL)
         testts <- matrix(c(sin(4*pi*x/32.0), sin(5*pi*x/32.0)), ncol=2)
     }
     Fx <- mvfft(testts)
-    Fxmag <- abs(Fx)
-    phase <- atan2(Im(Fx), Re(Fx))
+    phcoef <- phase_eqn_coef(Fx)
+    tsobj <- fldgen_object(NULL, NULL, NULL, NULL, Fx, phcoef, 'none')
 
     ## Running mkcorrts with these phases should reproduce the original time
     ## series
-    testout1 <- mkcorrts(Fxmag, phase, complexout=TRUE)
+    testout1 <- mkcorrts(tsobj, tsobj$fx$phase, complexout=TRUE)
     ## Verify that there are no imaginary components
     expect_equal(testout1, Re(testout1)*1+0i)
     ## Verify equality with original inputs
@@ -120,7 +120,7 @@ validate_mkcorrts <- function(testts=NULL)
     ## and standard deviation.  Note that we have to look at the absolute value
     ## of the mean because we can't guarantee the phase of the DC component is
     ## the same as the input.
-    testout2 <- mkcorrts(Fxmag)
+    testout2 <- mkcorrts(tsobj)
     meansin <- abs(apply(testts, 2, mean))
     meansout <- abs(apply(testout2, 2, mean))
     expect_equal(meansin, meansout)
