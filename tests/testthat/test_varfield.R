@@ -6,7 +6,7 @@ context('Field generation')
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 
-tann1 <- train_fldgen(system.file('extdata/tann1.nc', package='fldgen'))
+tann1 <- train(system.file('extdata/tann1.nc', package='fldgen'))
 
 griddata <- tann1$griddata
 tgav <- tann1$tgav

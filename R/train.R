@@ -25,7 +25,7 @@
 #' @param lonvar Name of the longitude coordinate variable in the netCDF files.
 #' @return A \code{fldgen} object.
 #' @export
-train_fldgen <- function(dat, latvar='lat', lonvar='lon')
+train <- function(dat, latvar='lat', lonvar='lon')
 {
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
