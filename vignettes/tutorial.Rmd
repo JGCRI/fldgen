@@ -37,7 +37,9 @@ help files.  For example, `help(read.temperatures)` will print the docs for the 
 that reads the netCDF temperature fields.
 
 ## Using the field generator
-### Reading the ESM data
+
+### Setup
+
 ```{r params}
 ## parameters for the code below.
 ngen <- 4             # number of fields to generate
@@ -51,13 +53,27 @@ library('fldgen')
 datadir <- system.file('extdata', package='fldgen')
 ```
 
+### One-step emulator training
+
+You can do the read and analyze steps below in a single command by running
+```
+emulator <- train(file.path(datadir, 'tann1.nc'))
+```
+If you use this (recommended) method, then you can skip directly to [Generating 
+fields].  For users that wish to customize the training process, the next two 
+sections describe what is happening inside the `train` function and show how to
+recreate those steps manually.
+
+### Reading the ESM data
+
 The ESM temperature field should be in a netCDF file.  The function that reads
 it returns a "griddata" structure that contains the data, as well as some
 information about the grid, such as the latitude, longitude, and time
 coordinates and the vector of area weights needed to compute grid averages.
 
 ```{r readdata}
-griddata <- read.temperatures(file.path(datadir, 'tann1.nc'))
+filename <- file.path(datadir, 'tann1.nc')
+griddata <- read.temperatures(filename)
 tgav <- griddata$tas %*% griddata$tgop
 ```
 Here, we have read in the netCDF data and used the global average operator to 
@@ -65,7 +81,7 @@ compute a time series of global mean temperatures.  These variables will be used
 as input to the functions that analyze the ESM data and produce the temperature
 fields.
 
-### Generating fields
+### Analyzing the input data
 
 The first thing we need is a model for the mean temperature response in each
 grid cell.  That is, for each grid cell, what is the mean temperature of that
@@ -86,7 +102,7 @@ analysis.
 reof <- eof_analyze(pscl$r, griddata$tgop)
 ```
 
-The last thing we need to generate our fields is the temporal structure of the
+The next thing we need to generate our fields is the temporal structure of the
 EOF coefficients.  We get this from the Fourier transform of the coordinates of
 the residuals in the coordinate system defined by the EOF basis vectors.
 
@@ -95,6 +111,22 @@ Fx <- mvfft(reof$x)
 Fxmag <- abs(Fx)
 Fxphase <- atan2(Im(Fx), Re(Fx))
 ```
+
+Finally, we need to create an array of coefficients for some constraint
+equations that our generated fields need to satisfy.
+```{r phaseeqn}
+phasecoef <- phase_eqn_coef(Fx)
+```
+
+The functions for generating fields will expect the results of these
+calculations to be packaged in an object like the one returned from `train`. 
+There is a function for taking our hand generated results and turning them into
+an object.
+```{r object}
+emulator <- fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef, filename)
+```
+
+### Generating fields
 
 Now we're ready to generate fields.  We'll do `r ngen` fields in this example. 
 The first one will be a reconstruction of the original input.  The other three
@@ -108,11 +140,13 @@ length(tempgrids) <- ngen
 meanfield <- pscl_apply(pscl, tgav)
 
 ## First field will have the same phases as the input ESM data
-tempgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag, Fxphase), meanfield)
+tempgrids[[1]] <- suppressMessages(         # mkcorrts emits a bunch of status messages that we don't want here.
+    reconst_fields(reof$rotation, mkcorrts(emulator, Fxphase), meanfield))
 
 ## Other fields will have random phases
 for(i in 2:ngen) {
-  tempgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(Fxmag), meanfield)
+  tempgrids[[i]] <- suppressMessages(       # don't want the status messages
+      reconst_fields(reof$rotation, mkcorrts(emulator), meanfield))
 }
 
 ## Subtract off the mean field.  Save these because we will want to use them later
