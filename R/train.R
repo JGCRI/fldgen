@@ -62,7 +62,9 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
 
     reof <- eof_analyze(pscl$r, griddata$tgop)
 
-    Fx <- mvfft(reof$x)
+    reof_l <- split_eof(reof, griddata)
+    psd <- psdest(reof_l)
+    Fx <- sqrt(psd)
 
     phasecoef <- phase_eqn_coef(Fx)
 
@@ -79,17 +81,16 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
 #' @param tgav Global mean temperature for the grids in griddata.
 #' @param pscl Object returned from \code{\link{pscl_analyze}}.
 #' @param reof Object returned from \code{\link{eof_analyze}}.
-#' @param ftran The Fourier transform of the EOF projection coefficients.
+#' @param ftran The magnitude of the Fourier transform of the EOF projection coefficients.
 #' @param phasecoef Object returned from \code{\link{phase_eqn_coef}}.
 #' @param infiles Names of input files used to construct the data.
 #' @export
 #' @keywords internal
 fldgen_object <- function(griddata, tgav, pscl, reof, ftran, phasecoef, infiles)
 {
-    Fx <- list(
-        fx = ftran,
-        mag = abs(ftran),
-        phase = atan2(Im(ftran), Re(ftran)))
+    Fx <- list(                         # We used to have other stuff in this
+                                        # list, but it's obsolete now.
+        mag = abs(ftran))
     fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx,
                phasecoef=phasecoef, infiles=infiles)
     class(fg) <- 'fldgen'

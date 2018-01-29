@@ -16,7 +16,7 @@ fldgen_object(griddata, tgav, pscl, reof, ftran, phasecoef, infiles)
 
 \item{reof}{Object returned from \code{\link{eof_analyze}}.}
 
-\item{ftran}{The Fourier transform of the EOF projection coefficients.}
+\item{ftran}{The magnitude of the Fourier transform of the EOF projection coefficients.}
 
 \item{phasecoef}{Object returned from \code{\link{phase_eqn_coef}}.}
 

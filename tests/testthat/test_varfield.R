@@ -13,9 +13,12 @@ tgav <- tann1$tgav
 pscl <- tann1$pscl
 reof <- tann1$reof
 
-Fx <- tann1$fx$fx
 Fxmag <- tann1$fx$mag
-Fxphase <- tann1$fx$phase
+
+## Get the phase and complex fft directly from reof$x.  These are only needed
+## for tests, not production calculations
+Fx <- mvfft(reof$x)
+Fxphase <- atan2(Im(Fx), Re(Fx))
 
 tempgrids <- list()                     # Empty list to hold the temperature
                                         # realizations
@@ -81,6 +84,12 @@ test_that('EOFs other than PC0 have zero global average.',
 })
 
 
+test_that('PSD returned from training matches manually calculated.',
+{
+    expect_equal(Fxmag, abs(Fx))
+})
+
+
 test_that('Residual field can be recovered from basis and rotated coordinates.',
 {
     ## We will be a little lenient on this test because there is plenty of
@@ -103,12 +112,14 @@ validate_mkcorrts <- function(testts=NULL)
         testts <- matrix(c(sin(4*pi*x/32.0), sin(5*pi*x/32.0)), ncol=2)
     }
     Fx <- mvfft(testts)
+    Fxmag <- abs(Fx)
+    Fxphase <- atan2(Im(Fx), Re(Fx))
     phcoef <- phase_eqn_coef(Fx)
-    tsobj <- fldgen_object(NULL, NULL, NULL, NULL, Fx, phcoef, 'none')
+    tsobj <- fldgen_object(NULL, NULL, NULL, NULL, Fxmag, phcoef, 'none')
 
     ## Running mkcorrts with these phases should reproduce the original time
     ## series
-    testout1 <- mkcorrts(tsobj, tsobj$fx$phase, complexout=TRUE)
+    testout1 <- mkcorrts(tsobj, Fxphase, complexout=TRUE)
     ## Verify that there are no imaginary components
     expect_equal(testout1, Re(testout1)*1+0i)
     ## Verify equality with original inputs
