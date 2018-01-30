@@ -64,11 +64,8 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
 
     reof_l <- split_eof(reof, griddata)
     psd <- psdest(reof_l)
-    Fx <- sqrt(psd)
 
-    phasecoef <- phase_eqn_coef(Fx)
-
-    fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef, infiles)
+    fldgen_object(griddata, tgav, pscl, reof, sqrt(psd$psd), psd$phases, infiles)
 }
 
 #' Create a \code{fldgen} object from constituent parts
@@ -76,23 +73,40 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
 #' Normally this code will be called internally, but it is available for
 #' external use, so that data created using the old interface can be converted.
 #'
+#' If there is only a single ESM run in the input data set, then \code{fxphase}
+#' can be passed as a matrix of phases (instead of a list of matrices).  It will
+#' be converted into a list automatically.
+#'
 #' @param griddata An object returned from \code{\link{read.temperatures}} or
 #' \code{\link{concatGrids}}.
 #' @param tgav Global mean temperature for the grids in griddata.
 #' @param pscl Object returned from \code{\link{pscl_analyze}}.
 #' @param reof Object returned from \code{\link{eof_analyze}}.
-#' @param ftran The magnitude of the Fourier transform of the EOF projection coefficients.
-#' @param phasecoef Object returned from \code{\link{phase_eqn_coef}}.
+#' @param fxmag The magnitude of the Fourier transform of the EOF projection
+#' coefficients.  This should be a matrix [Ntime x NEOF].  If using
+#' \code{\link{psdest}}, note this is the square root of the power spectral
+#' density returned by that function.
+#' @param fxphase List of matrices [Ntime x NEOF] of phases of the Fourier
+#' transform.  There should be one element in the list for each input ESM run.
 #' @param infiles Names of input files used to construct the data.
 #' @export
 #' @keywords internal
-fldgen_object <- function(griddata, tgav, pscl, reof, ftran, phasecoef, infiles)
+fldgen_object <- function(griddata, tgav, pscl, reof, fxmag, fxphase, infiles)
 {
-    Fx <- list(                         # We used to have other stuff in this
-                                        # list, but it's obsolete now.
-        mag = abs(ftran))
-    fg <- list(griddata=griddata, tgav=tgav, pscl=pscl, reof=reof, fx=Fx,
-               phasecoef=phasecoef, infiles=infiles)
+    if(is.matrix(fxphase)) {
+        phases <- list(fxphase)
+    }
+    else {
+        phases <- fxphase
+    }
+    Fx <- list(mag = fxmag,
+               phases = phases)
+    fg <- list(griddata=griddata,
+               tgav=tgav,
+               pscl=pscl,
+               reof=reof,
+               fx=Fx,
+               infiles=infiles)
     class(fg) <- 'fldgen'
     fg
 }

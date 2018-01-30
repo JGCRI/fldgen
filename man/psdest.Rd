@@ -30,16 +30,5 @@ as the first argument to \code{\link{mkcorrts}}.
 When doing the averaging we assume that all of the input time series have the
 same lengths, so that all of the frequency bins correspond.  Passing series
 of unequal length is an error.
-
-In early versions of this analysis we would perform the analysis manually,
-which allowed us to keep the phase information.  Using the recovered phases,
-we could force the output fields to replicate the input fields, if we wanted
-to.  It doesn't really make sense to do that when we're dealing with multiple
-input fields, so we haven't tried to preserve the phases on output.  You can
-get the phases for any single prcomp structure by running:
-\verb{
-Fx <- mvfft(pc$x)
-Fxphase <- atan2(Im(Fx), Re(Fx))
-}
 }
 \keyword{internal}

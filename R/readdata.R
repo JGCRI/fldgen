@@ -125,6 +125,7 @@ loadmodel <- function(file)
 {
     load(file)
     if(!exists('modeldata', inherits=FALSE)) {
+        modeldata <- NULL               # silence check notes.
         stop('No model data in file.')
     }
     if(!inherits(modeldata, 'fldgen')) {

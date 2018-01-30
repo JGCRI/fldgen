@@ -178,27 +178,19 @@ mkcorrts <- function(fldgen, phase=NULL, method=1, complexout=FALSE)
 
     if(is.null(phase)) {
         if(method==2) {
-            stop('Method II not yet implemented.')
-            ## generate phase differences between EOF components
-            deltaij <- gen_random_delta(fldgen$phasecoef, Nt)
-            ## generate phase values for the ith component.
-            thetai <- runif(Nf, 0, 2*pi)
-            if(abs(thetai[1]-pi) < pi/2) {
-                thetai[1] <- pi
-            }
-            else {
-                thetai[1] <- 0
-            }
+            ## generate phase shifts for each frequency component
+            dtheta <- runif(Nf, 0, 2*pi)
+            dtheta[1] <- phsym(dtheta[1])
             if(Nt %% 2 == 0) {
-                if(abs(thetai[Nf]-pi) < pi/2) {
-                    thetai[Nf] <- pi
-                }
-                else {
-                    thetai[Nf] <- 0
-                }
+                dtheta[Nf] <- phsym(dtheta[Nf])
             }
+
+            ## pick one of the phase templates at random and apply the phase
+            ## shifts to the plusrows.
+            n <- length(fldgen$fx$phases)
+            phase <- fldgen$fx$phases[[sample.int(n, 1)]][plusrows,]
             ## add thetai to each column to get the final
-            phase <- broadcast_apply_col(deltaij, thetai, `+`)
+            phase <- broadcast_apply_col(phase, dtheta, `+`)
         }
         else if(method==1) {
             phase <- matrix(runif(Nf*M, 0, 2*pi), ncol=M)
@@ -253,17 +245,6 @@ mkcorrts <- function(fldgen, phase=NULL, method=1, complexout=FALSE)
 #' same lengths, so that all of the frequency bins correspond.  Passing series
 #' of unequal length is an error.
 #'
-#' In early versions of this analysis we would perform the analysis manually,
-#' which allowed us to keep the phase information.  Using the recovered phases,
-#' we could force the output fields to replicate the input fields, if we wanted
-#' to.  It doesn't really make sense to do that when we're dealing with multiple
-#' input fields, so we haven't tried to preserve the phases on output.  You can
-#' get the phases for any single prcomp structure by running:
-#' \verb{
-#' Fx <- mvfft(pc$x)
-#' Fxphase <- atan2(Im(Fx), Re(Fx))
-#' }
-#'
 #' @param prcomp_l A list of principal components structures returned by
 #' eof_analyze, or a single such structure.
 #' @return A matrix [ntime, numPC] of PSD estimates (see details).
@@ -283,13 +264,18 @@ psdest <- function(prcomp_l)
         stop('All input prcomp structures must have equal length')
     }
 
-    psds <- lapply(prcomp_l,
+    ffts <- lapply(prcomp_l,
                    function(pc) {
                        fx <- stats::mvfft(pc$x)
-                       Mod(fx)^2
+                       list(Mod(fx)^2,
+                            atan2(Im(fx), Re(fx)))
                    })
 
-    Reduce(`+`, psds) / length(psds)
+    psds <- lapply(ffts, function(x) {x[[1]]})
+    phases <- lapply(ffts, function(x) {x[[2]]})
+
+    list(psd=Reduce(`+`, psds) / length(psds),
+         phases=phases)
 }
 
 
