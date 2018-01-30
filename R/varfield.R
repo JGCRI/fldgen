@@ -131,6 +131,23 @@ reconst_fields <- function(basis, bcoord, meanfield=NULL)
 #' for all frequencies, including the negative ones, despite the fact that only
 #' the phases for positive frequencies are needed.
 #'
+#' @section Methods:
+#'
+#' Method I assignes uniform random values in [0,2pi) to all phases.  This
+#' method is simple and fast, but it produces a slight bias in the covariance of
+#' the projection coefficients for the EOFs.  (The covariance of the projection
+#' coefficients for two distinct EOFs should be zero.)  Although this produces
+#' biases in the grid cell statistics, in many cases they are small enough to be
+#' ignorable.
+#'
+#' Method II is more conservative in its phase randomization.  It uses the
+#' Fourier transform of one of the input data sets as a prototype and for each
+#' frequency component it generates a random phase shift and adds it to that
+#' frequency component for all of the EOFs.  This guarantees that the covariance
+#' will be zero, but at the cost of making the space of possible realizations
+#' much lower dimension, roughly 1/2 N instead of 1/2 M*N (where M is the number
+#' of EOFs and N is the number of basis functions).
+#'
 #' @section ToDo:
 #'
 #' It should be possible to supply a partial matrix of phases, with some values
@@ -144,9 +161,11 @@ reconst_fields <- function(basis, bcoord, meanfield=NULL)
 #' the imaginary parts should all be zero.  By default we return Re(rslt), but
 #' setting this flag causes the result to be left in complex form.  This is
 #' mostly useful for testing.
+#' @param method Integer specifying method 1 or method 2 for generating the
+#' phases.  Ignored if \code{phase} is set.
 #' @importFrom stats mvfft runif
 #' @export
-mkcorrts <- function(fldgen, phase=NULL, complexout=FALSE)
+mkcorrts <- function(fldgen, phase=NULL, method=1, complexout=FALSE)
 {
     Fxmag <- fldgen$fx$mag
 
@@ -158,26 +177,40 @@ mkcorrts <- function(fldgen, phase=NULL, complexout=FALSE)
     minusrows <- find_minusf_coord(plusrows,Nt)
 
     if(is.null(phase)) {
-        ## generate phase differences between EOF components
-        deltaij <- gen_random_delta(fldgen$phasecoef, Nt)
-        ## generate phase values for the ith component.
-        thetai <- runif(Nf, 0, 2*pi)
-        if(abs(thetai[1]-pi) < pi/2) {
-            thetai[1] <- pi
-        }
-        else {
-            thetai[1] <- 0
-        }
-        if(Nt %% 2 == 0) {
-            if(abs(thetai[Nf]-pi) < pi/2) {
-                thetai[Nf] <- pi
+        if(method==2) {
+            stop('Method II not yet implemented.')
+            ## generate phase differences between EOF components
+            deltaij <- gen_random_delta(fldgen$phasecoef, Nt)
+            ## generate phase values for the ith component.
+            thetai <- runif(Nf, 0, 2*pi)
+            if(abs(thetai[1]-pi) < pi/2) {
+                thetai[1] <- pi
             }
             else {
-                thetai[Nf] <- 0
+                thetai[1] <- 0
+            }
+            if(Nt %% 2 == 0) {
+                if(abs(thetai[Nf]-pi) < pi/2) {
+                    thetai[Nf] <- pi
+                }
+                else {
+                    thetai[Nf] <- 0
+                }
+            }
+            ## add thetai to each column to get the final
+            phase <- broadcast_apply_col(deltaij, thetai, `+`)
+        }
+        else if(method==1) {
+            phase <- matrix(runif(Nf*M, 0, 2*pi), ncol=M)
+            phase[1,] <- phsym(phase[1,]) # symmetrize f==0 mode.
+            if(Nt %% 2 == 0) {
+                ## For even N the Nyquist mode is present and must be symmetrized.
+                phase[Nf,] <- phsym(phase[Nf,])
             }
         }
-        ## add thetai to each column to get the final
-        phase <- broadcast_apply_col(deltaij, thetai, `+`)
+        else {
+            stop('Unknown phase method: ', method)
+        }
     }
     else {
         phase <- phase[1:Nf,]

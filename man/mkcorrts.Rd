@@ -4,12 +4,15 @@
 \alias{mkcorrts}
 \title{Make time series with specified autocorrelation properties}
 \usage{
-mkcorrts(fldgen, phase = NULL, complexout = FALSE)
+mkcorrts(fldgen, phase = NULL, method = 1, complexout = FALSE)
 }
 \arguments{
 \item{fldgen}{A \code{\link[=train]{fldgen}} object.}
 
 \item{phase}{An optional matrix of phases.  See notes in the Details section.}
+
+\item{method}{Integer specifying method 1 or method 2 for generating the
+phases.  Ignored if \code{phase} is set.}
 
 \item{complexout}{The inverse FFT produces complex-valued results; however,
 the imaginary parts should all be zero.  By default we return Re(rslt), but
@@ -30,6 +33,25 @@ sort of exercise easier, the function will accept a matrix containing phases
 for all frequencies, including the negative ones, despite the fact that only
 the phases for positive frequencies are needed.
 }
+\section{Methods}{
+
+
+Method I assignes uniform random values in [0,2pi) to all phases.  This
+method is simple and fast, but it produces a slight bias in the covariance of
+the projection coefficients for the EOFs.  (The covariance of the projection
+coefficients for two distinct EOFs should be zero.)  Although this produces
+biases in the grid cell statistics, in many cases they are small enough to be
+ignorable.
+
+Method II is more conservative in its phase randomization.  It uses the
+Fourier transform of one of the input data sets as a prototype and for each
+frequency component it generates a random phase shift and adds it to that
+frequency component for all of the EOFs.  This guarantees that the covariance
+will be zero, but at the cost of making the space of possible realizations
+much lower dimension, roughly 1/2 N instead of 1/2 M*N (where M is the number
+of EOFs and N is the number of basis functions).
+}
+
 \section{ToDo}{
 
 

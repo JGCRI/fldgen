@@ -136,3 +136,12 @@ gen_random_delta <- function(Astruct, Nt)
     ## do it for all j
     sapply(jvals, delta1j)
 }
+
+
+## Convert arbitrary phases into the nearest self-symmetric (i.e., 0 or pi)
+## phases.
+## NB: phases must be in [0,2pi] for this to work properly
+phsym <- function(phase)
+{
+    dplyr::if_else(abs(phase-pi) < pi/2, pi, 0.0)
+}
