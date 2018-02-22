@@ -49,7 +49,8 @@ The names of the input files are recorded in the \code{infiles} field of the
 returned object.  This is for the your information only; none of the code
 here does anything with the recorded filenames.  You have the choice of
 recording either absolute filenames (useful for determining exactly which
-dataset was used) or relative filenames (useful if you might distribute a
+dataset was used, if you have a lot of similarly named files) or relative
+filenames (useful if you might distribute a
 saved model to other users who might not have the same directory structure as
 you).
 }

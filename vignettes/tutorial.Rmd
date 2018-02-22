@@ -4,7 +4,7 @@ author: "Robert Link"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Fldgen Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -55,10 +55,15 @@ datadir <- system.file('extdata', package='fldgen')
 
 ### One-step emulator training
 
-You can do the read and analyze steps below in a single command by running
+You can do the read and analyze steps below in a single command by running:
 ```
-emulator <- train(file.path(datadir, 'tann1.nc'))
+infile <- file.path(datadir, 'tann1.nc')
+emulator <- train(infile)
 ```
+If you want to use multiple ESM runs for the training, you can either pass
+`train` a list of filenames, or you can give it the name of a directory, in
+which case it will use all of the netCDF files it finds there.
+
 If you use this (recommended) method, then you can skip directly to [Generating 
 fields].  For users that wish to customize the training process, the next two 
 sections describe what is happening inside the `train` function and show how to
@@ -130,7 +135,7 @@ emulator <- fldgen_object(griddata, tgav, pscl, reof, Fx, phasecoef, filename)
 
 Now we're ready to generate fields.  We'll do `r ngen` fields in this example. 
 The first one will be a reconstruction of the original input.  The other three
-will new fields.
+will be new fields.
 
 ```{r genfields}
 tempgrids <- list()
@@ -140,13 +145,11 @@ length(tempgrids) <- ngen
 meanfield <- pscl_apply(pscl, tgav)
 
 ## First field will have the same phases as the input ESM data
-tempgrids[[1]] <- suppressMessages(         # mkcorrts emits a bunch of status messages that we don't want here.
-    reconst_fields(reof$rotation, mkcorrts(emulator, Fxphase), meanfield))
+tempgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(emulator, Fxphase), meanfield)
 
 ## Other fields will have random phases
 for(i in 2:ngen) {
-  tempgrids[[i]] <- suppressMessages(       # don't want the status messages
-      reconst_fields(reof$rotation, mkcorrts(emulator), meanfield))
+  tempgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(emulator), meanfield)
 }
 
 ## Subtract off the mean field.  Save these because we will want to use them later
