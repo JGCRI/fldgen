@@ -4,8 +4,8 @@
 \alias{trainTP}
 \title{Train the emulator on a set of input ESM temperature and precipitation data.}
 \usage{
-trainTP(dat, latvar = "lat", lonvar = "lon", meanfield = pscl_analyze,
-  record_absolute = FALSE)
+trainTP(dat, varname = "tas", latvar = "lat", lonvar = "lon",
+  meanfield = pscl_analyze, record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a

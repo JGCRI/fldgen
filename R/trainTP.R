@@ -38,8 +38,8 @@
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @export
-trainTP <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
-                  record_absolute=FALSE)
+trainTP <- function(dat, varname = "tas", latvar='lat', lonvar='lon',
+                    meanfield=pscl_analyze, record_absolute=FALSE)
 {
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
@@ -55,16 +55,33 @@ trainTP <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
     }
 
 
-    return(dat)
+    ### file pairing for T and P
+    ### Will likely move to own function in the future, with more flexibility.
+
+    # separate dat into list of precip files and temperature files. Relies on
+    # CMIP5 naming conventions.
+        pdat <- dat[grep("pr_", dat)]
+    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE)){
+        stop(paste("At least one precipitation file in", dat, "is not annual"))
+    }
+
+    tdat <- dat[grep("tas_", dat)]
+    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE)){
+        stop(paste("At least one temperature file in", dat, "is not annual"))
+    }
+
+    ### end file pairing
 
 
-    readin <- function(fn) {read.temperatures(fn, latvar=latvar, lonvar=lonvar)}
+    readin <- function(fn) {read.temperatures(fn, varname = varname,
+                                              latvar=latvar, lonvar=lonvar)}
 
 
 
 
-    griddata <- concatGrids(lapply(dat, readin)) # information about the
-                                                 # temperature grid
+    griddata <- concatGrids(lapply(tdat, readin)) # information about the
+                                                  # temperature grid
+    return(griddata)
     tgav <- griddata$tas %*% griddata$tgop # Global mean temperature
 
     meanfld <- meanfield(griddata$tas, tgav)
