@@ -6,8 +6,7 @@
 #' Therefore, it can be saved and reloaded in future sessions to bypass the
 #' analysis step.
 #'
-#' The steps run by this procedure are \code{\link{read.temperatures}},
-#' \code{\link{read.precipitations}},
+#' The steps run by this procedure are \code{\link{read.general}},
 #' \code{\link{pscl_analyze}}, and \code{\link{eof_analyze}}.  Additionally,
 #' the global mean temperature, global mean precipitation, and the FFT of the
 #' EOF decomposition are calculated and stored.  For backward compatibility,
@@ -27,18 +26,33 @@
 #' might not have the same directory structure as you).
 #'
 #' @param dat A single directory name, or a list of netCDF files.  If a
-#' directory name is given, all netCDF files in the directory will be used.
-#' @param latvar Name of the latitude coordinate variable in the netCDF files.
+#' directory name is given, all netCDF files in the directory will be used.The
+#' pairing of temperature and precipitaiton netCDF files in the directory
+#' relies on the CMIP5 file naming conventions. Other naming conventions are
+#' not currently supported.
+#' @param tvarname Name of the temperature variable in the temperature netCDF
+#' @param tlatvar Name of the latitude coordinate variable in the temperature
+#' netCDF files.
 #' Normally this is \code{'lat'}, but occasionally it will be something
-#' different, such as \code{'lat_2'}.
-#' @param lonvar Name of the longitude coordinate variable in the netCDF files.
+#' different, such as \code{'lat_2'}. Can vary between paired T and P.
+#' @param tlonvar Name of the longitude coordinate variable in the temperature
+#' netCDF files.  Can vary between paired T and P.
+#' @param pvarname Name of the precipitation variable in the precipitation
+#' netCDF.
+#' @param platvar Name of the latitude coordinate variable in the precipitation
+#' netCDF files.
+#' Normally this is \code{'lat'}, but occasionally it will be something
+#' different, such as \code{'lat_2'}.  Can vary between paired T and P.
+#' @param plonvar Name of the longitude coordinate variable in precipitation
+#'  netCDF files.  Can vary between paired T and P.
 #' @param meanfield Function to compute the mean temperature response field.
 #' The default is a linear pattern scaling algorithm.
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @export
-trainTP <- function(dat, varname = "tas", latvar='lat', lonvar='lon',
+trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
+                    pvarname = "pr", platvar='lat', plonvar='lon',
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
     if(length(dat) == 1 && file.info(dat)$isdir) {
@@ -60,37 +74,106 @@ trainTP <- function(dat, varname = "tas", latvar='lat', lonvar='lon',
 
     # separate dat into list of precip files and temperature files. Relies on
     # CMIP5 naming conventions.
-        pdat <- dat[grep("pr_", dat)]
+        pdat <- dat[grep(paste0(pvarname, "_"), dat)]
     if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE)){
         stop(paste("At least one precipitation file in", dat, "is not annual"))
     }
 
-    tdat <- dat[grep("tas_", dat)]
+    tdat <- dat[grep(paste0(tvarname, "_"), dat)]
     if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE)){
         stop(paste("At least one temperature file in", dat, "is not annual"))
+    }
+
+
+    # get to scenario identifying info
+    pdat %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(pfilename = value) %>%
+        tidyr::separate(value, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::select(-var, -timestep)  %>%
+        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
+        dplyr::mutate(startyr = substr(startyr, 1, 4),
+               stopyr = substr(stopyr, 1,4)) ->
+        ptbl
+
+    tdat %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(tfilename = value) %>%
+        tidyr::separate(value, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::select(-var, -timestep)  %>%
+        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
+        dplyr::mutate(startyr = substr(startyr, 1, 4),
+                      stopyr = substr(stopyr, 1,4)) ->
+        ttbl
+
+    ttbl %>%
+        left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
+        dplyr::select(tfilename, pfilename) %>%
+        na.omit ->
+        paireddat
+
+    if(nrow(paireddat) < 1){
+        stop("You have no paired temperature and precipitation files in this
+             directory. Use the function `train` to work on temperature files
+             only. Or ensure that your temperature and precipitation netCDFs
+             follow CMIP5 naming conventions.")
     }
 
     ### end file pairing
 
 
-    readin <- function(fn) {read.temperatures(fn, varname = varname,
-                                              latvar=latvar, lonvar=lonvar)}
+    ### Train
+
+    # read the relevant Temperature and Precipitation inputs across all
+    # scenarios and concatenate
+    readinT <- function(fn) {read.general(fn, varname = tvarname,
+                                          latvar=tlatvar, lonvar=tlonvar)}
+    readinP <- function(fn) {read.general(fn, varname = pvarname,
+                                          latvar=platvar, lonvar=plonvar)}
 
 
 
+    griddataT <- concatGrids.general(lapply(paireddat$tfilename, readinT))
+    griddataP <- concatGrids.general(lapply(paireddat$pfilename, readinP))
 
-    griddata <- concatGrids(lapply(tdat, readin)) # information about the
-                                                  # temperature grid
-    return(griddata)
-    tgav <- griddata$tas %*% griddata$tgop # Global mean temperature
 
-    meanfld <- meanfield(griddata$tas, tgav)
+    # calculate global average T and global average P
+    tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
+    # pgav <- griddataP$vardata %*% griddataP$globalop # Global mean precip
 
-    reof <- eof_analyze(meanfld$r, griddata$tgop)
 
+    # Use this to calculate the mean field for T and the mean field for P
+    # separately. We want the joint variability on the residuals, but we
+    # want those residuals
+    meanfldT <- meanfield(griddataT$vardata, tgav)
+    meanfldP <- meanfield(griddataP$vardata, tgav)
+    return(list(meanfldT, meanfldP))
+
+    # normalize residuals for both because it won;t hurt probably
+
+
+
+    # enforce pairing to bind columns of the matrices correctly to create
+    # joint matrix of residuals
+
+    joint_residuals <- as.matrix(c(meanfldT$r, meanfldP$r))
+    ## need to figure out enforcing pairing based on tags. It should just happen
+    ## automatically but it needs a test.
+    return(joint_residuals)
+
+
+    # update eof to include if's on length globalop and ncols meanfld$r so not
+    # doing uneccesarily large block matrix calculations.
+    reof <- eof_analyze(meanfld$r, # joint matrix of respective residuals
+                        griddata$tgop)
+
+
+    ## figure out needed updates
     reof_l <- split_eof(reof, griddata)
     psd <- psdest(reof_l)
 
+
+    ## update this guy to general
     fldgen_object(griddata, tgav, pscl, reof, sqrt(psd$psd), psd$phases, infiles)
 }
 

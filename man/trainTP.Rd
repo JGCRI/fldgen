@@ -4,18 +4,37 @@
 \alias{trainTP}
 \title{Train the emulator on a set of input ESM temperature and precipitation data.}
 \usage{
-trainTP(dat, varname = "tas", latvar = "lat", lonvar = "lon",
+trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
+  pvarname = "pr", platvar = "lat", plonvar = "lon",
   meanfield = pscl_analyze, record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
-directory name is given, all netCDF files in the directory will be used.}
+directory name is given, all netCDF files in the directory will be used.The
+pairing of temperature and precipitaiton netCDF files in the directory
+relies on the CMIP5 file naming conventions. Other naming conventions are
+not currently supported.}
 
-\item{latvar}{Name of the latitude coordinate variable in the netCDF files.
+\item{tvarname}{Name of the temperature variable in the temperature netCDF}
+
+\item{tlatvar}{Name of the latitude coordinate variable in the temperature
+netCDF files.
 Normally this is \code{'lat'}, but occasionally it will be something
-different, such as \code{'lat_2'}.}
+different, such as \code{'lat_2'}. Can vary between paired T and P.}
 
-\item{lonvar}{Name of the longitude coordinate variable in the netCDF files.}
+\item{tlonvar}{Name of the longitude coordinate variable in the temperature
+netCDF files.  Can vary between paired T and P.}
+
+\item{pvarname}{Name of the precipitation variable in the precipitation
+netCDF.}
+
+\item{platvar}{Name of the latitude coordinate variable in the precipitation
+netCDF files.
+Normally this is \code{'lat'}, but occasionally it will be something
+different, such as \code{'lat_2'}.  Can vary between paired T and P.}
+
+\item{plonvar}{Name of the longitude coordinate variable in precipitation
+netCDF files.  Can vary between paired T and P.}
 
 \item{meanfield}{Function to compute the mean temperature response field.
 The default is a linear pattern scaling algorithm.}
@@ -34,8 +53,7 @@ Therefore, it can be saved and reloaded in future sessions to bypass the
 analysis step.
 }
 \details{
-The steps run by this procedure are \code{\link{read.temperatures}},
-\code{\link{read.precipitations}},
+The steps run by this procedure are \code{\link{read.general}},
 \code{\link{pscl_analyze}}, and \code{\link{eof_analyze}}.  Additionally,
 the global mean temperature, global mean precipitation, and the FFT of the
 EOF decomposition are calculated and stored.  For backward compatibility,
