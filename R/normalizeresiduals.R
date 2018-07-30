@@ -218,36 +218,12 @@ normalize.resids <- function(r, len=NULL){
     quantiles <- apply(r,2, get.quans)
 
 
-    # The quantile corresponding to the largest residual will be 1. That will
-    # map to a normalized residual of Inf, which will break the field
-    # generation. Ensure that it remains the largest quantile, but replace
-    # with a value < 1.
-
-    # Get the second largest quantile
-    maxN <- function(x, N=2){
-        len <- length(x)
-        if(N>len){
-            warning('N greater than length(x).  Setting N=length(x)')
-            N <- length(x)
-        }
-        sort(x,partial=len-N+1)[len-N+1]
-    }
-
-    max2 <- maxN(quantiles[,1]) # apparently it's the same for all grid cells even though the
-    # quantiles vary by grid cells.
-
-    # use the second largest to create our offset from 1 for the largest quantile
-    offset <- (1-max2) / 5
-    offset.max <- function(x){
-        x[which.max(x)] <- max(x) - offset
-        return(x)}
-
-    q2 <-   quantiles # apply(quantiles, 2, offset.max)
+    q2 <-   quantiles
 
 
     # get the values of the normal distribution corresponding to these quantiles.
     normresids <- apply(q2, 2, stats::qnorm)
-    # normresids[is.infinite(normresids)] <- 10
+    # normresids[is.infinite(normresids)] <- 10 # correct way to address Inf
 
     # return
     output <- list(r = r, quants = q2, rn = normresids)
