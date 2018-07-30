@@ -247,7 +247,7 @@ normalize.resids <- function(r, len=NULL){
 
     # get the values of the normal distribution corresponding to these quantiles.
     normresids <- apply(q2, 2, stats::qnorm)
-    normresids[is.infinite(normresids)] <- 10
+    # normresids[is.infinite(normresids)] <- 10
 
     # return
     output <- list(r = r, quants = q2, rn = normresids)
