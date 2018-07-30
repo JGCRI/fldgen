@@ -242,7 +242,7 @@ normalize.resids <- function(r, len=NULL){
         x[which.max(x)] <- max(x) - offset
         return(x)}
 
-    q2 <- apply(quantiles, 2, offset.max)
+    q2 <-   quantiles # apply(quantiles, 2, offset.max)
 
 
     # get the values of the normal distribution corresponding to these quantiles.
