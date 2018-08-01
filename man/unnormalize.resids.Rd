@@ -7,38 +7,39 @@
 unnormalize.resids(r, rn, len = NULL)
 }
 \arguments{
-\item{r}{Column vector of the original, input residuals for a grid cell}
+\item{r}{Matrix of the original, input residuals for a grid cell}
 
-\item{rn}{Column vector of the input, randomized, normally distributed residuals}
+\item{rn}{Matrix of the input, randomized, normally distributed residuals}
 
 \item{len}{Maximum length of the time series to read.  If the data read is
 longer, it will be trimmed.  (Default: read entire time series, regardless of
 length.)}
 }
 \description{
-A vector of residuals must be normalized for the fldgen algorithm to work
-properly. This function takes a vector of residuals (T or P), calculates the
-quantiles of each residual, and maps the residual to the corresponding
-quantile value in a normal distribution.
+A vector of normally distributed residuals in a single grid cell, likely
+generated during the field generation step of this package, must be mapped
+back to the original distribution of ESM residuals for the generated fields
+to have any meaning. The original distribution of ESM residuals (T or P) is
+empirically characterized by the vector of residuals in the grid cell.
+fldgen algorithm to work properly. This function takes a matrix of normally
+distributed residuals (each grid cell is a column, T or P), calculates the
+quantiles of the normal distribution of each residual, and maps to the
+corresponding value in the original, empirically characterized distribution
+of residuals.
 }
 \details{
 The output will be a list with Three fields:
 \describe{
-  \item{\strong{r}}{Column vector of the original, input residuals for a grid cell - need because CDF of grid cell unknown}
-  \item{\strong{rn}}{Column vector of the input, randomized, normally distributed residuals.}
-  \item{\strong{rnew}}{Column vector of the quantiles of each input residual.}
+  \item{\strong{r}}{Matrix of the original, input residuals for a grid cell,
+  empirically characterizing the distribution.}
+  \item{\strong{rn}}{Matrix of the input, randomized, normally distributed
+  residuals.}
+  \item{\strong{rnew}}{Matrix of the new residuals, sampled from the
+  original distribution of residuals according to the quantiles of the
+  input normally distributed random residuals.}
 }
 
-UPDATE: The data at each time is represented as a flattened vector of grid cells.
-The flattening is performed by transposing to lat, lon ordering, so that lat
-will be the most rapidly varying index (because R uses
-Fortran-style indexing).  Then the spatial dimensions are discarded,
-resulting in a 1D vector.  The time dimension is kept, resulting in a matrix
-with years in rows and grid cells in columns.  The dimensions of the matrix
-will be Nyear x Ngrid, where Nyear is the number of years in the data set,
-and Ngrid is the number of grid cells.
-
-Conventionally, we refer to the output list as \code{griddata}.  Notably, any
-other function with a \code{griddata} argument is expecting one of these
-structures.
+Conventionally, we refer to the output list as \code{invquantilemapping}.
+Notably, any other function with a \code{invquantilemapping} argument is
+expecting one of these structures.
 }

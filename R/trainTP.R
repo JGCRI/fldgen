@@ -50,6 +50,9 @@
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
+#' @importFrom tibble as_tibble
+#' @importFrom dplyr mutate select
+#' @importFrom tidyr separate
 #' @export
 trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     pvarname = "pr", platvar='lat', plonvar='lon',
@@ -147,24 +150,25 @@ trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
     # want those residuals
     meanfldT <- meanfield(griddataT$vardata, tgav)
     meanfldP <- meanfield(griddataP$vardata, tgav)
-    return(list(meanfldT, meanfldP))
 
-    # normalize residuals for both because it won;t hurt probably
+
+    # normalize residuals for both T and P
+    normT <- normalize.resids(meanfldT$r)
+    normP <- normalize.resids(meanfldP$r)
 
 
 
     # enforce pairing to bind columns of the matrices correctly to create
     # joint matrix of residuals
-
-    joint_residuals <- as.matrix(c(meanfldT$r, meanfldP$r))
+    joint_residuals <- as.matrix(cbind(normT$rn, normP$rn))
     ## need to figure out enforcing pairing based on tags. It should just happen
-    ## automatically but it needs a test.
+    ## automatically but it probably needs a test.
     return(joint_residuals)
 
 
     # update eof to include if's on length globalop and ncols meanfld$r so not
     # doing uneccesarily large block matrix calculations.
-    reof <- eof_analyze(meanfld$r, # joint matrix of respective residuals
+    reof <- eof_analyze(joint_residuals,
                         griddata$tgop)
 
 

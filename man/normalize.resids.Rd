@@ -7,36 +7,31 @@
 normalize.resids(r, len = NULL)
 }
 \arguments{
-\item{r}{Column vector of the original, input residuals for a grid cell}
+\item{r}{Matrix of the original, input residuals for each grid cell (columns)}
 
 \item{len}{Maximum length of the time series to read.  If the data read is
 longer, it will be trimmed.  (Default: read entire time series, regardless of
 length.)}
 }
 \description{
-A vector of residuals must be normalized for the fldgen algorithm to work
-properly. This function takes a vector of residuals (T or P), calculates the
-quantiles of each residual, and maps the residual to the corresponding
-quantile value in a normal distribution.
+A vector of residuals in a single grid cell must be normalized for the
+fldgen algorithm to work properly. This function takes a matrix of
+residuals (each grid cell is a column, T or P), calculates the quantiles
+of each residual, and maps to the corresponding value in a normal
+distribution.
 }
 \details{
 The output will be a list with Three fields:
 \describe{
-  \item{\strong{r}}{Column vector of the original, input residuals for a grid cell}
-  \item{\strong{quants}}{Column vector of the quantiles of each input residual.}
-  \item{\strong{rn}}{Column vectorof the new, normally distributed residuals.}
+  \item{\strong{r}}{Matrix of the original, input residuals for each grid
+  cell.}
+  \item{\strong{quants}}{Matrix of the quantiles of each input residual.}
+  \item{\strong{rn}}{Matrix of the new, normally distributed residuals.}
 }
 
-UPDATE: The data at each time is represented as a flattened vector of grid cells.
-The flattening is performed by transposing to lat, lon ordering, so that lat
-will be the most rapidly varying index (because R uses
-Fortran-style indexing).  Then the spatial dimensions are discarded,
-resulting in a 1D vector.  The time dimension is kept, resulting in a matrix
-with years in rows and grid cells in columns.  The dimensions of the matrix
-will be Nyear x Ngrid, where Nyear is the number of years in the data set,
-and Ngrid is the number of grid cells.
 
-Conventionally, we refer to the output list as \code{griddata}.  Notably, any
-other function with a \code{griddata} argument is expecting one of these
-structures.
+
+Conventionally, we refer to the output list as \code{quantilemapping}.
+Notably, any other function with a \code{quantilemapping} argument is
+expecting one of these structures.
 }
