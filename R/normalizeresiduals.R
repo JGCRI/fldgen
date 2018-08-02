@@ -45,9 +45,12 @@ normalize.resids <- function(r, len=NULL){
     get.quans <- function(x){stats::ecdf(x)(x)}
     quantiles <- apply(r,2, get.quans)
 
+    # deal with the fact that the max point gets set to the 1.00 quantile
+    offset <- function(x){
+        x[which.max(x)] <- max(x) - 1/nrow(r)
+        return(x)}
 
-    q2 <-   quantiles
-
+    q2 <- apply(quantiles, 2, offset)
 
     # get the values of the normal distribution corresponding to these quantiles.
     normresids <- apply(q2, 2, stats::qnorm)
