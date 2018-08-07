@@ -4,10 +4,13 @@
 \alias{normalize.resids}
 \title{Normalize residuals}
 \usage{
-normalize.resids(r, len = NULL)
+normalize.resids(inputresids, empiricalcdf, len = NULL)
 }
 \arguments{
-\item{r}{Matrix of the original, input residuals for each grid cell (columns)}
+\item{inputresids}{Matrix of the original, input residuals for each grid
+cell (columns)}
+
+\item{empiricalcdf}{List of the empirical cdf functions for each grid cell.}
 
 \item{len}{Maximum length of the time series to read.  If the data read is
 longer, it will be trimmed.  (Default: read entire time series, regardless of
@@ -21,10 +24,12 @@ of each residual, and maps to the corresponding value in a normal
 distribution.
 }
 \details{
-The output will be a list with Three fields:
+The output will be a list with four fields:
 \describe{
-  \item{\strong{r}}{Matrix of the original, input residuals for each grid
-  cell.}
+  \item{\strong{inputresids}}{Matrix of the original, input residuals for
+  each grid cell.}
+  \item{\strong{empiricalcdf}}{List of the empirical cdf functions for each
+  grid cell.}
   \item{\strong{quants}}{Matrix of the quantiles of each input residual.}
   \item{\strong{rn}}{Matrix of the new, normally distributed residuals.}
 }

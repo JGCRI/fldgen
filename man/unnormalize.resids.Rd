@@ -4,10 +4,11 @@
 \alias{unnormalize.resids}
 \title{unNormalize residuals}
 \usage{
-unnormalize.resids(r, rn, len = NULL)
+unnormalize.resids(empiricalquant, rn, len = NULL)
 }
 \arguments{
-\item{r}{Matrix of the original, input residuals for a grid cell}
+\item{empiricalquant}{List of the empirical quantile functions for each grid
+cell.}
 
 \item{rn}{Matrix of the input, randomized, normally distributed residuals}
 
@@ -28,10 +29,10 @@ corresponding value in the original, empirically characterized distribution
 of residuals.
 }
 \details{
-The output will be a list with Three fields:
+The output will be a list with four fields:
 \describe{
-  \item{\strong{r}}{Matrix of the original, input residuals for a grid cell,
-  empirically characterizing the distribution.}
+  \item{\strong{empiricalquant}}{List of the empirical quantile functions
+  for each grid cell.}
   \item{\strong{rn}}{Matrix of the input, randomized, normally distributed
   residuals.}
   \item{\strong{rnew}}{Matrix of the new residuals, sampled from the
