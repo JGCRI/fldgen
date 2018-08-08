@@ -4,10 +4,15 @@
 \alias{eof_analyze}
 \title{Perform EOF analysis on residuals}
 \usage{
-eof_analyze(resids, tgop)
+eof_analyze(resids, Ngrid, tgop)
 }
 \arguments{
-\item{resids}{A matrix [ntime x ngrid] of residuals from the mean field}
+\item{resids}{A matrix [ntime x ngrid] or [ntime x 2ngrid] of residuals from
+the mean field. Temperature residuals must always occupy the first ngrid
+columns.}
+
+\item{Ngrid}{The number of spatial grid cells for each variable in data in
+dat. Defaults to 55296, a half degree grid.}
 
 \item{tgop}{A column vector [ngrid x 1] containing the global mean operator.
 This is produced as the \code{tgop} field of the structure returned by
@@ -19,6 +24,13 @@ these components (conventionally the first component) is always the
 normalized global mean temperature operator.  This convention isolates the
 time variability of the global mean in a single components and ensures that
 the remaining components describe variability that is purely spatial.
+This method also works when the state vector is grid cell temperature and
+grid cell precipitation (or other variable that patters with temperature)
+at time t - the state vector is 2Ngrid instead of Ngrid long.
+However, the two variable extension assumes that the first component is the
+normalized global mean temperature operator, concatenated with a 0 operator.
+This corresponds to the idea that the the global average value of
+precipitation (or other variable) is not relevant.
 }
 \section{Value}{
 
