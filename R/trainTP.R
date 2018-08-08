@@ -30,6 +30,8 @@
 #' pairing of temperature and precipitaiton netCDF files in the directory
 #' relies on the CMIP5 file naming conventions. Other naming conventions are
 #' not currently supported.
+#' @param Ngrid The number of spatial grid cells for each variable in data in
+#' dat. Defaults to 55296, a half degree grid.
 #' @param tvarname Name of the temperature variable in the temperature netCDF
 #' @param tlatvar Name of the latitude coordinate variable in the temperature
 #' netCDF files.
@@ -54,7 +56,8 @@
 #' @importFrom dplyr mutate select
 #' @importFrom tidyr separate
 #' @export
-trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
+trainTP <- function(dat, Ngrid = 55296,
+                    tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
@@ -152,33 +155,43 @@ trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
     meanfldP <- meanfield(griddataP$vardata, tgav)
 
 
-    # normalize residuals for both T and P
-    normT <- normalize.resids(meanfldT$r)
-    normP <- normalize.resids(meanfldP$r)
+    # characterize the distribution in each grid cell for each variable by
+    # generating an empirical CDF function and an empirical quantile function
+    # for each variable in each grid cell.
+    tfuns <- characterize.emp.dist(meanfldT$r)
+    pfuns <- characterize.emp.dist(meanfldP$r)
 
+
+    # Use the empirical cdf to normalize residuals for both T and P
+    normresidsT <- normalize.resids(inputresids = meanfldT$r,
+                                    empiricalcdf = tfuns$cdf)
+    normresidsP <- normalize.resids(inputresids = meanfldP$r,
+                                    empiricalcdf = pfuns$cdf)
 
 
     # enforce pairing to bind columns of the matrices correctly to create
     # joint matrix of residuals
-    joint_residuals <- as.matrix(cbind(normT$rn, normP$rn))
+    joint_residuals <- as.matrix(cbind(normresidsT$rn, normresidsP$rn))
     ## need to figure out enforcing pairing based on tags. It should just happen
     ## automatically but it probably needs a test.
-    return(joint_residuals)
 
 
-    # update eof to include if's on length globalop and ncols meanfld$r so not
-    # doing uneccesarily large block matrix calculations.
-    reof <- eof_analyze(joint_residuals,
-                        griddata$tgop)
+    # EOF decomposition
+    reof <- eof_analyze(joint_residuals, Ngrid = Ngrid,
+                        tgop = griddataT$globalop)
 
 
-    ## figure out needed updates
-    reof_l <- split_eof(reof, griddata)
+    # split the EOFs by ESM run.
+    # tags should be shared by T and P so doesn't matter which griddata you use
+    reof_l <- split_eof(reof, griddataT)
     psd <- psdest(reof_l)
 
 
-    ## update this guy to general
-    fldgen_object(griddata, tgav, pscl, reof, sqrt(psd$psd), psd$phases, infiles)
+    # output a genearlized fldgen object
+    fldgen_object_TP(griddataT, griddataP,
+                     tgav, meanfldT, meanfldP,
+                     tfuns, pfuns,
+                     reof, sqrt(psd$psd), psd$phases, infiles)
 }
 
 #' Create a \code{fldgen} object from constituent parts
@@ -190,10 +203,21 @@ trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
 #' can be passed as a matrix of phases (instead of a list of matrices).  It will
 #' be converted into a list automatically.
 #'
-#' @param griddata An object returned from \code{\link{read.temperatures}} or
+#' @param griddataT An object returned from \code{\link{read.temperatures}} or
+#' \code{\link{concatGrids}}.
+#' @param griddataP An object returned from \code{\link{read.temperatures}} or
 #' \code{\link{concatGrids}}.
 #' @param tgav Global mean temperature for the grids in griddata.
-#' @param pscl Object returned from \code{\link{pscl_analyze}}.
+#' @param meanfldT Object returned from whatever mean field analysis is done,
+#' currently \code{\link{pscl_analyze}}.
+#' @param meanfldP Object returned from whatever mean field analysis is done,
+#' currently \code{\link{pscl_analyze}}.
+#' @param tfuns The empirical cdf and empirical quantile functions for each
+#' grid cell, characterizing the distribution of residuals resulting from
+#' meanfldT.
+#' @param pfuns The empirical cdf and empirical quantile functions for each
+#' grid cell, characterizing the distribution of residuals resulting from
+#' meanfldP.
 #' @param reof Object returned from \code{\link{eof_analyze}}.
 #' @param fxmag The magnitude of the Fourier transform of the EOF projection
 #' coefficients.  This should be a matrix [Ntime x NEOF].  If using
@@ -204,7 +228,10 @@ trainTP <- function(dat, tvarname = "tas", tlatvar='lat', tlonvar='lon',
 #' @param infiles Names of input files used to construct the data.
 #' @export
 #' @keywords internal
-fldgen_object <- function(griddata, tgav, pscl, reof, fxmag, fxphase, infiles)
+fldgen_object_TP <- function(griddataT, griddataP,
+                             tgav, meanfldT, meanfldP,
+                             tfuns, pfuns,
+                             reof, fxmag, fxphase, infiles)
 {
     if(is.matrix(fxphase)) {
         phases <- list(fxphase)
@@ -214,9 +241,13 @@ fldgen_object <- function(griddata, tgav, pscl, reof, fxmag, fxphase, infiles)
     }
     Fx <- list(mag = fxmag,
                phases = phases)
-    fg <- list(griddata=griddata,
+    fg <- list(griddataT=griddataT,
+               griddataP=griddataP,
                tgav=tgav,
-               pscl=pscl,
+               meanfldT=meanfldT,
+               meanfldP=meanfldP,
+               tfuns = tfuns,
+               pfuns = pfuns,
                reof=reof,
                fx=Fx,
                infiles=infiles)
