@@ -178,7 +178,7 @@ trainTP <- function(dat, Ngrid = 55296,
 
     # EOF decomposition
     reof <- eof_analyze(joint_residuals, Ngrid = Ngrid,
-                        tgop = griddataT$globalop)
+                        globop = griddataT$globalop)
 
 
     # split the EOFs by ESM run.

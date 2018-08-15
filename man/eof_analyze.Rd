@@ -4,7 +4,7 @@
 \alias{eof_analyze}
 \title{Perform EOF analysis on residuals}
 \usage{
-eof_analyze(resids, Ngrid, tgop)
+eof_analyze(resids, Ngrid, globop)
 }
 \arguments{
 \item{resids}{A matrix [ntime x ngrid] or [ntime x 2ngrid] of residuals from
@@ -14,9 +14,9 @@ columns.}
 \item{Ngrid}{The number of spatial grid cells for each variable in data in
 dat. Defaults to 55296, a half degree grid.}
 
-\item{tgop}{A column vector [ngrid x 1] containing the global mean operator.
-This is produced as the \code{tgop} field of the structure returned by
-\code{\link{read.temperatures}}.}
+\item{globop}{A column vector [ngrid x 1] containing the global mean operator.
+This is produced as the \code{globop} field of the structure returned by
+\code{\link{read.general}}.}
 }
 \description{
 Decompose residuals from the mean field into orthogonal components.  One of
