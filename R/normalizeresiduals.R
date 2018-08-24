@@ -25,7 +25,7 @@
 #' @export
 characterize.emp.dist <- function(inputresids, len=NULL){
 
-    ntime <- length(inputresids)
+
     if(!is.null(len)) {
         ## Trim the input to the requested length.
         if(ntime < len) {
@@ -37,17 +37,126 @@ characterize.emp.dist <- function(inputresids, len=NULL){
         }
     }
 
+
+
+    # we're going to be adding two dummy points at p = 0, p = 1
+    # we have ntime observations between.
+    # So we're going from 0 to 1 inclusive in N+1 steps (for N+2 points).
+    ntime <- nrow(inputresids)
+    offset <- 1/(ntime + 1)
+
+
+    # helper functions
+    maxN <- function(x, N=2){
+        len <- length(x)
+        if(N>len){
+            warning('N greater than length(x).  Setting N=length(x)')
+            N <- length(x)
+        }
+        sort(x,partial=len-N+1)[len-N+1]
+    }
+
+    minN <- function(x, N=2){
+        len <- length(x)
+        if(N>len){
+            warning('N greater than length(x).  Setting N=length(x)')
+            N <- length(x)
+        }
+        sort(x,partial=N)[N]
+    }
+
+
+    # function to create the new max for a column of residuals according
+    # to 8-20-18 notes/documentation
+    newmax <- function(residual.column){
+        x.max1 <- max(residual.column)         # largest
+        x.max2 <- maxN(residual.column, N = 2) # 2nd largest
+        # x.max3 <- maxN(residual.column, N = 3) # 3rd largest
+
+        # corresponding probabilities
+        p.max0 <- 1
+        p.max1 <- (offset-1) * offset
+        p.max2 <- (offset-2) * offset
+        # p.max3 <- (offset-3) * offset
+
+        # slope between two segments
+        slope1 = (p.max1 - p.max2) / (x.max1 - x.max2)
+        # slope2 = (p.max2 - p.max3) / (x.max2 - x.max3)
+
+        # want to use k*slope1 to extrapolate to P=1 and our new x.max value
+        # want to capture the saturating nature of the tails of the CDF
+        # between segment 1 and 2, the slope has decreased by k = slope1/slope2
+        # use this k for our new slope.
+        k <- 100 #slope1 / slope2
+        slope0 <- k * slope1 # less steep than slope1
+
+        # calculate the new point
+        x.max0 <- (1 / slope0) * (p.max0 - p.max1) + x.max1
+        return(x.max0)
+
+    }
+
+
+    newmin <- function(residual.column){
+        x.min1 <- min(residual.column)         # smallest
+        x.min2 <- minN(residual.column, N = 2) # 2nd smallest
+        #x.min3 <- minN(residual.column, N = 3) # 3rd smallest
+
+        # corresponding probabilities
+        p.min0 <- 0
+        p.min1 <- 1 * offset
+        p.min2 <- 2 * offset
+       # p.min3 <- 3 * offset
+
+        # slope between two segments
+        slope1 = (p.min1 - p.min2) / (x.min1 - x.min2)
+        #slope2 = (p.min2 - p.min3) / (x.min2 - x.min3)
+
+        # want to use k*slope1 to extrapolate to P=1 and our new x.min value.
+        # want to capture the saturating nature of the tails of the CDF
+        # between segment 1 and 2, the slope has decreased by k = slope1/slope2
+        # use this k for our new slope.
+        k <- 100 # slope1 / slope2
+        slope0 <- k * slope1 # less steep than slope1
+
+        # calculate the new point
+        x.min0 <- (1 / slope0) * (p.min0 - p.min1) + x.min1
+        return(x.min0)
+
+    }
+
+
     # add a dummy point to the input residuals so that the largest residual
     # observed in each gridcell is now the penultimate, and won't get assigned
     # p = 1 from ecdf
-    maxresid <- 2 * max(apply(inputresids, 2, max))
-    newrow <- t(matrix(rep(maxresid, ncol(inputresids))))
+    maxresid <-  (1 + 0.0001) * apply(inputresids, 2, max)
+    newrow1 <- t(matrix(maxresid))
 
-    inputresids2 <- rbind(inputresids, newrow)
+    # dummy min for p=0
+    minresid <-  apply(inputresids, 2, newmin)
+    newrow2 <- t(matrix(minresid))
 
-    # get the empirical cdf function for each grid cell (column of inputresids)
-    empCDFs <- apply(inputresids2, 2, ecdf)
 
+    # add the new rows
+    inputresids2 <- rbind(inputresids, newrow1, newrow2)
+
+
+
+    # define a function that can create an interpolated empirical cdf rather than
+    # a step function
+    interp.ecdf <- function(column.resids) {
+
+        # for one column of the residuals, get the order of points.
+        # runs 1...Ntime+2 because we have added two dummy rows.
+        # needs to run 0...Ntime+1 for the probabilities
+        order.vector <- rank(column.resids)
+
+        # cumulative probabilities are order-1 / Ntime+1
+        probabilities <- (order.vector - 1) * offset
+
+        # return the ecdf for the function
+        approxfun(x = column.resids, y = probabilities)
+    }
 
     # define a function that can create the inverse of an empirical cdf
     # function. Such an inverse is the quantile function.
@@ -63,77 +172,37 @@ characterize.emp.dist <- function(inputresids, len=NULL){
     #
     # Hyndman, R. J. and Fan, Y. (1996) Sample quantiles in statistical packages,
     # American Statistician 50, 361–365. doi: 10.2307/2684934.
-    inv.ecdf <- function(f) {
-        # need to address value < min(value) has probability 0.
-        # smallest p empirical cdf returned from ecdf can handle is typically
-        # 0.0025ish
-        # calculate the last line segment and use the slope to extrapolate
-        # back to p = 0, then add that point to be fitted
-        minval <- min(knots(f))
-        minp <- f(minval)
+    inv.ecdf <- function(column.resids) {
 
-        minval2 <- sort(knots(f),partial=2)[2]
-        minp2 <- f(minval2)
+        # for one column of the residuals, get the order of points.
+        order.vector <- rank(column.resids)
 
-        slope <- 0.01 * (minval - minval2) / (minp - minp2)
-        newminval <- minval - slope * minp
+        # cumulative probabilities are order-1 / Ntime+1
+        probabilities <- (order.vector - 1) * offset
 
-
-        # define the new points and interpolate
-        newy <- c(newminval, knots(f)) # values from the distributions
-        newx <- c(0, f(knots(f))) # probabilities
-
-
-        approxfun(x = newx, y = newy)
-
+        # return the ecdf for the function
+        approxfun(x = probabilities, y = column.resids)
 
     }
 
-    ##### QUESTION ######
-    # if we're going ahead and interpolating to create our quantile,
-    # why not just interpolate for our empirical cdf too?
-    # harder to justify why not using built in R functions where we can
-    # but also more consistent. Could also be a cleaner place to address the
-    # 0 and 1 quantile issue
-    #
-    #
-    # define a function that can create an interpolated empirical cdf rather than
-    # a step function
-    interp.ecdf <- function(f) {
-        minval <- min(knots(f))
-        minp <- f(minval)
 
-        minval2 <- sort(knots(f),partial=2)[2]
-        minp2 <- f(minval2)
-
-        slope <- 0.01 * (minval - minval2) / (minp - minp2)
-        newminval <- minval - slope * minp
-
-
-        # define the new points and interpolate
-        newx <- c(newminval, knots(f)) # values from the distributions
-        newy <- c(0, f(knots(f))) # probabilities
-
-        approxfun(x = newx, y = newy)
-    }
 
     #######################
 
 
-    # apply this function to the empirical cdfs to get empirical quantile
+    # apply this function to each column of residuals to get empirical quantile
     # functions for every grid cell.
-    empQuants <- lapply(empCDFs, inv.ecdf)
+    empQuants <- apply(inputresids2, 2, inv.ecdf)
 
-    empCDFs2 <- lapply(empCDFs, interp.ecdf)
+    empCDFs <-apply(inputresids2, 2, interp.ecdf)
 
 
     # return
-    output <- list(cdf = empCDFs2, quant = empQuants)
+    output <- list(cdf = empCDFs, quant = empQuants)
     class(output) <- 'empiricaldistribution'
 
     return(output)
 }
-
 
 #' Normalize residuals
 #'
