@@ -1,5 +1,5 @@
 ---
-title: "Fldgen Tutorial"
+title: "Fldgen v1 Tutorial - Temperatures only"
 author: "Robert Link"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
