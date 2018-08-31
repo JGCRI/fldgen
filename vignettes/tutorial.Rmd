@@ -104,7 +104,7 @@ ESM, so it is these we will pass to the empirical orthogonal functions (EOF)
 analysis.  
 
 ```{r eof}
-reof <- eof_analyze(pscl$r, griddata$tgop)
+reof <- eof_analyze(pscl$r, Ngrid = ncol(pscl$r), globop = griddata$tgop)
 ```
 
 The next thing we need to generate our fields is the temporal structure of the

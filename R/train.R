@@ -61,7 +61,7 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
 
     pscl <- pscl_analyze(griddata$tas, tgav)
 
-    reof <- eof_analyze(pscl$r, griddata$tgop)
+    reof <- eof_analyze(resids = pscl$r, Ngrid = ncol(pscl$r), globop = griddata$tgop)
 
     reof_l <- split_eof(reof, griddata)
     psd <- psdest(reof_l)
