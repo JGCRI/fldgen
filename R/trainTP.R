@@ -53,7 +53,7 @@
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @importFrom tibble as_tibble
-#' @importFrom dplyr mutate select
+#' @importFrom dplyr mutate select left_join
 #' @importFrom tidyr separate
 #' @export
 trainTP <- function(dat, Ngrid = 55296,
@@ -113,7 +113,7 @@ trainTP <- function(dat, Ngrid = 55296,
         ttbl
 
     ttbl %>%
-        left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
+        dplyr::left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
         dplyr::select(tfilename, pfilename) %>%
         na.omit ->
         paireddat
