@@ -121,6 +121,7 @@ test_that('P residuals are preserved through normalize and unnormalize',
 
 test_that('Normal residuals are preserved through unnormalize to T distributions and normalize',
           {
+              set.seed(1)
               # create some normally distributed residuals
               residN <- as.matrix(rnorm(100, 0, 1))
               for(j in 1:((ncol(residT)/4)-1)){
@@ -141,13 +142,14 @@ test_that('Normal residuals are preserved through unnormalize to T distributions
 
               # compare n2 with the original residuals
               maxdiff <- max(abs(n2-residN))
-              ftol <- 1.0e-8
+              ftol <- 1.0e-6
               expect_lte(maxdiff, ftol)
           })
 
 
 test_that('Normal residuals are preserved through unnormalize to P distributions and normalize',
           {
+              set.seed(1)
               # create some normally distributed residuals
               residN <- as.matrix(rnorm(100, 0, 1))
               for(j in 1:((ncol(residP)/4)-1)){
@@ -168,7 +170,7 @@ test_that('Normal residuals are preserved through unnormalize to P distributions
 
               # compare n2 with the original residuals
               maxdiff <- max(abs(n2-residN))
-              ftol <- 1.0e-8
+              ftol <- 1.0e-6
               expect_lte(maxdiff, ftol)
           })
 
