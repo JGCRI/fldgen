@@ -81,12 +81,14 @@ trainTP <- function(dat, Ngrid = 55296,
     # separate dat into list of precip files and temperature files. Relies on
     # CMIP5 naming conventions.
         pdat <- dat[grep(paste0(pvarname, "_"), dat)]
-    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE)){
+    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) & 
+       any(grepl("Annual", tdat) == FALSE)){
         stop(paste("At least one precipitation file in", dat, "is not annual"))
     }
 
     tdat <- dat[grep(paste0(tvarname, "_"), dat)]
-    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE)){
+    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE) & 
+       any(grepl("Annual", tdat) == FALSE)){
         stop(paste("At least one temperature file in", dat, "is not annual"))
     }
 
