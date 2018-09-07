@@ -95,7 +95,8 @@ trainTP <- function(dat, Ngrid = 55296,
     pdat %>%
         tibble::as_tibble() %>%
         dplyr::mutate(pfilename = value) %>%
-        tidyr::separate(value, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::mutate(file = basename(value)) %>%
+        tidyr::separate(file, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
         dplyr::select(-var, -timestep)  %>%
         tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
         dplyr::mutate(startyr = substr(startyr, 1, 4),
@@ -105,7 +106,8 @@ trainTP <- function(dat, Ngrid = 55296,
     tdat %>%
         tibble::as_tibble() %>%
         dplyr::mutate(tfilename = value) %>%
-        tidyr::separate(value, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::mutate(file = basename(value)) %>%
+        tidyr::separate(file,  c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
         dplyr::select(-var, -timestep)  %>%
         tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
         dplyr::mutate(startyr = substr(startyr, 1, 4),
