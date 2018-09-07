@@ -82,7 +82,7 @@ trainTP <- function(dat, Ngrid = 55296,
     # CMIP5 naming conventions.
         pdat <- dat[grep(paste0(pvarname, "_"), dat)]
     if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) & 
-       any(grepl("Annual", tdat) == FALSE)){
+       any(grepl("Annual", pdat) == FALSE)){
         stop(paste("At least one precipitation file in", dat, "is not annual"))
     }
 
