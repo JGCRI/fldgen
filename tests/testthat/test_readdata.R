@@ -84,8 +84,8 @@ test_that('legacy T - Splitting a grid with a single element is ok.',
 
 
 ## Updated tests for temperature and precipitation
-inputTfile <- system.file('extdata/tas_annual_esm_rcp_r2i1p1_timeofrun.nc', package='fldgen')
-inputPfile <- system.file('extdata/pr_annual_esm_rcp_r2i1p1_timeofrun.nc', package='fldgen')
+inputTfile <- system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')
+inputPfile <- system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')
 ntime <- 95
 nlat <- 192
 nlon <- 288
@@ -106,7 +106,7 @@ test_that('Full T data read works.',
               expect_equal(length(griddata$lon), nlon)
               expect_equal(length(griddata$time), ntime)
 
-              expect_equal(griddata$tags, list(tas_annual_esm_rcp_r2i1p1_timeofrun.nc=c(1,ntime)))
+              expect_equal(griddata$tags, list(`tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime)))
 
               expect_equal(class(griddata), 'griddata')
           })
@@ -126,7 +126,7 @@ test_that('Trim T time series length works.',
               expect_equal(length(gdtrim$lon), nlon)
               expect_equal(length(gdtrim$time), ntime.trim)
 
-              expect_equal(gdtrim$tags, list(tas_annual_esm_rcp_r2i1p1_timeofrun.nc=c(1,ntime.trim)))
+              expect_equal(gdtrim$tags, list(`tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime.trim)))
 
               expect_equal(gdtrim$vardata, griddata$vardata[1:ntime.trim, ])
 
@@ -197,7 +197,7 @@ test_that('Full P data read works.',
               expect_equal(length(griddata$lon), nlon)
               expect_equal(length(griddata$time), ntime)
 
-              expect_equal(griddata$tags, list(pr_annual_esm_rcp_r2i1p1_timeofrun.nc=c(1,ntime)))
+              expect_equal(griddata$tags, list(`pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime)))
 
               expect_equal(class(griddata), 'griddata')
           })
@@ -217,7 +217,7 @@ test_that('Trim P time series length works.',
               expect_equal(length(gdtrim$lon), nlon)
               expect_equal(length(gdtrim$time), ntime.trim)
 
-              expect_equal(gdtrim$tags, list(pr_annual_esm_rcp_r2i1p1_timeofrun.nc=c(1,ntime.trim)))
+              expect_equal(gdtrim$tags, list(`pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime.trim)))
 
               expect_equal(gdtrim$vardata, griddata$vardata[1:ntime.trim, ])
 

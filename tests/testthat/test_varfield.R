@@ -176,11 +176,10 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
 Ngrid <- 55296
-emulator <- suppressWarnings(trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_timeofrun.nc', package='fldgen'),
-                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_timeofrun.nc', package='fldgen')),
-                    Ngrid = 55296,
-                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
-                    pvarname = "pr", platvar = "lat", plonvar = "lon"))
+emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
+                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
+                    Ngrid = 55296, tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
+                    pvarname = "pr", platvar = "lat", plonvar = "lon")
 
 griddataT <- emulator$griddataT
 griddataP <- emulator$griddataP

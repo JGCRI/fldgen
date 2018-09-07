@@ -49,8 +49,8 @@ datadir <- system.file('extdata', package='fldgen')
 
 You can do the read and analyze steps below in a single command by running:
 ```
-infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_timeofrun.nc')
-infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_timeofrun.nc')
+infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
+infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
 emulator <- trainaTP(c(infileT, infileP), Ngrid = 55296,
                     tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
                     pvarname = "pr", platvar = "lat", plonvar = "lon")
@@ -64,14 +64,14 @@ If you use this (recommended) method, then you can skip directly to [Generating 
 The ESM temperature and precipitation fields should be in netCDF filea.  The function that reads it returns a "griddata" structure that contains the data, as well as some information about the grid, such as the latitude, longitude, and time coordinates and the vector of area weights needed to compute grid averages.
 
 ```{r readdata}
-filenameT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_timeofrun.nc')
+filenameT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
 griddataT <- read.general(filenameT, 
                           varname='tas', latvar='lat_2', lonvar='lon_2',
                           timevar='time')
 tgav <- griddataT$vardata %*% griddataT$globalop
 
 
-filenameP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_timeofrun.nc')
+filenameP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
 griddataP <- read.general(filenameP, 
                           varname='pr', latvar='lat', lonvar='lon',
                           timevar='time')
