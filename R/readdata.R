@@ -214,6 +214,92 @@ splitGrids.general <- function(griddata)
 }
 
 
+#' Pair temperature and precipitation (or any other variable) netCDF files
+#' based on file name, following CMIP5 convention.
+#'
+#' This function reads in a directory or list of netCDF files, with names
+#' following CMIP5 scenario design conventions, and pairs the temperature
+#' and precipitation files based on scenario. Technically any two variables
+#' could have files paired using this function, just by changing the tvarname
+#' and pvarname inputs.
+#'
+#' @param dat A single directory name, or a list of netCDF files.  If a
+#' directory name is given, all netCDF files in the directory will be used.The
+#' pairing of temperature and precipitation netCDF files in the directory
+#' relies on the CMIP5 file naming conventions. Other naming conventions are
+#' not currently supported.
+#' @param tvarname The name of the temperature variable in CMIP5 ('tas' default).
+#' @param varname The name of the precipitation variable in CMIP5 ('pr' default).
+#' @return A tibble of paired file names in two columns: tfilename, pfilename.
+#' Each row of the tibble is a single scenario.
+#' @importFrom tibble as_tibble
+#' @importFrom stats na.omit
+#' @importFrom dplyr mutate select left_join %>%
+#' @importFrom tidyr separate
+#' @export
+#' @keywords internal
+file.pairer <- function(dat, tvarname = 'tas', pvarname = 'pr')
+{
+    # silence package checks
+    value <- var <- timestep <- time <- startyr <- stopyr <-
+        tfilename <- pfilename <- NULL
+
+    # separate dat into list of precip files and temperature files. Relies on
+    # CMIP5 naming conventions.
+    pdat <- dat[grep(paste0(pvarname, "_"), dat)]
+    if(any(grepl("aclim", tolower(pdat)) == FALSE) &
+       any(grepl("annual", tolower(pdat)) == FALSE)){
+        stop(paste("At least one precipitation file in", dat, "is not annual"))
+    }
+
+    tdat <- dat[grep(paste0(tvarname, "_"), dat)]
+    if(any(grepl("aclim", tolower(tdat)) == FALSE) &
+       any(grepl("annual", tolower(tdat)) == FALSE)){
+        stop(paste("At least one temperature file in", dat, "is not annual"))
+    }
+
+
+    # get to scenario identifying info
+    pdat %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(pfilename = value) %>%
+        dplyr::mutate(file = basename(value)) %>%
+        tidyr::separate(file, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::select(-var, -timestep)  %>%
+        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
+        dplyr::mutate(startyr = substr(startyr, 1, 4),
+                      stopyr = substr(stopyr, 1,4)) ->
+        ptbl
+
+    tdat %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(tfilename = value) %>%
+        dplyr::mutate(file = basename(value)) %>%
+        tidyr::separate(file,  c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
+        dplyr::select(-var, -timestep)  %>%
+        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
+        dplyr::mutate(startyr = substr(startyr, 1, 4),
+                      stopyr = substr(stopyr, 1,4)) ->
+        ttbl
+
+    ttbl %>%
+        dplyr::left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
+        dplyr::select(tfilename, pfilename) %>%
+        na.omit ->
+        paireddat
+
+    if(nrow(paireddat) < 1){
+        stop("You have no paired temperature and precipitation files in this
+             directory. Use the function `train` to work on temperature files
+             only. Or ensure that your temperature and precipitation netCDFs
+             follow CMIP5 naming conventions.")
+    }
+
+    return(paireddat)
+
+}
+
+
 ###########################################################################################
 
 

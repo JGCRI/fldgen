@@ -11,7 +11,7 @@ trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
 directory name is given, all netCDF files in the directory will be used.The
-pairing of temperature and precipitaiton netCDF files in the directory
+pairing of temperature and precipitation netCDF files in the directory
 relies on the CMIP5 file naming conventions. Other naming conventions are
 not currently supported.}
 

@@ -27,7 +27,7 @@
 #'
 #' @param dat A single directory name, or a list of netCDF files.  If a
 #' directory name is given, all netCDF files in the directory will be used.The
-#' pairing of temperature and precipitaiton netCDF files in the directory
+#' pairing of temperature and precipitation netCDF files in the directory
 #' relies on the CMIP5 file naming conventions. Other naming conventions are
 #' not currently supported.
 #' @param tvarname Name of the temperature variable in the temperature netCDF
@@ -72,69 +72,32 @@ trainTP <- function(dat,
         dat <- list.files(dat, '\\.nc$', full.names=TRUE)
     }
 
+    if(!is.null(dim(dat))){
+        if(ncol(dat) == 2){
+            ## This is a paired list of input files.
+            ## It should follow the formalism
+            ## column1 = temperature,
+            ## column2 = precipitation file names.
+            ## Entry should each be a netcdf name.
+            paireddat <- tibble::tibble(tfilename = dat[,1],
+                                        pfilename = dat[,2])
+
+            # reshape dat so that it can be given to infiles below
+            dat <- as.vector(as.matrix(dat))
+        }
+    }
+    else{
+        ## Otherwise files should be name according to the CMIP5 convention so
+        ## that they may be paired.
+        paireddat <- file.pairer(dat, tvarname = tvarname, pvarname = pvarname)
+    }
+
     if(record_absolute) {
         infiles <- normalizePath(dat)
     }
     else {
         infiles <- dat
     }
-
-
-    ### file pairing for T and P
-    ### Will likely move to own function in the future, with more flexibility.
-
-    # separate dat into list of precip files and temperature files. Relies on
-    # CMIP5 naming conventions.
-        pdat <- dat[grep(paste0(pvarname, "_"), dat)]
-    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) &
-       any(grepl("Annual", pdat) == FALSE)){
-        stop(paste("At least one precipitation file in", dat, "is not annual"))
-    }
-
-    tdat <- dat[grep(paste0(tvarname, "_"), dat)]
-    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE) &
-       any(grepl("Annual", tdat) == FALSE)){
-        stop(paste("At least one temperature file in", dat, "is not annual"))
-    }
-
-
-    # get to scenario identifying info
-    pdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(pfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-               stopyr = substr(stopyr, 1,4)) ->
-        ptbl
-
-    tdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(tfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file,  c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-                      stopyr = substr(stopyr, 1,4)) ->
-        ttbl
-
-    ttbl %>%
-        dplyr::left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
-        dplyr::select(tfilename, pfilename) %>%
-        na.omit ->
-        paireddat
-
-    if(nrow(paireddat) < 1){
-        stop("You have no paired temperature and precipitation files in this
-             directory. Use the function `train` to work on temperature files
-             only. Or ensure that your temperature and precipitation netCDFs
-             follow CMIP5 naming conventions.")
-    }
-
-    ### end file pairing
 
 
     ### Train
