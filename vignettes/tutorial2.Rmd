@@ -51,7 +51,7 @@ You can do the read and analyze steps below in a single command by running:
 ```
 infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
 infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc')
-emulator <- trainaTP(c(infileT, infileP), Ngrid = 55296,
+emulator <- trainaTP(c(infileT, infileP), 
                     tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
                     pvarname = "pr", platvar = "lat", plonvar = "lon")
 ```

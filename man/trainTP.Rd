@@ -4,8 +4,8 @@
 \alias{trainTP}
 \title{Train the emulator on a set of input ESM temperature and precipitation data.}
 \usage{
-trainTP(dat, Ngrid = 55296, tvarname = "tas", tlatvar = "lat",
-  tlonvar = "lon", pvarname = "pr", platvar = "lat", plonvar = "lon",
+trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
+  pvarname = "pr", platvar = "lat", plonvar = "lon",
   meanfield = pscl_analyze, record_absolute = FALSE)
 }
 \arguments{
@@ -14,9 +14,6 @@ directory name is given, all netCDF files in the directory will be used.The
 pairing of temperature and precipitaiton netCDF files in the directory
 relies on the CMIP5 file naming conventions. Other naming conventions are
 not currently supported.}
-
-\item{Ngrid}{The number of spatial grid cells for each variable in data in
-dat. Defaults to 55296, a half degree grid.}
 
 \item{tvarname}{Name of the temperature variable in the temperature netCDF}
 

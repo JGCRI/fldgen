@@ -175,10 +175,9 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
-Ngrid <- 55296
 emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
                       system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
-                    Ngrid = 55296, tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
+                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
                     pvarname = "pr", platvar = "lat", plonvar = "lon")
 
 griddataT <- emulator$griddataT
@@ -211,6 +210,7 @@ for(i in 2:4)
     newgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(emulator))
 
 ## Return these new grids of residuals to the native space
+Ngrid <- 55296
 residgrids <- lapply(newgrids, function(g) {
     g[, 1:Ngrid] <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
                                        rn = g[ ,1:Ngrid])$rnew

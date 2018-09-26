@@ -30,8 +30,6 @@
 #' pairing of temperature and precipitaiton netCDF files in the directory
 #' relies on the CMIP5 file naming conventions. Other naming conventions are
 #' not currently supported.
-#' @param Ngrid The number of spatial grid cells for each variable in data in
-#' dat. Defaults to 55296, a half degree grid.
 #' @param tvarname Name of the temperature variable in the temperature netCDF
 #' @param tlatvar Name of the latitude coordinate variable in the temperature
 #' netCDF files.
@@ -56,7 +54,7 @@
 #' @importFrom dplyr mutate select left_join
 #' @importFrom tidyr separate
 #' @export
-trainTP <- function(dat, Ngrid = 55296,
+trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     meanfield=pscl_analyze, record_absolute=FALSE)
@@ -81,13 +79,13 @@ trainTP <- function(dat, Ngrid = 55296,
     # separate dat into list of precip files and temperature files. Relies on
     # CMIP5 naming conventions.
         pdat <- dat[grep(paste0(pvarname, "_"), dat)]
-    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) & 
+    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) &
        any(grepl("Annual", pdat) == FALSE)){
         stop(paste("At least one precipitation file in", dat, "is not annual"))
     }
 
     tdat <- dat[grep(paste0(tvarname, "_"), dat)]
-    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE) & 
+    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE) &
        any(grepl("Annual", tdat) == FALSE)){
         stop(paste("At least one temperature file in", dat, "is not annual"))
     }
@@ -181,7 +179,7 @@ trainTP <- function(dat, Ngrid = 55296,
 
 
     # EOF decomposition
-    reof <- eof_analyze(joint_residuals, Ngrid = Ngrid,
+    reof <- eof_analyze(joint_residuals, Ngrid = ncol(normresidsT$rn),
                         globop = griddataT$globalop)
 
 
