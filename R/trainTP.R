@@ -51,7 +51,8 @@
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @importFrom tibble as_tibble
-#' @importFrom dplyr mutate select left_join
+#' @importFrom stats na.omit
+#' @importFrom dplyr mutate select left_join %>%
 #' @importFrom tidyr separate
 #' @export
 trainTP <- function(dat,
@@ -59,6 +60,12 @@ trainTP <- function(dat,
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
+
+    # silence package checks
+    value <- var <- timestep <- time <- startyr <- stopyr <-
+        tfilename <- pfilename <- NULL
+
+
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
         ## within.

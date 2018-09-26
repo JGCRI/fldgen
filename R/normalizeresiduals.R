@@ -22,6 +22,7 @@
 #' @param len Maximum length of the time series to read.  If the data read is
 #' longer, it will be trimmed.  (Default: read entire time series, regardless of
 #' length.)
+#' @importFrom stats approxfun
 #' @export
 characterize.emp.dist <- function(inputresids, len=NULL){
 
