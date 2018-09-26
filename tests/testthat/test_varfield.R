@@ -196,30 +196,29 @@ Fxphase <- atan2(Im(Fx), Re(Fx))
 
 
 
-##  Run with the phases of the actual time series
+## Run with one realization using the phases of the actual time series
+## and the rest with random phases.
+## First, the actual phases.
 ## Note that every entry of newgrids is in the normal space and needs to be
-## converted back to the native space
-newgrids <- list() # Empty list to hold the temperature realizations
-length(newgrids) <- 4
-newgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(emulator, phase = Fxphase))
+## converted back to the native space.
+newgrids1 <- reconst_fields(reof$rotation, mkcorrts(emulator, phase = Fxphase))
+Ngrid <- ncol(meanfldT$r)
+residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
+                                   rn = newgrids1[ ,1:Ngrid])$rnew
+residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
+                                   rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
+residgrids1 <- cbind(residgrids1T, residgrids1P)
+
 
 ## Run the rest with random phases
-for(i in 2:4)
-    ## If you wanted to use only 50 PCs, like in the previous demo, you could
-    ## use reof$rotation[,1:50] and Fxmag[,1:50] in the next call.
-    newgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(emulator))
+tmp <- generate.TP.resids(emulator, ngen = 3)
+residgrids <- list()
+length(residgrids) <- length(tmp) + 1
+residgrids[[1]] <- residgrids1
+residgrids[[2]] <- tmp[[1]]
+residgrids[[3]] <- tmp[[2]]
+residgrids[[4]] <- tmp[[3]]
 
-## Return these new grids of residuals to the native space
-Ngrid <- 55296
-residgrids <- lapply(newgrids, function(g) {
-    g[, 1:Ngrid] <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
-                                       rn = g[ ,1:Ngrid])$rnew
-
-    g[, (Ngrid+1):(2*Ngrid)] <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
-                                                   rn = g[ , (Ngrid+1):(2*Ngrid)])$rnew
-
-    return(g)}
-)
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
