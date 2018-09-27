@@ -61,17 +61,20 @@ trainTP <- function(dat,
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
 
-    # silence package checks
+    ## silence package checks
     value <- var <- timestep <- time <- startyr <- stopyr <-
         tfilename <- pfilename <- NULL
 
 
+    ## Make sure working with list of file names
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
         ## within.
         dat <- list.files(dat, '\\.nc$', full.names=TRUE)
     }
 
+
+    ## pair the T and P files
     if(!is.null(dim(dat))){
         if(ncol(dat) == 2){
             ## This is a paired list of input files.
@@ -81,9 +84,9 @@ trainTP <- function(dat,
             ## Entry should each be a netcdf name.
             paireddat <- tibble::tibble(tfilename = dat[,1],
                                         pfilename = dat[,2])
-
-            # reshape dat so that it can be given to infiles below
-            dat <- as.vector(as.matrix(dat))
+        }
+        else{
+            stop("Unrecognized input structure for training data.")
         }
     }
     else{
@@ -92,11 +95,15 @@ trainTP <- function(dat,
         paireddat <- file.pairer(dat, tvarname = tvarname, pvarname = pvarname)
     }
 
+
+    ## Prepare the list of input files that contribute to the training for output
     if(record_absolute) {
-        infiles <- normalizePath(dat)
+        dat1 <- as.vector(as.matrix(paireddat))
+        infiles <- normalizePath(dat1)
     }
     else {
-        infiles <- dat
+        dat1 <- as.vector(as.matrix(paireddat))
+        infiles <- dat1
     }
 
 
