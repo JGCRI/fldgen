@@ -82,6 +82,7 @@ test_that('legacy T - Splitting a grid with a single element is ok.',
     expect_equal(gdl[[1]], griddata)
 })
 
+##########################################################################################
 
 ## Updated tests for temperature and precipitation
 inputTfile <- system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')
@@ -90,6 +91,18 @@ ntime <- 95
 nlat <- 192
 nlon <- 288
 ngrid <- nlat*nlon
+
+
+## Test that file pairing works
+## Files don't have to exist; file.pairer just works on names.
+dat <- c(inputTfile, inputPfile,
+         'extdata/pr_annual_esm_rcp_r1i1p1_startyr-endyr.nc')
+
+
+test_that('Files following CMIP5 naming convention pair correctly.',
+          {
+              paireddat <- file.pairer(dat, tvarname = 'tas', pvarname = 'pr')
+          })
 
 
 ## T first

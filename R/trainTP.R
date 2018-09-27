@@ -27,11 +27,9 @@
 #'
 #' @param dat A single directory name, or a list of netCDF files.  If a
 #' directory name is given, all netCDF files in the directory will be used.The
-#' pairing of temperature and precipitaiton netCDF files in the directory
+#' pairing of temperature and precipitation netCDF files in the directory
 #' relies on the CMIP5 file naming conventions. Other naming conventions are
 #' not currently supported.
-#' @param Ngrid The number of spatial grid cells for each variable in data in
-#' dat. Defaults to 55296, a half degree grid.
 #' @param tvarname Name of the temperature variable in the temperature netCDF
 #' @param tlatvar Name of the latitude coordinate variable in the temperature
 #' netCDF files.
@@ -53,83 +51,60 @@
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
 #' @importFrom tibble as_tibble
-#' @importFrom dplyr mutate select left_join
+#' @importFrom stats na.omit
+#' @importFrom dplyr mutate select left_join %>%
 #' @importFrom tidyr separate
 #' @export
-trainTP <- function(dat, Ngrid = 55296,
+trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
+
+    ## silence package checks
+    value <- var <- timestep <- time <- startyr <- stopyr <-
+        tfilename <- pfilename <- NULL
+
+
+    ## Make sure working with list of file names
     if(length(dat) == 1 && file.info(dat)$isdir) {
         ## This is a directory.  Replace with the list of netCDF files contained
         ## within.
         dat <- list.files(dat, '\\.nc$', full.names=TRUE)
     }
 
+
+    ## pair the T and P files
+    if(!is.null(dim(dat))){
+        if(ncol(dat) == 2){
+            ## This is a paired list of input files.
+            ## It should follow the formalism
+            ## column1 = temperature,
+            ## column2 = precipitation file names.
+            ## Entry should each be a netcdf name.
+            paireddat <- tibble::tibble(tfilename = dat[,1],
+                                        pfilename = dat[,2])
+        }
+        else{
+            stop("Unrecognized input structure for training data.")
+        }
+    }
+    else{
+        ## Otherwise files should be name according to the CMIP5 convention so
+        ## that they may be paired.
+        paireddat <- file.pairer(dat, tvarname = tvarname, pvarname = pvarname)
+    }
+
+
+    ## Prepare the list of input files that contribute to the training for output
     if(record_absolute) {
-        infiles <- normalizePath(dat)
+        dat1 <- as.vector(as.matrix(paireddat))
+        infiles <- normalizePath(dat1)
     }
     else {
-        infiles <- dat
+        dat1 <- as.vector(as.matrix(paireddat))
+        infiles <- dat1
     }
-
-
-    ### file pairing for T and P
-    ### Will likely move to own function in the future, with more flexibility.
-
-    # separate dat into list of precip files and temperature files. Relies on
-    # CMIP5 naming conventions.
-        pdat <- dat[grep(paste0(pvarname, "_"), dat)]
-    if(any(grepl("Aclim", pdat) == FALSE) & any(grepl("annual", pdat) == FALSE) & 
-       any(grepl("Annual", pdat) == FALSE)){
-        stop(paste("At least one precipitation file in", dat, "is not annual"))
-    }
-
-    tdat <- dat[grep(paste0(tvarname, "_"), dat)]
-    if(any(grepl("Aclim", tdat) == FALSE) & any(grepl("annual", tdat) == FALSE) & 
-       any(grepl("Annual", tdat) == FALSE)){
-        stop(paste("At least one temperature file in", dat, "is not annual"))
-    }
-
-
-    # get to scenario identifying info
-    pdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(pfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-               stopyr = substr(stopyr, 1,4)) ->
-        ptbl
-
-    tdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(tfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file,  c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-                      stopyr = substr(stopyr, 1,4)) ->
-        ttbl
-
-    ttbl %>%
-        dplyr::left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
-        dplyr::select(tfilename, pfilename) %>%
-        na.omit ->
-        paireddat
-
-    if(nrow(paireddat) < 1){
-        stop("You have no paired temperature and precipitation files in this
-             directory. Use the function `train` to work on temperature files
-             only. Or ensure that your temperature and precipitation netCDFs
-             follow CMIP5 naming conventions.")
-    }
-
-    ### end file pairing
 
 
     ### Train
@@ -181,7 +156,7 @@ trainTP <- function(dat, Ngrid = 55296,
 
 
     # EOF decomposition
-    reof <- eof_analyze(joint_residuals, Ngrid = Ngrid,
+    reof <- eof_analyze(joint_residuals, Ngrid = ncol(normresidsT$rn),
                         globop = griddataT$globalop)
 
 

@@ -175,10 +175,9 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
-Ngrid <- 55296
 emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
                       system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
-                    Ngrid = 55296, tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
+                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
                     pvarname = "pr", platvar = "lat", plonvar = "lon")
 
 griddataT <- emulator$griddataT
@@ -197,29 +196,29 @@ Fxphase <- atan2(Im(Fx), Re(Fx))
 
 
 
-##  Run with the phases of the actual time series
+## Run with one realization using the phases of the actual time series
+## and the rest with random phases.
+## First, the actual phases.
 ## Note that every entry of newgrids is in the normal space and needs to be
-## converted back to the native space
-newgrids <- list() # Empty list to hold the temperature realizations
-length(newgrids) <- 4
-newgrids[[1]] <- reconst_fields(reof$rotation, mkcorrts(emulator, phase = Fxphase))
+## converted back to the native space.
+newgrids1 <- reconst_fields(reof$rotation, mkcorrts(emulator, phase = Fxphase))
+Ngrid <- ncol(meanfldT$r)
+residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
+                                   rn = newgrids1[ ,1:Ngrid])$rnew
+residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
+                                   rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
+residgrids1 <- cbind(residgrids1T, residgrids1P)
+
 
 ## Run the rest with random phases
-for(i in 2:4)
-    ## If you wanted to use only 50 PCs, like in the previous demo, you could
-    ## use reof$rotation[,1:50] and Fxmag[,1:50] in the next call.
-    newgrids[[i]] <- reconst_fields(reof$rotation, mkcorrts(emulator))
+tmp <- generate.TP.resids(emulator, ngen = 3)
+residgrids <- list()
+length(residgrids) <- length(tmp) + 1
+residgrids[[1]] <- residgrids1
+residgrids[[2]] <- tmp[[1]]
+residgrids[[3]] <- tmp[[2]]
+residgrids[[4]] <- tmp[[3]]
 
-## Return these new grids of residuals to the native space
-residgrids <- lapply(newgrids, function(g) {
-    g[, 1:Ngrid] <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
-                                       rn = g[ ,1:Ngrid])$rnew
-
-    g[, (Ngrid+1):(2*Ngrid)] <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
-                                                   rn = g[ , (Ngrid+1):(2*Ngrid)])$rnew
-
-    return(g)}
-)
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields

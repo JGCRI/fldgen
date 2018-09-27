@@ -59,7 +59,7 @@ train <- function(dat, latvar='lat', lonvar='lon', meanfield=pscl_analyze,
                                         # temperature grid
     tgav <- griddata$tas %*% griddata$tgop # Global mean temperature
 
-    pscl <- pscl_analyze(griddata$tas, tgav)
+    pscl <- meanfield(griddata$tas, tgav)
 
     reof <- eof_analyze(resids = pscl$r, Ngrid = ncol(pscl$r), globop = griddata$tgop)
 
