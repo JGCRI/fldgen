@@ -86,8 +86,16 @@ fldts2df <- function(fldts, griddata)
 #' @param maxval Upper limit of the color scale.  The default value was chosen
 #' to work well for fields of residuals from the mean temperature response.
 #' @param legendstr String to use for the title of the graph legend
+#' @param palettestr String with the name of the ggplot2 color palette to use.
+#' Defaults to 'RdYlBu'. Options are Diverging: 'BrBG', 'PiYG', 'PRGn', 'PuOr',
+#' 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral'; Qualitative: 'Accent',
+#' 'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3';
+#' Sequential: 'Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+#' 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds', 'YlGn',
+#' 'YlGnBu', 'YlOrBr', 'YlOrRd'.
+
 #' @export
-plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)")
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)", palettestr = 'RdYlBu' )
 {
     if(requireNamespace('gcammaptools')) {
         tdf <- fld2df(fld, griddata)
@@ -95,7 +103,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
         if(nb < 2) {
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1,
+              ggplot2::scale_fill_distiller(palette=palettestr, direction=-1,
                                             limits=c(minval, maxval), oob=scales::squish,
                                             guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
@@ -105,7 +113,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
               findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette='RdYlBu', direction=-1, limits=c(minval,maxval),
+              ggplot2::scale_fill_distiller(palette=palettestr, direction=-1, limits=c(minval,maxval),
                                             guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
     }

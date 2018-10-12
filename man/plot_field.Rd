@@ -5,7 +5,7 @@
 \title{Plot a single field in matrix form}
 \usage{
 plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5,
-  legendstr = "Temperature (K)")
+  legendstr = "Temperature (K)", palettestr = "RdYlBu")
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
@@ -24,6 +24,14 @@ to work well for fields of residuals from the mean temperature response.}
 to work well for fields of residuals from the mean temperature response.}
 
 \item{legendstr}{String to use for the title of the graph legend}
+
+\item{palettestr}{String with the name of the ggplot2 color palette to use.
+Defaults to 'RdYlBu'. Options are Diverging: 'BrBG', 'PiYG', 'PRGn', 'PuOr',
+'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral'; Qualitative: 'Accent',
+'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3';
+Sequential: 'Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds', 'YlGn',
+'YlGnBu', 'YlOrBr', 'YlOrRd'.}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot
