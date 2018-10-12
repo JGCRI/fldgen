@@ -5,7 +5,7 @@
 \title{Plot a single field in matrix form}
 \usage{
 plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5,
-  legendstr = "Temperature (K)", palettestr = "RdYlBu")
+  legendstr = "Temperature (K)", palettestr = "RdYlBu", palettedir = -1)
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
@@ -32,6 +32,9 @@ Defaults to 'RdYlBu'. Options are Diverging: 'BrBG', 'PiYG', 'PRGn', 'PuOr',
 Sequential: 'Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds', 'YlGn',
 'YlGnBu', 'YlOrBr', 'YlOrRd'.}
+
+\item{palettedir}{Numerical value, only accepts 1 or -1, determining the 
+order of the color palette used. Defaults to -1.}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot

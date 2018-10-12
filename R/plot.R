@@ -93,9 +93,10 @@ fldts2df <- function(fldts, griddata)
 #' Sequential: 'Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
 #' 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds', 'YlGn',
 #' 'YlGnBu', 'YlOrBr', 'YlOrRd'.
-
+#' @param palettedir Numerical value, only accepts 1 or -1, determining the 
+#' order of the color palette used. Defaults to -1. 
 #' @export
-plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)", palettestr = 'RdYlBu' )
+plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)", palettestr = 'RdYlBu', palettedir = -1 )
 {
     if(requireNamespace('gcammaptools')) {
         tdf <- fld2df(fld, griddata)
@@ -103,7 +104,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
         if(nb < 2) {
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette=palettestr, direction=-1,
+              ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir,
                                             limits=c(minval, maxval), oob=scales::squish,
                                             guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
@@ -113,7 +114,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
               findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
             gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
                                          legend=TRUE) +
-              ggplot2::scale_fill_distiller(palette=palettestr, direction=-1, limits=c(minval,maxval),
+              ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir, limits=c(minval,maxval),
                                             guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
         }
     }
