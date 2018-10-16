@@ -156,6 +156,6 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
 
     }
 
-    return(list(fullgrids = fullgrids, coordinates = coordinates, time = time))
+    return(list(fullgrids = fullgrids, coordinates = coordinates, time = time, tvarunconvert_fcn = tvarunconvert_fcn, pvarunconvert_fcn = pvarunconvert_fcn))
 
 }
