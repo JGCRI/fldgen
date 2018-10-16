@@ -1,7 +1,24 @@
-
-# TODO kalyn you need to add documentation and testing for this function!!
+#' Using a trained emulator, generate new full fields.
+#'
+#' This function takes in a trained emulator - a structure of class
+#' \code{fldgen}.
+#' This structure contains everything the emulator has learned about the model,
+#' and is used to generate new fields of residuals.
+#'
+#' First, ...
+#'
+#' @param emulator A trained \code{fldgen} temperature precipitation joint
+#' emulator.
+#' @param residgrids Descript
+#' @param tgav  Descript
+#' @param reconstruction_function Descript
+#' @param addNAs descript
+#' @return Descript - can crib some of the language from generateTPresids
+#' @export
 
 generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply, addNAs = FALSE){
+    # TODO kalyn you need to add documentation and testing for this function!!
+
 
     # Check inputs
     if(!is.data.frame(tgav)){ stop('tgav must be a data frame') }
