@@ -5,7 +5,8 @@
 \title{Using a trained emulator, generate new full fields.}
 \usage{
 generate.TP.fullgrids(emulator, residgrids, tgav,
-  reconstruction_function = pscl_apply, addNAs = FALSE)
+  reconstruction_function = pscl_apply, addNAs = FALSE,
+  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
@@ -18,6 +19,20 @@ emulator.}
 \item{reconstruction_function}{Descript}
 
 \item{addNAs}{descript}
+
+\item{tvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the tvarconvert_fcn argument to \code{trainTP}.
+Defaults to NULL as temperature typically doesn't need to be transformed to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here.}
+
+\item{pvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the pvarconvert_fcn argument to \code{trainTP}.
+Defaults to exp() as precipitation is usually log-transformed in ordere to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here.}
 }
 \value{
 Descript - can crib some of the language from generateTPresids

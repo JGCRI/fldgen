@@ -4,7 +4,8 @@
 \alias{generate.TP.resids}
 \title{Using a trained emulator, generate new fields of residuals.}
 \usage{
-generate.TP.resids(emulator, ngen, method = 1)
+generate.TP.resids(emulator, ngen, method = 1, tvarunconvert_fcn = NULL,
+  pvarunconvert_fcn = exp)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
@@ -14,6 +15,20 @@ emulator.}
 
 \item{method}{The algorithm used to generate new EOF coefficients, defaults
 to 1.}
+
+\item{tvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the tvarconvert_fcn argument to \code{trainTP}.
+Defaults to NULL as temperature typically doesn't need to be transformed to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here.}
+
+\item{pvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the pvarconvert_fcn argument to \code{trainTP}.
+Defaults to exp() as precipitation is usually log-transformed in ordere to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here.}
 }
 \value{
 A list of new residual fields, each entry in the list is a new

@@ -13,10 +13,23 @@
 #' @param tgav  Descript
 #' @param reconstruction_function Descript
 #' @param addNAs descript
+#' @param tvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the tvarconvert_fcn argument to \code{trainTP}.
+#' Defaults to NULL as temperature typically doesn't need to be transformed to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here.
+#' @param pvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the pvarconvert_fcn argument to \code{trainTP}.
+#' Defaults to exp() as precipitation is usually log-transformed in ordere to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here.
 #' @return Descript - can crib some of the language from generateTPresids
 #' @export
 
-generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply, addNAs = FALSE){
+generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply, addNAs = FALSE,
+                                  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp){
     # TODO kalyn you need to add documentation and testing for this function!!
 
 
@@ -75,6 +88,32 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
 
     }) ->
         fullgrids
+
+
+    ## deal with the support conversion if necessary
+
+    if(!is.null(emulator$griddataT$tvarconvert_fcn)){
+
+        fullgrids <- lapply(fullgrids, function(g){
+            g[, 1:Ngrid] <- tvarunconvert_fcn(g[, 1:Ngrid])
+            return(g)
+        })
+    } else{
+        print('Generated T full fields are not being touched')
+    }
+
+
+    if(!is.null(emulator$griddataP$pvarconvert_fcn)){
+
+        fullgrids <- lapply(fullgrids, function(g){
+            g[, (Ngrid+1):(2*Ngrid)] <- pvarunconvert_fcn(g[, (Ngrid+1):(2*Ngrid)])
+            return(g)
+        })
+    } else{
+        print('Generated P full fields are not being touched')
+    }
+
+
 
     # Create the croodinates mapping file.
     # TODO there is probably a better way to do this

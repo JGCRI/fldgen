@@ -37,7 +37,7 @@
 #' different, such as \code{'lat_2'}. Can vary between paired T and P.
 #' @param tlonvar Name of the longitude coordinate variable in the temperature
 #' netCDF files.  Can vary between paired T and P.
-#' @param tvarconvert The function used to transform the T variable so that it
+#' @param tvarconvert_fcn The function used to transform the T variable so that it
 #' has support on -infinity to infinity. Defaults to NULL, as Temperature is
 #' effectively already supported on this range.
 #' @param pvarname Name of the precipitation variable in the precipitation
@@ -48,7 +48,7 @@
 #' different, such as \code{'lat_2'}.  Can vary between paired T and P.
 #' @param plonvar Name of the longitude coordinate variable in precipitation
 #'  netCDF files.  Can vary between paired T and P.
-#' @param pvarconvert The function used to transform the P variable so that it
+#' @param pvarconvert_fcn The function used to transform the P variable so that it
 #' has support on -infinity to infinity. Defaults to log() as precipitation
 #' values cannot be less than 0.
 #' @param meanfield Function to compute the mean temperature response field.
@@ -63,9 +63,9 @@
 #' @export
 trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
-                    tvarconvert = NULL,
+                    tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
-                    pvarconvert = log,
+                    pvarconvert_fcn = log,
                     meanfield=pscl_analyze, record_absolute=FALSE)
 {
 
@@ -132,22 +132,22 @@ trainTP <- function(dat,
 
     # make sure supported on -infinity to infinity, add some output data to
     # facilitate the reversing later
-    if(!is.null(tvarconvert)){
+    if(!is.null(tvarconvert_fcn)){
         griddataT$vardata_raw <- griddataT$vardata
-        griddataT$vardata <- tvarconvert(griddataT$vardata)
+        griddataT$vardata <- tvarconvert_fcn(griddataT$vardata)
     } else {
         griddataT$vardata_raw <- NULL
     }
-    griddataT$tvarconvert <- tvarconvert
+    griddataT$tvarconvert_fcn <- tvarconvert_fcn
 
 
-    if(!is.null(pvarconvert)){
+    if(!is.null(pvarconvert_fcn)){
         griddataP$vardata_raw <- griddataP$vardata
-        griddataP$vardata <- pvarconvert(griddataP$vardata)
+        griddataP$vardata <- pvarconvert_fcn(griddataP$vardata)
     } else {
         griddataP$vardata_raw <- NULL
     }
-    griddataP$pvarconvert <- pvarconvert
+    griddataP$pvarconvert_fcn <- pvarconvert_fcn
 
 
     # calculate global average T and global average P

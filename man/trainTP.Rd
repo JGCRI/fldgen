@@ -5,8 +5,9 @@
 \title{Train the emulator on a set of input ESM temperature and precipitation data.}
 \usage{
 trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
-  tvarconvert = NULL, pvarname = "pr", platvar = "lat", plonvar = "lon",
-  pvarconvert = log, meanfield = pscl_analyze, record_absolute = FALSE)
+  tvarconvert_fcn = NULL, pvarname = "pr", platvar = "lat",
+  plonvar = "lon", pvarconvert_fcn = log, meanfield = pscl_analyze,
+  record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
@@ -25,7 +26,7 @@ different, such as \code{'lat_2'}. Can vary between paired T and P.}
 \item{tlonvar}{Name of the longitude coordinate variable in the temperature
 netCDF files.  Can vary between paired T and P.}
 
-\item{tvarconvert}{The function used to transform the T variable so that it
+\item{tvarconvert_fcn}{The function used to transform the T variable so that it
 has support on -infinity to infinity. Defaults to NULL, as Temperature is
 effectively already supported on this range.}
 
@@ -40,7 +41,7 @@ different, such as \code{'lat_2'}.  Can vary between paired T and P.}
 \item{plonvar}{Name of the longitude coordinate variable in precipitation
 netCDF files.  Can vary between paired T and P.}
 
-\item{pvarconvert}{The function used to transform the P variable so that it
+\item{pvarconvert_fcn}{The function used to transform the P variable so that it
 has support on -infinity to infinity. Defaults to log() as precipitation
 values cannot be less than 0.}
 

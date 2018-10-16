@@ -16,12 +16,24 @@
 #' @param ngen The number of new fields to generate
 #' @param method The algorithm used to generate new EOF coefficients, defaults
 #' to 1.
+#' @param tvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the tvarconvert_fcn argument to \code{trainTP}.
+#' Defaults to NULL as temperature typically doesn't need to be transformed to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here.
+#' @param pvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the pvarconvert_fcn argument to \code{trainTP}.
+#' Defaults to exp() as precipitation is usually log-transformed in ordere to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here.
 #' @return A list of new residual fields, each entry in the list is a new
 #' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
 #' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
 #' @export
-generate.TP.resids <- function(emulator, ngen, method = 1)
+generate.TP.resids <- function(emulator, ngen, method = 1, tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp)
 {
     Ngrid <- ncol(emulator$meanfldT$r)
 
@@ -52,6 +64,30 @@ generate.TP.resids <- function(emulator, ngen, method = 1)
 
         return(g)}
     )
+
+
+    # check the conversion
+
+    if(!is.null(emulator$griddataT$tvarconvert_fcn)){
+
+         residgrids <- lapply(residgrids, function(g){
+            g[, 1:Ngrid] <- tvarunconvert_fcn(g[, 1:Ngrid])
+            return(g)
+        })
+    } else{
+        print('Generated T residuals are not being touched')
+    }
+
+
+    if(!is.null(emulator$griddataP$pvarconvert_fcn)){
+
+        residgrids <- lapply(residgrids, function(g){
+            g[, (Ngrid+1):(2*Ngrid)] <- pvarunconvert_fcn(g[, (Ngrid+1):(2*Ngrid)])
+            return(g)
+        })
+    } else{
+        print('Generated P residuals are not being touched')
+    }
 
 
 
