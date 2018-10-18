@@ -112,7 +112,7 @@ test_that('P residuals are preserved through normalize and unnormalize',
 
               # compare p2 with the original residuals
               maxdiff <- max(abs(p2-residP))
-              ftol <- 1.0e-6 * min(abs(residP))
+              ftol <- 1.0e-5 * min(abs(residP))
               expect_lte(maxdiff, ftol)
           })
 
