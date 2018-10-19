@@ -3,63 +3,58 @@
 #' This function takes in a trained emulator - a structure of class
 #' \code{fldgen}.
 #' This structure contains everything the emulator has learned about the model,
-#' and is used to generate new fields of residuals.
+#' and is used to generate new fields of residuals. Also taking in a list of
+#' generated residual fields and a global average yield, a global gridded
+#' mean field is constructed accoring to the input reconstruction_function.
+#' The mean field and residual fields are added to return a list of different
+#' realizations of full fields.
 #'
-#' First, ...
 #'
 #' @param emulator A trained \code{fldgen} temperature precipitation joint
 #' emulator.
-#' @param residgrids Descript
-#' @param tgav  Descript
-#' @param reconstruction_function Descript
-#' @param addNAs descript
-#' @param tvarunconvert_fcn The function to undo any transformation done to the
-#' input training data in \code{trainTP} to correct the support. This should be
-#' the inverse function of the tvarconvert_fcn argument to \code{trainTP}.
-#' Defaults to NULL as temperature typically doesn't need to be transformed to
-#' correct the support. WARNING: currently rely on the user to define the
-#' correct inverse function here.
-#' @param pvarunconvert_fcn The function to undo any transformation done to the
-#' input training data in \code{trainTP} to correct the support. This should be
-#' the inverse function of the pvarconvert_fcn argument to \code{trainTP}.
-#' Defaults to exp() as precipitation is usually log-transformed in ordere to
-#' correct the support. WARNING: currently rely on the user to define the
-#' correct inverse function here.
-#' @return Descript - can crib some of the language from generateTPresids
+#' @param residgrids A list containing:
+#' 1) residgrids = A list of new residual fields, each entry in the list is a new
+#' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
+#' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
+#' precipitation residuals.
+#' 2) tvarunconvert_fcn = The function to inverse transform T values from
+#' (-infinity, infinity) to the original support, if necessary.
+#' 3) pvarunconvert_fcn = The function to inverse transform P values from
+#' (-infinity, infinity) to the original support, if necessary.
+#' @param tgav  A data frame with columns tgav = the vector of global annual
+#' mean temperatures for constructing a mean field with
+#' \code{reconstruction_function}.To be added to each list
+#' entry of residual fiels in \code{residgrids$residgrids}. And a column time =
+#' something KD needs for handling ISIMIP data in the grand experiment.
+#' @param reconstruction_function A function for constructing a mean field from
+#' trained pattern scaling result + a vector of global annual mean temperatures.
+#' @return A list of:
+#' 1) fullgrids = A list of new full fields, each entry in
+#' the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
+#' first 1:Ngrid cols are the temperature field and columns
+#' (Ngrid + 1):(2*Ngrid) are the precipitation field.
+#' 2) coordinates = something KD needs to fill in, relevant to using ISIMIP data
+#' in the grand experiment.
+#' 3) time = something KD needs to fill in, relevant to using ISIMIP data
+#' in the grand experiment.
+#' 4) tvarunconvert_fcn = the tvarunconvert_fcn entry of the residgrids input.
+#' 5) pvarunconvert_fcn = the pvarunconvert_fcn entry of the residgrids input.
 #' @export
 
-generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply, addNAs = FALSE,
-                                  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp){
-    # TODO kalyn you need to add documentation and testing for this function!!
+generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply){
+
+    # save a copy of the number of grids cells for each variable
+    Ngrid <- ncol(residgrids$residgrids[[1]])/2
+
 
 
     # Check inputs
-    if(!is.data.frame(tgav)){ stop('tgav must be a data frame') }
-
-    req_cols <- c('tgav', 'time')
-    missing  <- !req_cols %in% names(tgav)
-    if(any(missing)){ stop('tgav missing the following columns: ', paste(req_cols[missing], collapse = ', ')) }
-
+    ### space for KD code in the future
 
     # TODO eventually wer are going to want to check time that is actually pulled from the traing
     # data instead of parsing it out from the tag names.
-    startYr_endYr <- gsub(".nc", "", stringr::str_split(basename(emulator$infiles), "_")[[1]][6])
-    startYr <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][1])
-    endYr   <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][2])
+    ### space for KD code in the future
 
-    nc_time <- startYr:endYr
-    # Compare the emulator time with the tgav time
-    missing_time <- !tgav$time %in% nc_time
-
-    if(any(missing_time)){stop('emulator was not trained with data for the following years: ', paste(tgav$time[missing_time], collapse = ', '))}
-
-
-    if(any(!nc_time %in% tgav$time)){
-
-        # TODO
-        stop('Need to add code that will subset the resid and emulator training data for years in common')
-
-    }
 
     # Define the time and tgav
     time <- tgav$time
@@ -68,12 +63,36 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
     meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
     meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)
 
-    # save a copy of the number of grids cells for each variable
-    Ngrid <- ncol(residgrids[[1]])/2
+    ## note that meanfieldP is in logP space if trainTP uses
+    ## pvarconvert_fcn = log. To avoid order of operations
+    ## issues, we actually have to transform the residuals BACK
+    ## to having support on (-inf, inf) so that they can be
+    ## added to mean field and transofrmed to the natural support
+    ## properly.
+
+    if(!is.null(emulator$griddataT$tvarconvert_fcn)){
+
+        residgrids$residgrids <- lapply(residgrids$residgrids, function(g){
+            g[, 1:Ngrid] <- emulator$griddataT$tvarconvert_fcn(g[, 1:Ngrid])
+            return(g)
+        })
+    }
+
+    if(!is.null(emulator$griddataP$pvarconvert_fcn)){
+
+        residgrids$residgrids <- lapply(residgrids$residgrids, function(g){
+            g[, (Ngrid+1):(2*Ngrid)] <- emulator$griddataP$pvarconvert_fcn(g[, (Ngrid+1):(2*Ngrid)])
+            return(g)
+        })
+    }
+
+
+
+
 
 
     # Add the meanfield values to the residual grids
-    lapply(residgrids, function(matrix, gridcells = Ngrid){
+    lapply(residgrids$residgrids, function(matrix, gridcells = Ngrid){
 
         # Separate the tas and pr data from one another.
         tas <- matrix[ , 1:Ngrid]
@@ -83,38 +102,41 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
         tas[ , 1:Ngrid] <- tas[ , 1:Ngrid] + meanfieldT
         pr[ , 1:Ngrid]  <- pr[ , 1:Ngrid] + meanfieldP
 
+
+
+        # convert from (-inf, inf) support to natural support.
+        if(!is.null(residgrids$tvarunconvert_fcn) & !is.null(emulator$griddataT$tvarconvert_fcn)){
+
+            tas <- residgrids$tvarunconvert_fcn(tas)
+
+        } else{
+            print('Generated T full fields not being transformed to a different support. Up to user to know if this is desirable.')
+        }
+
+
+        if(!is.null(residgrids$pvarunconvert_fcn) & !is.null(emulator$griddataP$pvarconvert_fcn)){
+
+            pr <- residgrids$pvarunconvert_fcn(pr)
+
+        } else{
+            print('Generated P full fields not being transformed to a different support. Up to user to know if this is desirable.')
+        }
+
+
+
         # Return output
-        list(tas = tas, pr = pr)
+        cbind(tas, pr)# list(tas = tas, pr = pr) # KD LIST OUTPUT
+
 
     }) ->
         fullgrids
 
 
-    ## deal with the support conversion if necessary
-
-    if(!is.null(emulator$griddataT$tvarconvert_fcn)){
-
-        fullgrids <- lapply(fullgrids, function(g){
-            g[, 1:Ngrid] <- tvarunconvert_fcn(g[, 1:Ngrid])
-            return(g)
-        })
-    } else{
-        print('Generated T full fields are not being touched')
-    }
-
-
-    if(!is.null(emulator$griddataP$pvarconvert_fcn)){
-
-        fullgrids <- lapply(fullgrids, function(g){
-            g[, (Ngrid+1):(2*Ngrid)] <- pvarunconvert_fcn(g[, (Ngrid+1):(2*Ngrid)])
-            return(g)
-        })
-    } else{
-        print('Generated P full fields are not being touched')
-    }
 
 
 
+
+    # KD CODE
     # Create the croodinates mapping file.
     # TODO there is probably a better way to do this
     # Create a coordinate mapping data frame. Since
@@ -131,31 +153,32 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
         dplyr::select(column_index, lat, lon) ->
         coordinates
 
-    # If griddata mapping files exist then then add NA grid cells will have to be added back into
-    # the grids in order to return output that has the same grid dimensions.
-    if(!is.null(emulator$griddataT$mapping) & addNAs){
+    # # If griddata mapping files exist then then add NA grid cells will have to be added back into
+    # # the grids in order to return output that has the same grid dimensions.
+    # if(!is.null(emulator$griddataT$mapping) & addNAs){
+    #
+    #     # Since the T and P fields are concatenated together in a single data frame the mapping data must be updated to
+    #     # reflect the single data frame.
+    #     emulator$griddataT$mapping %>%
+    #         dplyr::bind_rows(tibble::tibble(original_index = emulator$griddataP$mapping$original_index + max(emulator$griddataT$mapping$original_index),
+    #                                         new_index = emulator$griddataP$mapping$new_index + max(emulator$griddataT$mapping$new_index, na.rm = TRUE))) ->
+    #         mapping
+    #
+    #     # Use the new mapping file to insert the NAs into the fullgrids
+    #     fullgrids <- lapply(fullgrids, FUN = add_NAs, mapping = mapping)
+    #
+    # } else if(!is.null(emulator$griddataT$mapping) & !addNAs){
+    #
+    #     # If the NAs were removed but the user has selected NOT to add the NAs back
+    #     # to the grid then discard the NA cells from the coordinates mapping file.
+    #     emulator$griddataT$mapping %>%
+    #         na.omit %>%
+    #         dplyr::select(column_index = new_index, lat, lon) ->
+    #         coordinates
+    #
+    # }
 
-        # Since the T and P fields are concatenated together in a single data frame the mapping data must be updated to
-        # reflect the single data frame.
-        emulator$griddataT$mapping %>%
-            dplyr::bind_rows(tibble::tibble(original_index = emulator$griddataP$mapping$original_index + max(emulator$griddataT$mapping$original_index),
-                                            new_index = emulator$griddataP$mapping$new_index + max(emulator$griddataT$mapping$new_index, na.rm = TRUE))) ->
-            mapping
-
-        # Use the new mapping file to insert the NAs into the fullgrids
-        fullgrids <- lapply(fullgrids, FUN = add_NAs, mapping = mapping)
-
-    } else if(!is.null(emulator$griddataT$mapping) & !addNAs){
-
-        # If the NAs were removed but the user has selected NOT to add the NAs back
-        # to the grid then discard the NA cells from the coordinates mapping file.
-        emulator$griddataT$mapping %>%
-            na.omit %>%
-            dplyr::select(column_index = new_index, lat, lon) ->
-            coordinates
-
-    }
-
-    return(list(fullgrids = fullgrids, coordinates = coordinates, time = time, tvarunconvert_fcn = tvarunconvert_fcn, pvarunconvert_fcn = pvarunconvert_fcn))
+    return(list(fullgrids = fullgrids, coordinates = coordinates, time = time,
+                tvarunconvert_fcn = residgrids$tvarunconvert_fcn, pvarunconvert_fcn = residgrids$pvarunconvert_fcn))
 
 }

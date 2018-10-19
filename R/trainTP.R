@@ -37,9 +37,9 @@
 #' different, such as \code{'lat_2'}. Can vary between paired T and P.
 #' @param tlonvar Name of the longitude coordinate variable in the temperature
 #' netCDF files.  Can vary between paired T and P.
-#' @param tvarconvert_fcn The function used to transform the T variable so that it
-#' has support on -infinity to infinity. Defaults to NULL, as Temperature is
-#' effectively already supported on this range.
+#' @param tvarconvert_fcn The function used to transform the T variable prior
+#' to training so that it has support on -infinity to infinity. Defaults to
+#' NULL, as Temperature is effectively already supported on this range.
 #' @param pvarname Name of the precipitation variable in the precipitation
 #' netCDF.
 #' @param platvar Name of the latitude coordinate variable in the precipitation
@@ -48,9 +48,9 @@
 #' different, such as \code{'lat_2'}.  Can vary between paired T and P.
 #' @param plonvar Name of the longitude coordinate variable in precipitation
 #'  netCDF files.  Can vary between paired T and P.
-#' @param pvarconvert_fcn The function used to transform the P variable so that it
-#' has support on -infinity to infinity. Defaults to log() as precipitation
-#' values cannot be less than 0.
+#' @param pvarconvert_fcn The function used to transform the P variable prior
+#' to analyis so that it has support on -infinity to infinity. Defaults to
+#' log() as precipitation values cannot be less than 0.
 #' @param meanfield Function to compute the mean temperature response field.
 #' The default is a linear pattern scaling algorithm.
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
