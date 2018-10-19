@@ -43,6 +43,9 @@
 
 generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply){
 
+    # silence package checks
+    column_index <- lat <- lon <- NULL
+
     # save a copy of the number of grids cells for each variable
     Ngrid <- ncol(residgrids$residgrids[[1]])/2
 
