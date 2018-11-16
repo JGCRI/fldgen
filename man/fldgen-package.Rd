@@ -36,4 +36,9 @@ for(i in 2:4)
 \author{
 \strong{Maintainer}: Robert Link \email{robert.link@pnnl.gov}
 
+Authors:
+\itemize{
+  \item Abigail Snyder \email{abigail.snyder@pnnl.gov}
+}
+
 }
