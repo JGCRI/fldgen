@@ -12,20 +12,33 @@
 #'
 #' @param emulator A trained \code{fldgen} temperature precipitation joint
 #' emulator.
-#' @param residgrids A list containing:
-#' 1) residgrids = A list of new residual fields, each entry in the list is a new
+#' @param residgrids A list of new residual fields, each entry in the list is a new
 #' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
 #' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
-#' 2) tvarunconvert_fcn = The function to inverse transform T values from
-#' (-infinity, infinity) to the original support, if necessary.
-#' 3) pvarunconvert_fcn = The function to inverse transform P values from
-#' (-infinity, infinity) to the original support, if necessary.
 #' @param tgav  A data frame with columns tgav = the vector of global annual
 #' mean temperatures for constructing a mean field with
 #' \code{reconstruction_function}.To be added to each list
-#' entry of residual fiels in \code{residgrids$residgrids}. And a column time =
+#' entry of residual fiels in \code{residgrids}. And a column time =
 #' something KD needs for handling ISIMIP data in the grand experiment.
+#' @param tvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
+#' is stored in a \code{trainTP} \code{emulator} under
+#' \code{emulator$griddattaT$tvarconvert_fcn}.
+#' Defaults to NULL as temperature typically doesn't need to be transformed to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here, though we do some checks and throw warnings
+#' if it looks like there may be an issue.
+#' @param pvarunconvert_fcn The function to undo any transformation done to the
+#' input training data in \code{trainTP} to correct the support. This should be
+#' the inverse function of the pvarconvert_fcn argument to \code{trainTP}. This
+#' is stored in a \code{trainTP} \code{emulator} under
+#' \code{emulator$griddattaP$pvarconvert_fcn}.
+#' Defaults to exp() as precipitation is usually log-transformed in ordere to
+#' correct the support. WARNING: currently rely on the user to define the
+#' correct inverse function here, though we do some checks and throw warnings
+#' if it looks like there may be an issue.
 #' @param reconstruction_function A function for constructing a mean field from
 #' trained pattern scaling result + a vector of global annual mean temperatures.
 #' @return A list of:
@@ -37,18 +50,62 @@
 #' in the grand experiment.
 #' 3) time = something KD needs to fill in, relevant to using ISIMIP data
 #' in the grand experiment.
-#' 4) tvarunconvert_fcn = the tvarunconvert_fcn entry of the residgrids input.
-#' 5) pvarunconvert_fcn = the pvarunconvert_fcn entry of the residgrids input.
+#' 4) tvarunconvert_fcn = the tvarunconvert_fcn input.
+#' 5) pvarunconvert_fcn = the pvarunconvert_fcn input.
 #' @export
 
-generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_function = pscl_apply){
+generate.TP.fullgrids <- function(emulator, residgrids, tgav,
+                                  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+                                  reconstruction_function = pscl_apply){
 
     # silence package checks
     column_index <- lat <- lon <- NULL
 
-    # save a copy of the number of grids cells for each variable
-    Ngrid <- ncol(residgrids$residgrids[[1]])/2
+    # dbl check that convert and unconvert functions are actual inverses on some test data.
+    # throw a warning if this is not the case but it is up to the user to track down.
+    testx <- 1:5
 
+    if(!is.null(emulator$griddataT$tvarconvert_fcn) &
+       !(is.null(tvarunconvert_fcn))){
+        testx %>%
+            emulator$griddataT$tvarconvert_fcn() %>%
+            tvarunconvert_fcn() ->
+            x1
+
+        testx %>%
+            tvarunconvert_fcn() %>%
+            emulator$griddataT$tvarconvert_fcn() ->
+            x2
+
+        if((max(abs(x1-testx))>1e-14) | (max(abs(x2-testx))>1e-14) ){
+            warning('Your functions for transforming and inverse transforming the support of T may not be inverses of each other 1.')
+        }
+
+    } else if((!is.null(emulator$griddataT$tvarconvert_fcn) & is.null(tvarunconvert_fcn)) |
+              (is.null(emulator$griddataT$tvarconvert_fcn) & !is.null(tvarunconvert_fcn))){
+        warning('Your functions for transforming and inverse transforming the support of T may not be inverses of each other 2.')
+    }
+
+    if(!is.null(emulator$griddataP$pvarconvert_fcn) &
+       !(is.null(pvarunconvert_fcn))){
+        testx %>%
+            emulator$griddataP$pvarconvert_fcn() %>%
+            pvarunconvert_fcn() ->
+            x1
+
+        testx %>%
+            pvarunconvert_fcn() %>%
+            emulator$griddataP$pvarconvert_fcn() ->
+            x2
+
+        if((max(abs(x1-testx))>1e-14) | (max(abs(x2-testx))>1e-14) ){
+            warning('Your functions for transforming and inverse transforming the support of P may not be inverses of each other 1.')
+        }
+
+    } else if((!is.null(emulator$griddataP$pvarconvert_fcn) & is.null(pvarunconvert_fcn)) |
+              (is.null(emulator$griddataP$pvarconvert_fcn) & !is.null(pvarunconvert_fcn))){
+        warning('Your functions for transforming and inverse transforming the support of P may not be inverses of each other 2.')
+    }
 
 
     # Check inputs
@@ -59,6 +116,10 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
     ### space for KD code in the future
 
 
+
+    # save a copy of the number of grids cells for each variable
+    Ngrid <- ncol(residgrids[[1]])/2
+
     # Define the time and tgav
     time <- tgav$time
     tgav <- matrix(tgav$tgav, ncol = 1)
@@ -66,36 +127,9 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
     meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
     meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)
 
-    ## note that meanfieldP is in logP space if trainTP uses
-    ## pvarconvert_fcn = log. To avoid order of operations
-    ## issues, we actually have to transform the residuals BACK
-    ## to having support on (-inf, inf) so that they can be
-    ## added to mean field and transofrmed to the natural support
-    ## properly.
-
-    if(!is.null(emulator$griddataT$tvarconvert_fcn)){
-
-        residgrids$residgrids <- lapply(residgrids$residgrids, function(g){
-            g[, 1:Ngrid] <- emulator$griddataT$tvarconvert_fcn(g[, 1:Ngrid])
-            return(g)
-        })
-    }
-
-    if(!is.null(emulator$griddataP$pvarconvert_fcn)){
-
-        residgrids$residgrids <- lapply(residgrids$residgrids, function(g){
-            g[, (Ngrid+1):(2*Ngrid)] <- emulator$griddataP$pvarconvert_fcn(g[, (Ngrid+1):(2*Ngrid)])
-            return(g)
-        })
-    }
-
-
-
-
-
 
     # Add the meanfield values to the residual grids
-    lapply(residgrids$residgrids, function(matrix, gridcells = Ngrid){
+    lapply(residgrids, function(matrix, gridcells = Ngrid){
 
         # Separate the tas and pr data from one another.
         tas <- matrix[ , 1:Ngrid]
@@ -108,18 +142,18 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
 
 
         # convert from (-inf, inf) support to natural support.
-        if(!is.null(residgrids$tvarunconvert_fcn) & !is.null(emulator$griddataT$tvarconvert_fcn)){
+        if( !is.null(emulator$griddataT$tvarconvert_fcn)){
 
-            tas <- residgrids$tvarunconvert_fcn(tas)
+            tas <- tvarunconvert_fcn(tas)
 
         } else{
             print('Generated T full fields not being transformed to a different support. Up to user to know if this is desirable.')
         }
 
 
-        if(!is.null(residgrids$pvarunconvert_fcn) & !is.null(emulator$griddataP$pvarconvert_fcn)){
+        if(!is.null(emulator$griddataP$pvarconvert_fcn)){
 
-            pr <- residgrids$pvarunconvert_fcn(pr)
+            pr <- pvarunconvert_fcn(pr)
 
         } else{
             print('Generated P full fields not being transformed to a different support. Up to user to know if this is desirable.')
@@ -128,7 +162,7 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
 
 
         # Return output
-        cbind(tas, pr)# list(tas = tas, pr = pr) # KD LIST OUTPUT
+        return(cbind(tas, pr))# list(tas = tas, pr = pr) # KD LIST OUTPUT
 
 
     }) ->
@@ -182,6 +216,6 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav, reconstruction_fun
     # }
 
     return(list(fullgrids = fullgrids, coordinates = coordinates, time = time,
-                tvarunconvert_fcn = residgrids$tvarunconvert_fcn, pvarunconvert_fcn = residgrids$pvarunconvert_fcn))
+                tvarunconvert_fcn = tvarunconvert_fcn, pvarunconvert_fcn = pvarunconvert_fcn))
 
 }

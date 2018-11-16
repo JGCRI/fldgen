@@ -177,8 +177,10 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 ### tested in the test case below.
 emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
                       system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
-                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
-                    pvarname = "pr", platvar = "lat", plonvar = "lon")
+                    tvarname = "tas", tlatvar='lat_2', tlonvar='lon_2',
+                    tvarconvert_fcn = NULL,
+                    pvarname = "pr", platvar='lat', plonvar='lon',
+                    pvarconvert_fcn = log)
 
 griddataT <- emulator$griddataT
 griddataP <- emulator$griddataP
@@ -205,17 +207,15 @@ newgrids1 <- reconst_fields(reof$rotation, mkcorrts(emulator, phase = Fxphase))
 Ngrid <- ncol(meanfldT$r)
 residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
                                    rn = newgrids1[ ,1:Ngrid])$rnew
-residgrids1P <- exp(unnormalize.resids(empiricalquant = emulator$pfuns$quant,
-                                   rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew)
+residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
+                                   rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
 # TODO: un-hard code this conversion of residgrids1P from (-inf, inf) support
 # to natural support (0,inf)
 
 
 ## Run the rest with random phases
-tmp <- generate.TP.resids(emulator, ngen = 3, pvarunconvert_fcn = exp)
-tvarunconvert_fcn <- tmp$tvarunconvert_fcn
-pvarunconvert_fcn <- tmp$pvarunconvert_fcn
-tmp <- tmp$residgrids
+tmp <- generate.TP.resids(emulator, ngen = 3)
+
 
 
 residgrids <- list()
@@ -225,14 +225,16 @@ residgrids[[2]] <- tmp[[1]]
 residgrids[[3]] <- tmp[[2]]
 residgrids[[4]] <- tmp[[3]]
 
-residgrids <- list(residgrids = residgrids,
-                   tvarunconvert_fcn = tvarunconvert_fcn,
-                   pvarunconvert_fcn = pvarunconvert_fcn)
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
 fullgrids <- generate.TP.fullgrids(emulator, residgrids, tgav = data.frame(tgav = tgav, time = 2006:2100),
-                                   reconstruction_function = pscl_apply)$fullgrids
+                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+                                   reconstruction_function = pscl_apply)
+
+pvarunconvert_fcn <- fullgrids$pvarunconvert_fcn
+tvarunconvert_fcn <- fullgrids$tvarunconvert_fcn
+fullgrids <- fullgrids$fullgrids
 
 test_that('T Values produced by global mean calculation agree with the ones produced by CDO.',
           {
@@ -279,8 +281,8 @@ test_that('Applying the pattern scaling and adding back the residuals recovers t
 test_that('Applying the pattern scaling and adding back the residuals recovers the original precipitations.',
           {
               prfield <- pscl_apply(meanfldP, tgav)
-              prscl <- exp(prfield + meanfldP$r)
-              prfield <- exp(prfield)
+              prscl <- pvarunconvert_fcn(prfield + meanfldP$r)
+              prfield <- pvarunconvert_fcn(prfield)
 
               ## Allow for some roundoff error
               ftol <- 1.0e-8 * max(abs(prfield))

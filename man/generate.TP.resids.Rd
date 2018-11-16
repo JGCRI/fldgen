@@ -4,8 +4,7 @@
 \alias{generate.TP.resids}
 \title{Using a trained emulator, generate new fields of residuals.}
 \usage{
-generate.TP.resids(emulator, ngen, method = 1, tvarunconvert_fcn = NULL,
-  pvarunconvert_fcn = exp)
+generate.TP.resids(emulator, ngen, method = 1)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
@@ -15,37 +14,12 @@ emulator.}
 
 \item{method}{The algorithm used to generate new EOF coefficients, defaults
 to 1.}
-
-\item{tvarunconvert_fcn}{The function to undo any transformation done to the
-input training data in \code{trainTP} to correct the support. This should be
-the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
-is stored in a \code{trainTP} \code{emulator} under
-\code{emulator$griddattaT$tvarconvert_fcn}.
-Defaults to NULL as temperature typically doesn't need to be transformed to
-correct the support. WARNING: currently rely on the user to define the
-correct inverse function here, though we do some checks and throw warnings
-if it looks like there may be an issue.}
-
-\item{pvarunconvert_fcn}{The function to undo any transformation done to the
-input training data in \code{trainTP} to correct the support. This should be
-the inverse function of the pvarconvert_fcn argument to \code{trainTP}. This
-is stored in a \code{trainTP} \code{emulator} under
-\code{emulator$griddattaP$pvarconvert_fcn}.
-Defaults to exp() as precipitation is usually log-transformed in ordere to
-correct the support. WARNING: currently rely on the user to define the
-correct inverse function here, though we do some checks and throw warnings
-if it looks like there may be an issue.}
 }
 \value{
-A list containing:
-1)residgrids = A list of new residual fields, each entry in the list is a new
-realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
-are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
-precipitation residuals.
-2) tvarunconvert_fcn = The function to inverse transform T values from
-(-infinity, infinity) to the original support, if necessary.
-3) pvarunconvert_fcn = The function to inverse transform P values from
-(-infinity, infinity) to the original support, if necessary.
+residgrids = A list of new residual fields, each entry in the list
+is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the first
+1:Ngrid cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid)
+are the precipitation residuals.
 }
 \description{
 This function takes in a trained emulator - a structure of class

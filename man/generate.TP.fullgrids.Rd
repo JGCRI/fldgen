@@ -4,28 +4,43 @@
 \alias{generate.TP.fullgrids}
 \title{Using a trained emulator, generate new full fields.}
 \usage{
-generate.TP.fullgrids(emulator, residgrids, tgav,
-  reconstruction_function = pscl_apply)
+generate.TP.fullgrids(emulator, residgrids, tgav, tvarunconvert_fcn = NULL,
+  pvarunconvert_fcn = exp, reconstruction_function = pscl_apply)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
 emulator.}
 
-\item{residgrids}{A list containing:
-1) residgrids = A list of new residual fields, each entry in the list is a new
+\item{residgrids}{A list of new residual fields, each entry in the list is a new
 realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
 are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
-precipitation residuals.
-2) tvarunconvert_fcn = The function to inverse transform T values from
-(-infinity, infinity) to the original support, if necessary.
-3) pvarunconvert_fcn = The function to inverse transform P values from
-(-infinity, infinity) to the original support, if necessary.}
+precipitation residuals.}
 
 \item{tgav}{A data frame with columns tgav = the vector of global annual
 mean temperatures for constructing a mean field with
 \code{reconstruction_function}.To be added to each list
-entry of residual fiels in \code{residgrids$residgrids}. And a column time =
+entry of residual fiels in \code{residgrids}. And a column time =
 something KD needs for handling ISIMIP data in the grand experiment.}
+
+\item{tvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
+is stored in a \code{trainTP} \code{emulator} under
+\code{emulator$griddattaT$tvarconvert_fcn}.
+Defaults to NULL as temperature typically doesn't need to be transformed to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here, though we do some checks and throw warnings
+if it looks like there may be an issue.}
+
+\item{pvarunconvert_fcn}{The function to undo any transformation done to the
+input training data in \code{trainTP} to correct the support. This should be
+the inverse function of the pvarconvert_fcn argument to \code{trainTP}. This
+is stored in a \code{trainTP} \code{emulator} under
+\code{emulator$griddattaP$pvarconvert_fcn}.
+Defaults to exp() as precipitation is usually log-transformed in ordere to
+correct the support. WARNING: currently rely on the user to define the
+correct inverse function here, though we do some checks and throw warnings
+if it looks like there may be an issue.}
 
 \item{reconstruction_function}{A function for constructing a mean field from
 trained pattern scaling result + a vector of global annual mean temperatures.}
@@ -40,8 +55,8 @@ first 1:Ngrid cols are the temperature field and columns
 in the grand experiment.
 3) time = something KD needs to fill in, relevant to using ISIMIP data
 in the grand experiment.
-4) tvarunconvert_fcn = the tvarunconvert_fcn entry of the residgrids input.
-5) pvarunconvert_fcn = the pvarunconvert_fcn entry of the residgrids input.
+4) tvarunconvert_fcn = the tvarunconvert_fcn input.
+5) pvarunconvert_fcn = the pvarunconvert_fcn input.
 }
 \description{
 This function takes in a trained emulator - a structure of class
