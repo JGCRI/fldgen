@@ -16,10 +16,10 @@ emulator.}
 to 1.}
 }
 \value{
-A list of new residual fields, each entry in the list is a new
-realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
-are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
-precipitation residuals.
+residgrids = A list of new residual fields, each entry in the list
+is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the first
+1:Ngrid cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid)
+are the precipitation residuals.
 }
 \description{
 This function takes in a trained emulator - a structure of class

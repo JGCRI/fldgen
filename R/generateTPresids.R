@@ -16,16 +16,15 @@
 #' @param ngen The number of new fields to generate
 #' @param method The algorithm used to generate new EOF coefficients, defaults
 #' to 1.
-#' @return A list of new residual fields, each entry in the list is a new
-#' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
-#' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
-#' precipitation residuals.
+#' @return residgrids = A list of new residual fields, each entry in the list
+#' is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the first
+#' 1:Ngrid cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid)
+#' are the precipitation residuals.
 #' @export
-generate.TP.resids <- function(emulator, ngen, method = 1)
-{
+generate.TP.resids <- function(emulator, ngen, method = 1){
+
     Ngrid <- ncol(emulator$meanfldT$r)
 
-    # Generate the new residual fields in the normal space.
     newgrids <- lapply(1:ngen,
                        function(x) {
                            ## It takes the full fldgen object, but doesn't appear
@@ -58,5 +57,5 @@ generate.TP.resids <- function(emulator, ngen, method = 1)
     ### ADD THE NA COLUMNS BACK FOR ISIMIP DATA
 
     ### return the generated residuals
-    return(residgrids)
+    return(residgrids = residgrids)
 }

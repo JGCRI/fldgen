@@ -177,8 +177,10 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 ### tested in the test case below.
 emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
                       system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
-                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
-                    pvarname = "pr", platvar = "lat", plonvar = "lon")
+                    tvarname = "tas", tlatvar='lat_2', tlonvar='lon_2',
+                    tvarconvert_fcn = NULL,
+                    pvarname = "pr", platvar='lat', plonvar='lon',
+                    pvarconvert_fcn = log)
 
 griddataT <- emulator$griddataT
 griddataP <- emulator$griddataP
@@ -207,14 +209,18 @@ residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
                                    rn = newgrids1[ ,1:Ngrid])$rnew
 residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
                                    rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
-residgrids1 <- cbind(residgrids1T, residgrids1P)
+# TODO: un-hard code this conversion of residgrids1P from (-inf, inf) support
+# to natural support (0,inf)
 
 
 ## Run the rest with random phases
 tmp <- generate.TP.resids(emulator, ngen = 3)
+
+
+
 residgrids <- list()
 length(residgrids) <- length(tmp) + 1
-residgrids[[1]] <- residgrids1
+residgrids[[1]] <-  cbind(residgrids1T, residgrids1P)
 residgrids[[2]] <- tmp[[1]]
 residgrids[[3]] <- tmp[[2]]
 residgrids[[4]] <- tmp[[3]]
@@ -222,12 +228,13 @@ residgrids[[4]] <- tmp[[3]]
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
-fullgrids <- lapply(residgrids, function(g){
-    g[, 1:Ngrid] <- g[, 1:Ngrid] + pscl_apply(meanfldT, tgav)
-    g[, (Ngrid+1):(2*Ngrid)] <- g[, (Ngrid+1):(2*Ngrid)] + pscl_apply(meanfldP, tgav)
+fullgrids <- generate.TP.fullgrids(emulator, residgrids, tgav = data.frame(tgav = tgav, time = 2006:2100),
+                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+                                   reconstruction_function = pscl_apply)
 
-    return(g)}
-)
+pvarunconvert_fcn <- fullgrids$pvarunconvert_fcn
+tvarunconvert_fcn <- fullgrids$tvarunconvert_fcn
+fullgrids <- fullgrids$fullgrids
 
 test_that('T Values produced by global mean calculation agree with the ones produced by CDO.',
           {
@@ -250,25 +257,88 @@ test_that('Applying the pattern scaling and adding back the residuals recovers t
               tscl <- pscl_apply(meanfldT, tgav) + meanfldT$r
 
               ## Allow for some roundoff error
-              ftol <- 1.0e-6 * mean(abs(tgav))
+              ftol <- 1.0e-8 * mean(abs(tgav))
               diff <- tscl - griddataT$vardata
               maxdiff <- max(abs(diff))
 
               expect_lte(maxdiff, ftol)
+
+              # and test with the actual function results
+              tscl2 <- fullgrids[[1]][, 1:Ngrid]
+              diff2 <- tscl2 - griddataT$vardata
+              maxdiff2 <- max(abs(diff2))
+
+              expect_lte(maxdiff2, ftol)
+
+
+              # finally make sure those estimates agree
+              expect_lte(abs(maxdiff - maxdiff2), 1e-6 * ftol)
+
+
+
           })
 
 test_that('Applying the pattern scaling and adding back the residuals recovers the original precipitations.',
           {
               prfield <- pscl_apply(meanfldP, tgav)
-              prscl <- prfield + meanfldP$r
+              prscl <- pvarunconvert_fcn(prfield + meanfldP$r)
+              prfield <- pvarunconvert_fcn(prfield)
 
               ## Allow for some roundoff error
-              ftol <- 1.0e-6 * max(abs(prfield))
-              diff <- prscl - griddataP$vardata
+              ftol <- 1.0e-8 * max(abs(prfield))
+              diff <- prscl - griddataP$vardata_raw
               maxdiff <- max(abs(diff))
 
               expect_lte(maxdiff, ftol)
+
+              # and test with the actual function results
+              pscl2 <- fullgrids[[1]][, (Ngrid + 1):(2*Ngrid)]
+              diff2 <- pscl2 - griddataP$vardata_raw
+              maxdiff2 <- max(abs(diff2))
+
+              expect_lte(maxdiff2, ftol)
+
+
+              # finally make sure those estimates are close
+              expect_lte(abs(maxdiff - maxdiff2), 1e-6 * ftol)
           })
+
+
+test_that('Full P grids produced do not feature negative precipitation.',
+          {
+              ## pull off the P:
+              fullgridsP <- lapply(fullgrids, function(g){
+                  g[, (Ngrid+1):(2*Ngrid)]}
+              )
+
+              minP <- lapply(fullgridsP, function(g){
+                  apply(g,2,min)
+              })
+
+
+
+              ftol <- 0
+              # While precip SHOULD absolutely be >0 as
+              # an emergent property of the fldgen algorithm.
+              # we may want to give ourselves some
+              # numerical wiggle room in the future.
+              # for reference, ftol = -1e-8 is
+              # equivalent to saying precip just has
+              # to be > -0.000864 mm/day. Then we could
+              # add a manual adjustment to be > 0.
+
+              minminP.input <- min(minP[[1]])
+              minminP.gen1 <- min(minP[[2]])
+              minminP.gen2 <- min(minP[[3]])
+              minminP.gen3 <- min(minP[[4]])
+
+
+              expect_gte(minminP.input, ftol)
+              expect_gte(minminP.gen1, ftol)
+              expect_gte(minminP.gen2, ftol)
+              expect_gte(minminP.gen3, ftol)
+          })
+
 
 
 test_that('All EOFs are normalized and orthogonal to one another.',
