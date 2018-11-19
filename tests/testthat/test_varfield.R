@@ -175,8 +175,8 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
-emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
-                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
+emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen'),
+                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen')),
                     tvarname = "tas", tlatvar='lat_2', tlonvar='lon_2',
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',

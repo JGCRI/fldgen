@@ -7,7 +7,7 @@
 #' @param griddata_input output from \code{concatGrids.general}
 #' @return A list similar in structure and content to \code{concatGrids.general} output but without the
 #' NA gridcells if applicable and a mapping data frame of the original and new grid cell indices.
-#' @importFrom dplyr filter select mutate group_by left_join %>% n
+#' @importFrom dplyr filter select mutate group_by left_join %>% n summarise
 #' @importFrom stats na.omit
 #' @export
 #' @keywords internal
@@ -32,7 +32,7 @@ drop_NAs <- function(griddata_input){
 
         NA_ind %>%
             dplyr::group_by(col) %>%
-            dplyr::summarise(NA_count = dplyr::n()) ->
+            dplyr::summarise(NA_count = n()) ->
             NA_count
 
         NA_count$remove_index <- TRUE

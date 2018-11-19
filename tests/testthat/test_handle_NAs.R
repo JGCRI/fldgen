@@ -15,6 +15,9 @@ test_that('When there are no NAs there are no changes.', {
     expect_equal(length(original_data), length(out1))
     expect_equal(dim(original_data$vardata), dim(out1$vardata))
 
+    test <- original_data$vardata == out1$vardata
+    expect_true(!any(test != TRUE))
+
 })
 
 
