@@ -284,3 +284,24 @@ test_that('Splitting a P grid with a single element is ok.',
               expect_equal(length(gdl), 1)
               expect_equal(gdl[[1]], griddata)
           })
+
+
+
+test_that('Read in global average works as expected.',
+          {
+            # Check that it works
+            globalAvg <- read_globalAvg(inputTfile, 'globalAvg.txt',
+                                        griddata$vardata,
+                                        data.frame(test = 1, test2 = 2))
+
+            # Check for error messages
+            expect_error(read_globalAvg(inputTfile, 'globalAvg2.txt',
+                                        griddata$vardata,
+                                        data.frame(test = 1, test2 = 2)),
+                         'could not find: tas_annual_esm_rcp_r2i1p1_2006-2100.ncglobalAvg2.txt')
+            expect_error(read_globalAvg(nc_files = inputTfile,
+                                        globalAvg_file = 'globalAvgbadYrs.txt',
+                                        vardata = griddata$vardata,
+                                        paireddat = data.frame(test = 1, test2 = 2)),
+                         '83 rows in tas_annual_esm_rcp_r2i1p1_2006-2100.ncglobalAvgbadYrs.txt when 95 rows expected.')
+            })
