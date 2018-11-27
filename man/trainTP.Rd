@@ -7,7 +7,7 @@
 trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
   tvarconvert_fcn = NULL, pvarname = "pr", platvar = "lat",
   plonvar = "lon", pvarconvert_fcn = log, meanfield = pscl_analyze,
-  record_absolute = FALSE)
+  globalAvg_file = NULL, record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
@@ -47,6 +47,11 @@ log() as precipitation values cannot be less than 0.}
 
 \item{meanfield}{Function to compute the mean temperature response field.
 The default is a linear pattern scaling algorithm.}
+
+\item{globalAvg_file}{Optional argument, defaults to NULL and \code{trainTP}
+calculates the time series of global average temperatures internally. When
+an input is provided in the argument, it must some string.txt, allowing the
+user to read in the global average temperature time series from a txt file.}
 
 \item{record_absolute}{If \code{TRUE}, record absolute paths for the input
 files; otherwise, record relative paths.}

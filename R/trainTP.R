@@ -53,6 +53,10 @@
 #' log() as precipitation values cannot be less than 0.
 #' @param meanfield Function to compute the mean temperature response field.
 #' The default is a linear pattern scaling algorithm.
+#' @param globalAvg_file Optional argument, defaults to NULL and \code{trainTP}
+#' calculates the time series of global average temperatures internally. When
+#' an input is provided in the argument, it must some string.txt, allowing the
+#' user to read in the global average temperature time series from a txt file.
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
@@ -66,7 +70,9 @@ trainTP <- function(dat,
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     pvarconvert_fcn = log,
-                    meanfield=pscl_analyze, record_absolute=FALSE)
+                    meanfield=pscl_analyze,
+                    globalAvg_file = NULL,
+                    record_absolute=FALSE)
 {
 
     ## silence package checks
@@ -150,9 +156,31 @@ trainTP <- function(dat,
     griddataP$pvarconvert_fcn <- pvarconvert_fcn
 
 
-    # calculate global average T and global average P
+
+
+    # Save a copy of the original vardata and globalop incase NA grid cells
+    # are removed, if the NA grid cells are removed from the training process
+    # the original copies will be used to add the NAs back into the data frame
+    # before returning the output.
+    Tvardata_original  <- griddataT$vardata
+    Pvardata_original  <- griddataP$vardata
+    Tglobalop_original <- griddataT$globalop
+    Pglobalop_original <- griddataP$globalop
+
+    # Remove the gridcells that only contain NA values.
+    griddataT <- drop_NAs(griddataT)
+    griddataP <- drop_NAs(griddataP)
+
+    # calculate global average T
+    # if(is.null(globalAvg_file)){
+    #     # Calculate the global average internally
+    #     tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
+
+    # calculate global average T
     tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
-    # pgav <- griddataP$vardata %*% griddataP$globalop # Global mean precip
+
+
+
 
 
     # Use this to calculate the mean field for T and the mean field for P
