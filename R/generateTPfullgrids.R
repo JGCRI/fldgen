@@ -12,15 +12,17 @@
 #'
 #' @param emulator A trained \code{fldgen} temperature precipitation joint
 #' emulator.
-#' @param residgrids A list of new residual fields, each entry in the list is a new
-#' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
-#' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
+#' @param residgrids A list of new residual fields, each entry in the list is a
+#' new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
+#' cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
-#' @param tgav  A data frame with two columns. Column tgav = the vector of
-#' global annual mean temperatures for constructing a mean field with
+#' @param tgav  A data frame with two columns. Column \code{tgav} = the vector
+#' of global annual mean temperatures for constructing a mean field with
 #' \code{reconstruction_function}.To be added to each list entry of residual
-#' fields in \code{residgrids}. And a column time = something KD needs for
-#' handling ISIMIP data in the grand experiment.
+#' fields in \code{residgrids}. And a column \code{time}, used to subset the
+#' trained emulator so that pattern scaling information from the appropriate
+#' years is applied to tgav time series. Note: grids cannot be generated for
+#' tgav years missing from the trained emulator.
 #' @param tvarunconvert_fcn The function to undo any transformation done to the
 #' input training data in \code{trainTP} to correct the support. This should be
 #' the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
@@ -52,8 +54,10 @@
 #' (Ngrid + 1):(2*Ngrid) are the precipitation field.
 #' 2) coordinates = something KD needs to fill in, relevant to using ISIMIP data
 #' in the grand experiment.
-#' 3) time = something KD needs to fill in, relevant to using ISIMIP data
-#' in the grand experiment.
+#' 3) time = the input time column used to subset the trained emulator so that
+#' pattern scaling information from the appropriate years is applied to tgav
+#' time series. Note: grids cannot be generated for tgav years missing from
+#' the trained emulator.
 #' 4) meanfieldT = the reconstructed, pattern scaled temperature mean field.
 #' 5) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 #' 6) tvarunconvert_fcn = the tvarunconvert_fcn input.

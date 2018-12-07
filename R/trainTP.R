@@ -156,8 +156,6 @@ trainTP <- function(dat,
     griddataP$pvarconvert_fcn <- pvarconvert_fcn
 
 
-
-
     # Save a copy of the original vardata and globalop incase NA grid cells
     # are removed, if the NA grid cells are removed from the training process
     # the original copies will be used to add the NAs back into the data frame
@@ -172,15 +170,19 @@ trainTP <- function(dat,
     griddataP <- drop_NAs(griddataP)
 
     # calculate global average T
-    # if(is.null(globalAvg_file)){
-    #     # Calculate the global average internally
-    #     tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
+    if(is.null(globalAvg_file)){
 
-    # calculate global average T
-    tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
+        # Calculate the global mean Temperature internally
+        tgav <- griddataT$vardata %*% griddataT$globalop
 
+    } else {
 
+        tgav <- read_globalAvg(paireddat$tfilename,
+                               globalAvg_file,
+                               griddataT$vardata,
+                               paireddat)
 
+    }
 
 
     # Use this to calculate the mean field for T and the mean field for P
@@ -204,11 +206,9 @@ trainTP <- function(dat,
                                     empiricalcdf = pfuns$cdf)
 
 
-    # enforce pairing to bind columns of the matrices correctly to create
-    # joint matrix of residuals
+    # bind columns of the matrices to create joint matrix of residuals
     joint_residuals <- as.matrix(cbind(normresidsT$rn, normresidsP$rn))
-    ## need to figure out enforcing pairing based on tags. It should just happen
-    ## automatically but it probably needs a test.
+
 
 
     # EOF decomposition
@@ -220,6 +220,19 @@ trainTP <- function(dat,
     # tags should be shared by T and P so doesn't matter which griddata you use
     reof_l <- split_eof(reof, griddataT)
     psd <- psdest(reof_l)
+
+
+    # If NA values were removed from the vardata object replace with the original vardata
+    # data frame here.
+    if(!is.null(griddataT$mapping)){
+        griddataT$vardata  <- Tvardata_original
+        griddataT$globalop <- Tglobalop_original
+    }
+
+    if(!is.null(griddataP$mapping)){
+        griddataP$vardata  <- Pvardata_original
+        griddataP$globalop <- Pglobalop_original
+    }
 
 
     # output a genearlized fldgen object
