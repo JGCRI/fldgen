@@ -16,7 +16,7 @@
 #' new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
 #' cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
-#' @param tgav  A data frame with two columns. Column \code{tgav} = the vector
+#' @param tgavdf  A data frame with two columns. Column \code{tgav} = the vector
 #' of global annual mean temperatures for constructing a mean field with
 #' \code{reconstruction_function}.To be added to each list entry of residual
 #' fields in \code{residgrids}. And a column \code{time}, used to subset the
@@ -64,7 +64,7 @@
 #' 7) pvarunconvert_fcn = the pvarunconvert_fcn input.
 #' @export
 
-generate.TP.fullgrids <- function(emulator, residgrids, tgav,
+generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
                                   reconstruction_function = pscl_apply, addNAs = FALSE){
 
@@ -119,10 +119,10 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
 
 
     # Check inputs
-    if(!is.data.frame(tgav)){ stop('tgav must be a data frame') }
+    if(!is.data.frame(tgavdf)){ stop('tgavdf must be a data frame') }
 
     req_cols <- c('tgav', 'time')
-    missing  <- !req_cols %in% names(tgav)
+    missing  <- !req_cols %in% names(tgavdf)
     if(any(missing)){ stop('tgav missing the following columns: ',
                            paste(req_cols[missing], collapse = ', ')) }
 
@@ -134,28 +134,21 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
     endYr   <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][2])
 
     nc_time <- startYr:endYr
-    # Compare the emulator time with the tgav time
-    missing_time <- !tgav$time %in% nc_time
+    # Compare the emulator time with the tgavdf time
+    missing_time <- !tgavdf$time %in% nc_time
 
     if(any(missing_time)){
         stop('emulator was not trained with data for the following years: ',
-             paste(tgav$time[missing_time], collapse = ', '))
+             paste(tgavdf$time[missing_time], collapse = ', '))
         }
 
 
-    if(any(!nc_time %in% tgav$time)){
+    if(any(!nc_time %in% tgavdf$time)){
 
         # TODO
         stop('Need to add code that will subset the resid and emulator training data for years in common')
 
     }
-
-    # Define the time and tgav
-    time <- tgav$time
-    tgav <- matrix(tgav$tgav, ncol = 1)
-
-    meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
-    meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)
 
 
     # save a copy of the number of grids cells for each variable
@@ -163,8 +156,8 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
 
 
     # Define the time and tgav
-    time <- tgav$time
-    tgav <- matrix(tgav$tgav, ncol = 1)
+    time <- tgavdf$time
+    tgav <- matrix(tgavdf$tgav, ncol = 1)
 
     meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
     meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)

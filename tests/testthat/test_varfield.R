@@ -222,13 +222,17 @@ residgrids[[4]] <- tmp[[3]]
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
-fullgrids <- generate.TP.fullgrids(emulator, residgrids, tgav = data.frame(tgav = tgav, time = 2006:2100),
+fullgrids <- generate.TP.fullgrids(emulator, residgrids,
+                                   tgavdf = data.frame(tgav = tgav, time = 2006:2100),
                                    tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
                                    reconstruction_function = pscl_apply)
 
 pvarunconvert_fcn <- fullgrids$pvarunconvert_fcn
 tvarunconvert_fcn <- fullgrids$tvarunconvert_fcn
-fullgrids <- fullgrids$fullgrids
+fullgrids <- lapply(fullgrids$fullgrids,
+                    function(g){
+                        return(cbind(g[[1]], g[[2]]))
+                               })
 
 
 test_that('T Values produced by global mean calculation agree with the ones produced by CDO.',

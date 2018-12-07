@@ -4,7 +4,7 @@
 \alias{generate.TP.fullgrids}
 \title{Using a trained emulator, generate new full fields.}
 \usage{
-generate.TP.fullgrids(emulator, residgrids, tgav, tvarunconvert_fcn = NULL,
+generate.TP.fullgrids(emulator, residgrids, tgavdf, tvarunconvert_fcn = NULL,
   pvarunconvert_fcn = exp, reconstruction_function = pscl_apply,
   addNAs = FALSE)
 }
@@ -17,7 +17,7 @@ new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
 cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 precipitation residuals.}
 
-\item{tgav}{A data frame with two columns. Column \code{tgav} = the vector
+\item{tgavdf}{A data frame with two columns. Column \code{tgav} = the vector
 of global annual mean temperatures for constructing a mean field with
 \code{reconstruction_function}.To be added to each list entry of residual
 fields in \code{residgrids}. And a column \code{time}, used to subset the
