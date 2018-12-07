@@ -209,14 +209,9 @@ residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
                                    rn = newgrids1[ ,1:Ngrid])$rnew
 residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
                                    rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
-# TODO: un-hard code this conversion of residgrids1P from (-inf, inf) support
-# to natural support (0,inf)
 
-
-## Run the rest with random phases
+## Run the rest with random phases and add
 tmp <- generate.TP.resids(emulator, ngen = 3)
-
-
 residgrids <- list()
 length(residgrids) <- length(tmp) + 1
 residgrids[[1]] <-  cbind(residgrids1T, residgrids1P)

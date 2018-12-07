@@ -16,11 +16,11 @@
 #' realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
 #' are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
-#' @param tgav  A data frame with columns tgav = the vector of global annual
-#' mean temperatures for constructing a mean field with
-#' \code{reconstruction_function}.To be added to each list
-#' entry of residual fiels in \code{residgrids}. And a column time =
-#' something KD needs for handling ISIMIP data in the grand experiment.
+#' @param tgav  A data frame with two columns. Column tgav = the vector of
+#' global annual mean temperatures for constructing a mean field with
+#' \code{reconstruction_function}.To be added to each list entry of residual
+#' fields in \code{residgrids}. And a column time = something KD needs for
+#' handling ISIMIP data in the grand experiment.
 #' @param tvarunconvert_fcn The function to undo any transformation done to the
 #' input training data in \code{trainTP} to correct the support. This should be
 #' the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
@@ -41,6 +41,10 @@
 #' if it looks like there may be an issue.
 #' @param reconstruction_function A function for constructing a mean field from
 #' trained pattern scaling result + a vector of global annual mean temperatures.
+#' @param addNAs A logical TRUE/FALSE, whether NA values need to be added back
+#' to the full grids of data (that is, if ISIMIP data, restricting to land cells
+#' only, was used for training rather than data with full global coverage.)
+#' Defaults to FALSE.
 #' @return A list of:
 #' 1) fullgrids = A list of new full fields, each entry in
 #' the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
@@ -50,13 +54,15 @@
 #' in the grand experiment.
 #' 3) time = something KD needs to fill in, relevant to using ISIMIP data
 #' in the grand experiment.
-#' 4) tvarunconvert_fcn = the tvarunconvert_fcn input.
-#' 5) pvarunconvert_fcn = the pvarunconvert_fcn input.
+#' 4) meanfieldT = the reconstructed, pattern scaled temperature mean field.
+#' 5) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
+#' 6) tvarunconvert_fcn = the tvarunconvert_fcn input.
+#' 7) pvarunconvert_fcn = the pvarunconvert_fcn input.
 #' @export
 
 generate.TP.fullgrids <- function(emulator, residgrids, tgav,
                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
-                                  reconstruction_function = pscl_apply){
+                                  reconstruction_function = pscl_apply, addNAs = FALSE){
 
     # silence package checks
     column_index <- lat <- lon <- NULL
@@ -109,16 +115,48 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
 
 
     # Check inputs
-    ### space for KD code in the future
+    if(!is.data.frame(tgav)){ stop('tgav must be a data frame') }
 
-    # TODO eventually wer are going to want to check time that is actually pulled from the traing
+    req_cols <- c('tgav', 'time')
+    missing  <- !req_cols %in% names(tgav)
+    if(any(missing)){ stop('tgav missing the following columns: ',
+                           paste(req_cols[missing], collapse = ', ')) }
+
+
+    # TODO eventually we are going to want to check time that is actually pulled from the traing
     # data instead of parsing it out from the tag names.
-    ### space for KD code in the future
+    startYr_endYr <- gsub(".nc", "", stringr::str_split(basename(emulator$infiles), "_")[[1]][6])
+    startYr <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][1])
+    endYr   <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][2])
 
+    nc_time <- startYr:endYr
+    # Compare the emulator time with the tgav time
+    missing_time <- !tgav$time %in% nc_time
+
+    if(any(missing_time)){
+        stop('emulator was not trained with data for the following years: ',
+             paste(tgav$time[missing_time], collapse = ', '))
+        }
+
+
+    if(any(!nc_time %in% tgav$time)){
+
+        # TODO
+        stop('Need to add code that will subset the resid and emulator training data for years in common')
+
+    }
+
+    # Define the time and tgav
+    time <- tgav$time
+    tgav <- matrix(tgav$tgav, ncol = 1)
+
+    meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
+    meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)
 
 
     # save a copy of the number of grids cells for each variable
     Ngrid <- ncol(residgrids[[1]])/2
+
 
     # Define the time and tgav
     time <- tgav$time
@@ -162,7 +200,7 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
 
 
         # Return output
-        return(cbind(tas, pr))# list(tas = tas, pr = pr) # KD LIST OUTPUT
+        return(list(tas = tas, pr = pr))
 
 
     }) ->
@@ -171,9 +209,6 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
 
 
 
-
-
-    # KD CODE
     # Create the croodinates mapping file.
     # TODO there is probably a better way to do this
     # Create a coordinate mapping data frame. Since
@@ -190,32 +225,36 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgav,
         dplyr::select(column_index, lat, lon) ->
         coordinates
 
-    # # If griddata mapping files exist then then add NA grid cells will have to be added back into
-    # # the grids in order to return output that has the same grid dimensions.
-    # if(!is.null(emulator$griddataT$mapping) & addNAs){
-    #
-    #     # Since the T and P fields are concatenated together in a single data frame the mapping data must be updated to
-    #     # reflect the single data frame.
-    #     emulator$griddataT$mapping %>%
-    #         dplyr::bind_rows(tibble::tibble(original_index = emulator$griddataP$mapping$original_index + max(emulator$griddataT$mapping$original_index),
-    #                                         new_index = emulator$griddataP$mapping$new_index + max(emulator$griddataT$mapping$new_index, na.rm = TRUE))) ->
-    #         mapping
-    #
-    #     # Use the new mapping file to insert the NAs into the fullgrids
-    #     fullgrids <- lapply(fullgrids, FUN = add_NAs, mapping = mapping)
-    #
-    # } else if(!is.null(emulator$griddataT$mapping) & !addNAs){
-    #
-    #     # If the NAs were removed but the user has selected NOT to add the NAs back
-    #     # to the grid then discard the NA cells from the coordinates mapping file.
-    #     emulator$griddataT$mapping %>%
-    #         na.omit %>%
-    #         dplyr::select(column_index = new_index, lat, lon) ->
-    #         coordinates
-    #
-    # }
+    # If griddata mapping files exist then then add NA grid cells will have to be added back into
+    # the grids in order to return output that has the same grid dimensions.
+    if(!is.null(emulator$griddataT$mapping) & addNAs){
+
+        # Since the T and P fields are concatenated together in a single data frame the mapping data must be updated to
+        # reflect the single data frame.
+        emulator$griddataT$mapping %>%
+            dplyr::bind_rows(tibble::tibble(original_index = emulator$griddataP$mapping$original_index + max(emulator$griddataT$mapping$original_index),
+                                            new_index = emulator$griddataP$mapping$new_index + max(emulator$griddataT$mapping$new_index, na.rm = TRUE))) ->
+            mapping
+
+        # Use the new mapping file to insert the NAs into the fullgrids
+        fullgrids <- lapply(fullgrids, FUN = add_NAs, mapping = mapping)
+
+    } else if(!is.null(emulator$griddataT$mapping) & !addNAs){
+
+        # If the NAs were removed but the user has selected NOT to add the NAs back
+        # to the grid then discard the NA cells from the coordinates mapping file.
+        emulator$griddataT$mapping %>%
+            na.omit %>%
+            dplyr::select(column_index = new_index, lat, lon) ->
+            coordinates
+
+    }
+
+
+
 
     return(list(fullgrids = fullgrids, coordinates = coordinates, time = time,
+                meanfieldT = meanfieldT, meanfieldP = meanfieldP,
                 tvarunconvert_fcn = tvarunconvert_fcn, pvarunconvert_fcn = pvarunconvert_fcn))
 
 }
