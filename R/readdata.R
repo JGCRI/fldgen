@@ -321,6 +321,10 @@ file.pairer <- function(dat, tvarname = 'tas', pvarname = 'pr')
 #' @keywords internal
 read_globalAvg <- function(nc_files, globalAvg_file, vardata, paireddat){
 
+    # silence package checks
+    X <- NULL
+
+
     # TODO currently, because of the paireddat element, this is not back-
     # compatible with the T-only training. When creating a single, streamlined
     # train function that works on T or TP, update. Based on plan for that

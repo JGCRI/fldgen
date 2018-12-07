@@ -62,6 +62,7 @@
 #' 5) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 #' 6) tvarunconvert_fcn = the tvarunconvert_fcn input.
 #' 7) pvarunconvert_fcn = the pvarunconvert_fcn input.
+#' @importFrom stringr str_split
 #' @export
 
 generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,

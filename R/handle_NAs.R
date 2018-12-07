@@ -14,7 +14,7 @@
 drop_NAs <- function(griddata_input){
 
     # Silence package checks
-    remove_index <- . <- original_index <- new_index <- NULL
+    remove_index <- . <- original_index <- new_index <- lat <- lon <- NULL
 
     # IF there are no NA values then return a NULL mapping file and the input griddata.
     if(!TRUE %in% is.na(griddata_input$vardata)){
