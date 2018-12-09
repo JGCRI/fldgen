@@ -18,7 +18,7 @@
 #' precipitation residuals.
 #' @param tgavdf  A data frame with two columns. Column \code{tgav} = the vector
 #' of global annual mean temperatures for constructing a mean field with
-#' \code{reconstruction_function}.To be added to each list entry of residual
+#' \code{reconstruction_function}.  To be added to each list entry of residual
 #' fields in \code{residgrids}. And a column \code{time}, used to subset the
 #' trained emulator so that pattern scaling information from the appropriate
 #' years is applied to tgav time series. Note: grids cannot be generated for
@@ -62,7 +62,6 @@
 #' 5) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 #' 6) tvarunconvert_fcn = the tvarunconvert_fcn input.
 #' 7) pvarunconvert_fcn = the pvarunconvert_fcn input.
-#' @importFrom stringr str_split
 #' @export
 
 generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
