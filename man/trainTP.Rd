@@ -6,7 +6,7 @@
 \usage{
 trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
   tvarconvert_fcn = NULL, pvarname = "pr", platvar = "lat",
-  plonvar = "lon", pvarconvert_fcn = log, meanfield = pscl_analyze,
+  plonvar = "lon", pvarconvert_fcn = logPfloor, meanfield = pscl_analyze,
   globalAvg_file = NULL, record_absolute = FALSE)
 }
 \arguments{

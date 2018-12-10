@@ -19,7 +19,7 @@ precipitation residuals.}
 
 \item{tgavdf}{A data frame with two columns. Column \code{tgav} = the vector
 of global annual mean temperatures for constructing a mean field with
-\code{reconstruction_function}.To be added to each list entry of residual
+\code{reconstruction_function}.  To be added to each list entry of residual
 fields in \code{residgrids}. And a column \code{time}, used to subset the
 trained emulator so that pattern scaling information from the appropriate
 years is applied to tgav time series. Note: grids cannot be generated for

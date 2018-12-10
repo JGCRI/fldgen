@@ -88,7 +88,7 @@ trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
-                    pvarconvert_fcn = log,
+                    pvarconvert_fcn = logPfloor,
                     meanfield=pscl_analyze,
                     globalAvg_file = NULL,
                     record_absolute=FALSE)
@@ -320,4 +320,12 @@ fldgen_object_TP <- function(griddataT, griddataP,
                infiles=infiles)
     class(fg) <- 'fldgen'
     fg
+}
+
+logPfloor <- function(x)
+{
+    ## Log transformation of precipitation, with a floor of 1e-9 (slightly less than
+    ## 0.1mm for the year) on the pre-transform values
+    x <- pmax(x, 1e-9)
+    log(x)
 }
