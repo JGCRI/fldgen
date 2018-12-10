@@ -5,8 +5,7 @@
 \title{Using a trained emulator, generate new full fields.}
 \usage{
 generate.TP.fullgrids(emulator, residgrids, tgavdf, tvarunconvert_fcn = NULL,
-  pvarunconvert_fcn = exp, reconstruction_function = pscl_apply,
-  addNAs = FALSE)
+  pvarunconvert_fcn = exp, reconstruction_function = pscl_apply)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
@@ -47,11 +46,6 @@ if it looks like there may be an issue.}
 
 \item{reconstruction_function}{A function for constructing a mean field from
 trained pattern scaling result + a vector of global annual mean temperatures.}
-
-\item{addNAs}{A logical TRUE/FALSE, whether NA values need to be added back
-to the full grids of data (that is, if ISIMIP data, restricting to land cells
-only, was used for training rather than data with full global coverage.)
-Defaults to FALSE.}
 }
 \value{
 A list of:
@@ -59,16 +53,12 @@ A list of:
 the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
 first 1:Ngrid cols are the temperature field and columns
 (Ngrid + 1):(2*Ngrid) are the precipitation field.
-2) coordinates = something KD needs to fill in, relevant to using ISIMIP data
-in the grand experiment.
-3) time = the input time column used to subset the trained emulator so that
+2) time = the input time column used to subset the trained emulator so that
 pattern scaling information from the appropriate years is applied to tgav
 time series. Note: grids cannot be generated for tgav years missing from
 the trained emulator.
-4) meanfieldT = the reconstructed, pattern scaled temperature mean field.
-5) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
-6) tvarunconvert_fcn = the tvarunconvert_fcn input.
-7) pvarunconvert_fcn = the pvarunconvert_fcn input.
+3) meanfieldT = the reconstructed, pattern scaled temperature mean field.
+4) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 }
 \description{
 This function takes in a trained emulator - a structure of class
