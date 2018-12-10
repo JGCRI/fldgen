@@ -26,6 +26,7 @@ Suggests:
     gcammaptools (>= 0.4),
     covr,
     gridExtra,
+    readr (>= 1.1.0),
     knitr,
     rmarkdown
 RoxygenNote: 6.0.1
