@@ -25,6 +25,7 @@ Suggests:
     testthat,
     gcammaptools (>= 0.4),
     covr,
+    gridExtra,
     knitr,
     rmarkdown
 RoxygenNote: 6.0.1
