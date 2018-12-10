@@ -182,7 +182,7 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
             tas <- tvarunconvert_fcn(tas)
 
         } else{
-            print('Generated T full fields not being transformed to a different support. Up to user to know if this is desirable.')
+            message('Generated T full fields not being transformed to a different support. Up to user to know if this is desirable.')
         }
 
 
@@ -191,7 +191,7 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
             pr <- pvarunconvert_fcn(pr)
 
         } else{
-            print('Generated P full fields not being transformed to a different support. Up to user to know if this is desirable.')
+            message('Generated P full fields not being transformed to a different support. Up to user to know if this is desirable.')
         }
 
 
