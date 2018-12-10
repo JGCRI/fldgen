@@ -227,7 +227,7 @@ tvarunconvert_fcn <- NULL
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
 fullgrids <- generate.TP.fullgrids(emulator, residgrids,
-                                   tgavdf = data.frame(tgav = tgav, time = 2006:2100),
+                                   tgav = tgav,
                                    tvarunconvert_fcn = NULL, pvarunconvert_fcn = pvarunconvert_fcn,
                                    reconstruction_function = pscl_apply)
 

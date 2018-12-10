@@ -16,13 +16,8 @@
 #' new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
 #' cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 #' precipitation residuals.
-#' @param tgavdf  A data frame with two columns. Column \code{tgav} = the vector
-#' of global annual mean temperatures for constructing a mean field with
-#' \code{reconstruction_function}.  To be added to each list entry of residual
-#' fields in \code{residgrids}. And a column \code{time}, used to subset the
-#' trained emulator so that pattern scaling information from the appropriate
-#' years is applied to tgav time series. Note: grids cannot be generated for
-#' tgav years missing from the trained emulator.
+#' @param tgav  A vector (or N x 1 matrix) of global mean temperatures, used to
+#' calculate the mean warming response field.
 #' @param tvarunconvert_fcn The function to undo any transformation done to the
 #' input training data in \code{trainTP} to correct the support. This should be
 #' the inverse function of the tvarconvert_fcn argument to \code{trainTP}. This
@@ -48,15 +43,11 @@
 #' the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
 #' first 1:Ngrid cols are the temperature field and columns
 #' (Ngrid + 1):(2*Ngrid) are the precipitation field.
-#' 2) time = the input time column used to subset the trained emulator so that
-#' pattern scaling information from the appropriate years is applied to tgav
-#' time series. Note: grids cannot be generated for tgav years missing from
-#' the trained emulator.
-#' 3) meanfieldT = the reconstructed, pattern scaled temperature mean field.
-#' 4) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
+#' 2) meanfieldT = the reconstructed, pattern scaled temperature mean field.
+#' 3) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 #' @export
 
-generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
+generate.TP.fullgrids <- function(emulator, residgrids, tgav,
                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
                                   reconstruction_function = pscl_apply){
 
@@ -86,46 +77,14 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
     }
 
 
-    # Check inputs
-    if(!is.data.frame(tgavdf)){ stop('tgavdf must be a data frame') }
-
-    req_cols <- c('tgav', 'time')
-    missing  <- !req_cols %in% names(tgavdf)
-    if(any(missing)){ stop('tgav missing the following columns: ',
-                           paste(req_cols[missing], collapse = ', ')) }
-
-
-    # TODO eventually we are going to want to check time that is actually pulled from the traing
-    # data instead of parsing it out from the tag names.
-    startYr_endYr <- gsub(".nc", "", stringr::str_split(basename(emulator$infiles), "_")[[1]][6])
-    startYr <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][1])
-    endYr   <- as.integer(stringr::str_split(startYr_endYr, '-')[[1]][2])
-
-    nc_time <- startYr:endYr
-    # Compare the emulator time with the tgavdf time
-    missing_time <- !tgavdf$time %in% nc_time
-
-    if(any(missing_time)){
-        stop('emulator was not trained with data for the following years: ',
-             paste(tgavdf$time[missing_time], collapse = ', '))
-        }
-
-
-    if(any(!nc_time %in% tgavdf$time)){
-
-        # TODO
-        stop('Need to add code that will subset the resid and emulator training data for years in common')
-
+    ## Convert the tgav input to a column vector if necessary
+    assertthat::assert_that(is.numeric(tgav))
+    if(!is.matrix(tgav) || ncol(tgav) != 1) {
+        tgav <- matrix(tgav, ncol=1)
     }
-
 
     # save a copy of the number of grids cells for each variable
     Ngrid <- ncol(residgrids[[1]])/2
-
-
-    # Define the time and tgav
-    time <- tgavdf$time
-    tgav <- matrix(tgavdf$tgav, ncol = 1)
 
     meanfieldT <- reconstruction_function(emulator$meanfldT, tgav)
     meanfieldP <- reconstruction_function(emulator$meanfldP, tgav)
@@ -172,8 +131,8 @@ generate.TP.fullgrids <- function(emulator, residgrids, tgavdf,
         fullgrids
 
 
-    return(list(fullgrids = fullgrids, time = time,
-                meanfieldT = meanfieldT, meanfieldP = meanfieldP))
+    return(list(fullgrids = fullgrids, meanfieldT = meanfieldT, meanfieldP =
+                  meanfieldP))
 
 }
 
