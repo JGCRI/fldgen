@@ -4,15 +4,15 @@
 \alias{add_NAs}
 \title{Add the NA grid cells that may have been removed during the the emulator training process}
 \usage{
-add_NAs(data, mapping)
+add_NAs(data, griddata)
 }
 \arguments{
-\item{data}{a matrix of the time by grid cell data that is missing NA gridcells}
+\item{data}{Matrix of data to which to restore missing grid cells}
 
-\item{mapping}{a mapping data frame created by \code{drop_NAs} that contains the original and new index information for each grid cell.}
+\item{griddata}{Griddata structure from the training procedure}
 }
 \value{
-a complete data frame of NA grid cells and the generated fields ordered by grid cell
+Matrix of data with grid cells restored.
 }
 \description{
 This function adds NA gridcells that were removed during the training process in order to convert

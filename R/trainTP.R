@@ -174,16 +174,6 @@ trainTP <- function(dat,
     }
     griddataP$pvarconvert_fcn <- pvarconvert_fcn
 
-
-    # Save a copy of the original vardata and globalop in case NA grid cells
-    # are removed, if the NA grid cells are removed from the training process
-    # the original copies will be used to add the NAs back into the data frame
-    # before returning the output.
-    Tvardata_original  <- griddataT$vardata
-    Pvardata_original  <- griddataP$vardata
-    Tglobalop_original <- griddataT$globalop
-    Pglobalop_original <- griddataP$globalop
-
     # Remove the gridcells that only contain NA values.
     griddataT <- drop_NAs(griddataT)
     griddataP <- drop_NAs(griddataP)
@@ -239,20 +229,6 @@ trainTP <- function(dat,
     # tags should be shared by T and P so doesn't matter which griddata you use
     reof_l <- split_eof(reof, griddataT)
     psd <- psdest(reof_l)
-
-
-    # If NA values were removed from the vardata object replace with the original vardata
-    # data frame here.
-    if(!is.null(griddataT$mapping)){
-        griddataT$vardata  <- Tvardata_original
-        griddataT$globalop <- Tglobalop_original
-    }
-
-    if(!is.null(griddataP$mapping)){
-        griddataP$vardata  <- Pvardata_original
-        griddataP$globalop <- Pglobalop_original
-    }
-
 
     # output a generalized fldgen object
     fldgen_object_TP(griddataT, griddataP,

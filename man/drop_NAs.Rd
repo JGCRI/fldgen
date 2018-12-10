@@ -4,17 +4,36 @@
 \alias{drop_NAs}
 \title{Remove NA grid cells from processing in the emulator training process}
 \usage{
-drop_NAs(griddata_input)
+drop_NAs(griddata)
 }
 \arguments{
-\item{griddata_input}{output from \code{concatGrids.general}}
+\item{griddata}{output from \code{concatGrids.general}}
 }
 \value{
-A list similar in structure and content to \code{concatGrids.general} output but without the
-NA gridcells if applicable and a mapping data frame of the original and new grid cell indices.
+A new griddata structure, with missing grid cells removed
 }
 \description{
-This function removes grid cells with missing data, NA values for all timesteps,
-from being processed by \code{trainTP}. This enables \code{fldgen} to work with output that has NAs in it.
+This function removes grid cells with missing data, NA values for all
+timesteps, from being processed by \code{trainTP}. This enables \code{fldgen}
+to work with output that has NAs in it.
+}
+\details{
+The parts of the griddata structure that are affected are:
+\describe{
+\item{vardata}{Missing grid cells are removed}
+\item{globalop}{Entries corresponding to missing grid cells are removed.}
+}
+
+The following items are added, \emph{only if} there were missing grid cells
+to drop.
+\describe{
+\item{ncol_full}{Number of columns in the original matrix, before missing
+values were dropped.}
+\item{gridid_full}{Column ids in the original matrix, for the grid cells that
+were not dropped.}
+\item{coord}{Matrix of latitude and longitude for each grid cell. This is distinct from
+the \emph{lat} and \emph{lon} entries, which gives the latitude coordinate
+extracted from the original netCDF file.} #'
+}
 }
 \keyword{internal}
