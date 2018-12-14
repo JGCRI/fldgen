@@ -12,11 +12,7 @@ test_that('When there are no NAs there are no changes.', {
 
     out1 <- drop_NAs(original_data)
 
-    expect_equal(length(original_data), length(out1))
-    expect_equal(dim(original_data$vardata), dim(out1$vardata))
-
-    test <- original_data$vardata == out1$vardata
-    expect_true(!any(test != TRUE))
+    expect_identical(out1, original_data)
 
 })
 
@@ -31,7 +27,7 @@ test_that('drop_NAs throws errors.', {
 
     })
 
-test_that('drop_NAs & add_NAs changes dimensions correctly.', {
+test_that('drop_NAs & add_NAs are inverses.', {
 
     # Change some of the columns to NAs
     data_w_NAs <- original_data
@@ -43,18 +39,14 @@ test_that('drop_NAs & add_NAs changes dimensions correctly.', {
     expected_cols <- ncol(data_w_NAs$vardata) - 4
     expect_equal(ncol(data_wo_NAs$vardata), expected_cols)
 
-    new_length <- length(data_w_NAs) + 1 # should add the mapping data frame to the list
-    expect_equal(length(data_wo_NAs), new_length)
-
+    expect_false(is.null(data_wo_NAs$ncol_full))
+    expect_false(is.null(data_wo_NAs$gridid_full))
+    expect_false(is.null(data_wo_NAs$coord))
 
     # Check to see that when the NAs are added back the output matches the original data with the NAs.
-    data_NAs_added <- add_NAs(data_wo_NAs$vardata, mapping = data_wo_NAs$mapping)
+    data_NAs_added <- add_NAs(data_wo_NAs$vardata, data_wo_NAs)
 
-    expect_equal(dim(data_w_NAs$vardata), dim(data_NAs_added))
-    expect_equal(which(is.na(data_w_NAs$vardata), arr.ind = TRUE), which(is.na(data_w_NAs$vardata), arr.ind = TRUE))
-    expect_equal(which(!is.na(data_w_NAs$vardata), arr.ind = TRUE), which(!is.na(data_w_NAs$vardata), arr.ind = TRUE))
-
-
+    expect_equal(data_NAs_added, data_w_NAs$vardata)
 })
 
 

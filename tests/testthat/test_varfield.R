@@ -219,16 +219,18 @@ residgrids[[2]] <- tmp[[1]]
 residgrids[[3]] <- tmp[[2]]
 residgrids[[4]] <- tmp[[3]]
 
+## Define the unconvert functions
+pvarunconvert_fcn <- exp
+tvarunconvert_fcn <- NULL
+
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
 fullgrids <- generate.TP.fullgrids(emulator, residgrids,
-                                   tgavdf = data.frame(tgav = tgav, time = 2006:2100),
-                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+                                   tgav = tgav,
+                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = pvarunconvert_fcn,
                                    reconstruction_function = pscl_apply)
 
-pvarunconvert_fcn <- fullgrids$pvarunconvert_fcn
-tvarunconvert_fcn <- fullgrids$tvarunconvert_fcn
 fullgrids <- lapply(fullgrids$fullgrids,
                     function(g){
                         return(cbind(g[[1]], g[[2]]))
