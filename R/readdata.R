@@ -300,6 +300,81 @@ file.pairer <- function(dat, tvarname = 'tas', pvarname = 'pr')
 }
 
 
+#' Read in global average temperature time series
+#'
+#' Use the string defined by the globalAvg_file \code{trainTP} argument to
+#' import a global average temperature time series from a corresponding txt
+#' file.
+#'
+#' @param nc_files the path and name to the nc file the global average is
+#' paired with.
+#' @param globalAvg_file The string end added onto the nc_file name for the txt
+#' file to read in.
+#' @param vardata The data frame to use to check the dimensions of the data
+#' imported by the function.
+#' @param paireddat The paireddat data frame, this is used to make sure that
+#' the number of rows returned matches what is expected.
+#' @return A matrix of global averages, the number of rows should match the
+#' number of rows in the vardata data frame.
+#' @importFrom utils read.table
+#' @export
+#' @keywords internal
+read_globalAvg <- function(nc_files, globalAvg_file, vardata, paireddat){
+
+    # silence package checks
+    X <- NULL
+
+
+    # TODO currently, because of the paireddat element, this is not back-
+    # compatible with the T-only training. When creating a single, streamlined
+    # train function that works on T or TP, update. Based on plan for that
+    # (only support the input of a list of file names, one var or paired),
+    # will likely just come down to renaming paireddat here and in the new
+    # master train function.
+
+
+    # TODO I think that theres needs to be some changes to this function so
+    # that it takes in a global average data frame and checks to make sure
+    # that the time is compatible with the the training files! other wise
+    # there could be some serious problems.
+    tgav_list <- lapply(nc_files, function(nc_file = X){
+
+        # Check to make sure that only one nc file is read in at a time
+        if(length(nc_file) > 1) {
+            stop('more than one file read into read_globalAvg')
+            }
+
+
+        # Read in the global average from the txt file.
+        global_file <- paste0(nc_file, globalAvg_file)
+
+
+        # Throw an error if the file is missing
+        if(!file.exists(global_file)) {
+            stop('could not find: ', basename(global_file))
+            }
+
+
+        # Import the txt file
+        tgav <- as.matrix(read.table(file = global_file))
+
+
+        # Check the imported tgav dimensions
+        expected_rows <- nrow(vardata) / nrow(paireddat)
+        if(nrow(tgav) != expected_rows) {
+            stop(nrow(tgav), ' rows in ', basename(global_file), ' when ', expected_rows, ' rows expected.')
+            }
+
+        tgav
+        })
+
+
+    # Format into a matrix
+    matrix(data = unlist(tgav_list), ncol = 1)
+}
+
+
+
 ###########################################################################################
 
 

@@ -53,9 +53,6 @@ generate.TP.resids <- function(emulator, ngen, method = 1){
     )
 
 
-
-    ### ADD THE NA COLUMNS BACK FOR ISIMIP DATA
-
     ### return the generated residuals
     return(residgrids = residgrids)
 }

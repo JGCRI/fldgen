@@ -11,16 +11,13 @@ generate.TP.fullgrids(emulator, residgrids, tgav, tvarunconvert_fcn = NULL,
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint
 emulator.}
 
-\item{residgrids}{A list of new residual fields, each entry in the list is a new
-realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid cols
-are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
+\item{residgrids}{A list of new residual fields, each entry in the list is a
+new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
+cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 precipitation residuals.}
 
-\item{tgav}{A data frame with columns tgav = the vector of global annual
-mean temperatures for constructing a mean field with
-\code{reconstruction_function}.To be added to each list
-entry of residual fiels in \code{residgrids}. And a column time =
-something KD needs for handling ISIMIP data in the grand experiment.}
+\item{tgav}{A vector (or N x 1 matrix) of global mean temperatures, used to
+calculate the mean warming response field.}
 
 \item{tvarunconvert_fcn}{The function to undo any transformation done to the
 input training data in \code{trainTP} to correct the support. This should be
@@ -51,12 +48,8 @@ A list of:
 the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
 first 1:Ngrid cols are the temperature field and columns
 (Ngrid + 1):(2*Ngrid) are the precipitation field.
-2) coordinates = something KD needs to fill in, relevant to using ISIMIP data
-in the grand experiment.
-3) time = something KD needs to fill in, relevant to using ISIMIP data
-in the grand experiment.
-4) tvarunconvert_fcn = the tvarunconvert_fcn input.
-5) pvarunconvert_fcn = the pvarunconvert_fcn input.
+2) meanfieldT = the reconstructed, pattern scaled temperature mean field.
+3) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
 }
 \description{
 This function takes in a trained emulator - a structure of class

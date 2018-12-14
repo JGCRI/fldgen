@@ -25,6 +25,25 @@
 #' filenames (useful if you might distribute a saved model to other users who
 #' might not have the same directory structure as you).
 #'
+#' @section Supplying global mean temperatures:
+#'
+#' In some cases it may be desirable to supply global mean temperatures, rather
+#' than calculating them from the grid.  For example, the grid may cover only
+#' part of the grid, so that the average of the values would not be a true
+#' global average.  In such cases the true global mean temperatures can be
+#' supplied in a separate file.
+#'
+#' If this input file is used, it should be a plain text file with one
+#' temperature value per line, each line corresponding to one time slice in the
+#' corresponding netCDF file containing the grid data.  The name of the file
+#' will be constructed by adding a suffix (specified in the
+#' \code{globalAvg_file} argument) to the name of the netCDF file.  For example,
+#' if the netCDF file is called \code{larry.nc}, and the suffix is
+#' \code{curly.txt}, the name of the global mean temperature file will be
+#' \code{larry.nccurly.txt}.  If multiple netCDF files are passed in, each one
+#' will have its own file of global mean temperatures, constructed in the same
+#' way.
+#'
 #' @param dat A single directory name, or a list of netCDF files.  If a
 #' directory name is given, all netCDF files in the directory will be used.The
 #' pairing of temperature and precipitation netCDF files in the directory
@@ -53,6 +72,10 @@
 #' log() as precipitation values cannot be less than 0.
 #' @param meanfield Function to compute the mean temperature response field.
 #' The default is a linear pattern scaling algorithm.
+#' @param globalAvg_file Optional string to use in constructing the name of the
+#' file containing global mean temperatures, Tgav.  If omitted, calculate Tgav
+#' as the mean of the grid cells in each frame. (See "Supplying global mean
+#' temperatures" for more information.)
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
@@ -65,8 +88,10 @@ trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
-                    pvarconvert_fcn = log,
-                    meanfield=pscl_analyze, record_absolute=FALSE)
+                    pvarconvert_fcn = logPfloor,
+                    meanfield=pscl_analyze,
+                    globalAvg_file = NULL,
+                    record_absolute=FALSE)
 {
 
     ## silence package checks
@@ -149,10 +174,24 @@ trainTP <- function(dat,
     }
     griddataP$pvarconvert_fcn <- pvarconvert_fcn
 
+    # Remove the gridcells that only contain NA values.
+    griddataT <- drop_NAs(griddataT)
+    griddataP <- drop_NAs(griddataP)
 
-    # calculate global average T and global average P
-    tgav <- griddataT$vardata %*% griddataT$globalop # Global mean temperature
-    # pgav <- griddataP$vardata %*% griddataP$globalop # Global mean precip
+    # calculate global average T
+    if(is.null(globalAvg_file)){
+
+        # Calculate the global mean Temperature internally
+        tgav <- griddataT$vardata %*% griddataT$globalop
+
+    } else {
+
+        tgav <- read_globalAvg(paireddat$tfilename,
+                               globalAvg_file,
+                               griddataT$vardata,
+                               paireddat)
+
+    }
 
 
     # Use this to calculate the mean field for T and the mean field for P
@@ -176,11 +215,9 @@ trainTP <- function(dat,
                                     empiricalcdf = pfuns$cdf)
 
 
-    # enforce pairing to bind columns of the matrices correctly to create
-    # joint matrix of residuals
+    # bind columns of the matrices to create joint matrix of residuals
     joint_residuals <- as.matrix(cbind(normresidsT$rn, normresidsP$rn))
-    ## need to figure out enforcing pairing based on tags. It should just happen
-    ## automatically but it probably needs a test.
+
 
 
     # EOF decomposition
@@ -193,8 +230,7 @@ trainTP <- function(dat,
     reof_l <- split_eof(reof, griddataT)
     psd <- psdest(reof_l)
 
-
-    # output a genearlized fldgen object
+    # output a generalized fldgen object
     fldgen_object_TP(griddataT, griddataP,
                      tgav, meanfldT, meanfldP,
                      tfuns, pfuns,
@@ -260,4 +296,12 @@ fldgen_object_TP <- function(griddataT, griddataP,
                infiles=infiles)
     class(fg) <- 'fldgen'
     fg
+}
+
+logPfloor <- function(x)
+{
+    ## Log transformation of precipitation, with a floor of 1e-9 (slightly less than
+    ## 0.1mm for the year) on the pre-transform values
+    x <- pmax(x, 1e-9)
+    log(x)
 }

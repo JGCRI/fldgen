@@ -85,8 +85,8 @@ test_that('legacy T - Splitting a grid with a single element is ok.',
 ##########################################################################################
 
 ## Updated tests for temperature and precipitation
-inputTfile <- system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')
-inputPfile <- system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')
+inputTfile <- system.file('extdata/tas_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen')
+inputPfile <- system.file('extdata/pr_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen')
 ntime <- 95
 nlat <- 192
 nlon <- 288
@@ -96,7 +96,7 @@ ngrid <- nlat*nlon
 ## Test that file pairing works
 ## Files don't have to exist; file.pairer just works on names.
 dat <- c(inputTfile, inputPfile,
-         'extdata/pr_annual_esm_rcp_r1i1p1_startyr-endyr.nc')
+         'extdata/pr_annual_esm_rcp_r1i1p1_2006-2100.nc')
 
 
 test_that('Files following CMIP5 naming convention pair correctly.',
@@ -119,7 +119,7 @@ test_that('Full T data read works.',
               expect_equal(length(griddata$lon), nlon)
               expect_equal(length(griddata$time), ntime)
 
-              expect_equal(griddata$tags, list(`tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime)))
+              expect_equal(griddata$tags, list(`tas_annual_esm_rcp_r2i1p1_2006-2100.nc`=c(1,ntime)))
 
               expect_equal(class(griddata), 'griddata')
           })
@@ -139,7 +139,7 @@ test_that('Trim T time series length works.',
               expect_equal(length(gdtrim$lon), nlon)
               expect_equal(length(gdtrim$time), ntime.trim)
 
-              expect_equal(gdtrim$tags, list(`tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime.trim)))
+              expect_equal(gdtrim$tags, list(`tas_annual_esm_rcp_r2i1p1_2006-2100.nc`=c(1,ntime.trim)))
 
               expect_equal(gdtrim$vardata, griddata$vardata[1:ntime.trim, ])
 
@@ -210,7 +210,7 @@ test_that('Full P data read works.',
               expect_equal(length(griddata$lon), nlon)
               expect_equal(length(griddata$time), ntime)
 
-              expect_equal(griddata$tags, list(`pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime)))
+              expect_equal(griddata$tags, list(`pr_annual_esm_rcp_r2i1p1_2006-2100.nc`=c(1,ntime)))
 
               expect_equal(class(griddata), 'griddata')
           })
@@ -230,7 +230,7 @@ test_that('Trim P time series length works.',
               expect_equal(length(gdtrim$lon), nlon)
               expect_equal(length(gdtrim$time), ntime.trim)
 
-              expect_equal(gdtrim$tags, list(`pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc`=c(1,ntime.trim)))
+              expect_equal(gdtrim$tags, list(`pr_annual_esm_rcp_r2i1p1_2006-2100.nc`=c(1,ntime.trim)))
 
               expect_equal(gdtrim$vardata, griddata$vardata[1:ntime.trim, ])
 
@@ -284,3 +284,24 @@ test_that('Splitting a P grid with a single element is ok.',
               expect_equal(length(gdl), 1)
               expect_equal(gdl[[1]], griddata)
           })
+
+
+
+test_that('Read in global average works as expected.',
+          {
+            # Check that it works
+            globalAvg <- read_globalAvg(inputTfile, 'globalAvg.txt',
+                                        griddata$vardata,
+                                        data.frame(test = 1, test2 = 2))
+
+            # Check for error messages
+            expect_error(read_globalAvg(inputTfile, 'globalAvg2.txt',
+                                        griddata$vardata,
+                                        data.frame(test = 1, test2 = 2)),
+                         'could not find: tas_annual_esm_rcp_r2i1p1_2006-2100.ncglobalAvg2.txt')
+            expect_error(read_globalAvg(nc_files = inputTfile,
+                                        globalAvg_file = 'globalAvgbadYrs.txt',
+                                        vardata = griddata$vardata,
+                                        paireddat = data.frame(test = 1, test2 = 2)),
+                         '83 rows in tas_annual_esm_rcp_r2i1p1_2006-2100.ncglobalAvgbadYrs.txt when 95 rows expected.')
+            })

@@ -175,8 +175,8 @@ test_that('legacy T - psdest produces equivalent results to manual calculation.'
 
 ### Run the analysis and generation.  The results of these calculations will be
 ### tested in the test case below.
-emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
-                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
+emulator <- trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen'),
+                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen')),
                     tvarname = "tas", tlatvar='lat_2', tlonvar='lon_2',
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
@@ -209,14 +209,9 @@ residgrids1T <- unnormalize.resids(empiricalquant = emulator$tfuns$quant,
                                    rn = newgrids1[ ,1:Ngrid])$rnew
 residgrids1P <- unnormalize.resids(empiricalquant = emulator$pfuns$quant,
                                    rn = newgrids1[ , (Ngrid+1):(2*Ngrid)])$rnew
-# TODO: un-hard code this conversion of residgrids1P from (-inf, inf) support
-# to natural support (0,inf)
 
-
-## Run the rest with random phases
+## Run the rest with random phases and add
 tmp <- generate.TP.resids(emulator, ngen = 3)
-
-
 residgrids <- list()
 length(residgrids) <- length(tmp) + 1
 residgrids[[1]] <-  cbind(residgrids1T, residgrids1P)
@@ -224,16 +219,22 @@ residgrids[[2]] <- tmp[[1]]
 residgrids[[3]] <- tmp[[2]]
 residgrids[[4]] <- tmp[[3]]
 
+## Define the unconvert functions
+pvarunconvert_fcn <- exp
+tvarunconvert_fcn <- NULL
+
 
 ## use the new residuals in the native space with the mean field to reconstruct
 ## the full new fields
-fullgrids <- generate.TP.fullgrids(emulator, residgrids, tgav = data.frame(tgav = tgav, time = 2006:2100),
-                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+fullgrids <- generate.TP.fullgrids(emulator, residgrids,
+                                   tgav = tgav,
+                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = pvarunconvert_fcn,
                                    reconstruction_function = pscl_apply)
 
-pvarunconvert_fcn <- fullgrids$pvarunconvert_fcn
-tvarunconvert_fcn <- fullgrids$tvarunconvert_fcn
-fullgrids <- fullgrids$fullgrids
+fullgrids <- lapply(fullgrids$fullgrids,
+                    function(g){
+                        return(cbind(g[[1]], g[[2]]))
+                               })
 
 
 test_that('T Values produced by global mean calculation agree with the ones produced by CDO.',

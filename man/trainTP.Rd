@@ -6,8 +6,8 @@
 \usage{
 trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
   tvarconvert_fcn = NULL, pvarname = "pr", platvar = "lat",
-  plonvar = "lon", pvarconvert_fcn = log, meanfield = pscl_analyze,
-  record_absolute = FALSE)
+  plonvar = "lon", pvarconvert_fcn = logPfloor, meanfield = pscl_analyze,
+  globalAvg_file = NULL, record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a
@@ -48,6 +48,11 @@ log() as precipitation values cannot be less than 0.}
 \item{meanfield}{Function to compute the mean temperature response field.
 The default is a linear pattern scaling algorithm.}
 
+\item{globalAvg_file}{Optional string to use in constructing the name of the
+file containing global mean temperatures, Tgav.  If omitted, calculate Tgav
+as the mean of the grid cells in each frame. (See "Supplying global mean
+temperatures" for more information.)}
+
 \item{record_absolute}{If \code{TRUE}, record absolute paths for the input
 files; otherwise, record relative paths.}
 }
@@ -81,3 +86,24 @@ dataset was used, if you have a lot of similarly named files) or relative
 filenames (useful if you might distribute a saved model to other users who
 might not have the same directory structure as you).
 }
+\section{Supplying global mean temperatures}{
+
+
+In some cases it may be desirable to supply global mean temperatures, rather
+than calculating them from the grid.  For example, the grid may cover only
+part of the grid, so that the average of the values would not be a true
+global average.  In such cases the true global mean temperatures can be
+supplied in a separate file.
+
+If this input file is used, it should be a plain text file with one
+temperature value per line, each line corresponding to one time slice in the
+corresponding netCDF file containing the grid data.  The name of the file
+will be constructed by adding a suffix (specified in the
+\code{globalAvg_file} argument) to the name of the netCDF file.  For example,
+if the netCDF file is called \code{larry.nc}, and the suffix is
+\code{curly.txt}, the name of the global mean temperature file will be
+\code{larry.nccurly.txt}.  If multiple netCDF files are passed in, each one
+will have its own file of global mean temperatures, constructed in the same
+way.
+}
+

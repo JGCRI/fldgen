@@ -4,8 +4,8 @@ context('Native-normal mappings inverse check')
 ### Forward: Native to Normal to Native
 
 ### Get the residuals for the pair of example TP files
-emulator <- suppressWarnings(trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen'),
-                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_startyr-endyr.nc', package='fldgen')),
+emulator <- suppressWarnings(trainTP(c(system.file('extdata/tas_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen'),
+                      system.file('extdata/pr_annual_esm_rcp_r2i1p1_2006-2100.nc', package='fldgen')),
                     tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
                     pvarname = "pr", platvar = "lat", plonvar = "lon"))
 
