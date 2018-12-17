@@ -42,15 +42,7 @@ drop_NAs <- function(griddata){
         stop('Inconsistent grid cell entries, both NAs and numeric values for ', names(griddata$tags))
     }
 
-    ## construct full latitude and longitued arrays
-    nlat <- length(griddata$lat)
-    nlon <- length(griddata$lon)
-    ## Latitude is the most rapidly varying coordinate
-    latgrid <- rep(griddata$lat, times=nlon)
-    ## Longitude is trickier.  We'll build it as a matrix with the lon values
-    ## running in rows.
-    longrid <- as.vector(
-        matrix(rep(griddata$lon, times=nlat), nrow=nlat, byrow=TRUE))
+    coord_full <- coord_array(griddata$lat, griddata$lon)
 
     ## Record the original number of columns
     griddata$ncol_full <- ncol(griddata$vardata)
@@ -62,14 +54,12 @@ drop_NAs <- function(griddata){
     griddata$vardata <- griddata$vardata[ , valid_cells]
     griddata$globalop <- griddata$globalop[valid_cells, ]
     ## Need to drop missing cells from the coordinate arrays too.
-    latgrid <- latgrid[valid_cells]
-    longrid <- longrid[valid_cells]
+    coord <- coord_full[valid_cells , ]
 
     ## Record the other data we need
     griddata$gridid_full <- valid_cells # valid_cells has the original
                                         # column ids.
-    griddata$coord <- matrix(c(latgrid, longrid), ncol=2)
-    colnames(griddata$coord) <- c('lat','lon')
+    griddata$coord <- coord
 
     griddata
 }
@@ -101,3 +91,30 @@ add_NAs <- function(data, griddata)
     output
 }
 
+#' Convert lat/lon coordinates to a coordinate array
+#'
+#' NetCDF assumes the grid is rectangular, so it stores latitude by row and
+#' longitude by column.  We are potentially handling irregular coordinate grids
+#' here, so we need to be able to covert to lat/lon for each grid cell.
+#'
+#' @param lat Latitude coordinate array for the full rectangular grid
+#' @param lon Longitude coordinate array for the full rectangular grid
+#' @return Matrix [ngrid x 2], latitude in the first column, longitude in the
+#' second.
+#' @export
+coord_array <- function(lat, lon)
+{
+    nlat <- length(lat)
+    nlon <- length(lon)
+
+    ## Latitude is the most rapidly varying coordinate
+    latgrid <- rep(lat, times=nlon)
+    ## Longitude is trickier.  We'll build it as a matrix with the lon values
+    ## running in rows.
+    longrid <- as.vector(
+        matrix(rep(lon, times=nlat), nrow=nlat, byrow=TRUE))
+
+    coord <- matrix(c(latgrid, longrid), ncol=2)
+    colnames(coord) <- c('lat','lon')
+    coord
+}
