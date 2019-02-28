@@ -52,8 +52,10 @@ You can do the read and analyze steps below in a single command by running:
 infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_2006-2100.nc')
 infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_2006-2100.nc')
 emulator <- trainTP(c(infileT, infileP), 
-                    tvarname = "tas", tlatvar = "lat_2", tlonvar = "lon_2",
-                    pvarname = "pr", platvar = "lat", plonvar = "lon")
+                    tvarname = "tas", tlatvar='lat', tlonvar='lon',
+                    tvarconvert_fcn = NULL,
+                    pvarname = "pr", platvar='lat', plonvar='lon',
+                    pvarconvert_fcn = log)
 ```
 If you want to use multiple ESM runs for the training (recommended), you can either pass `trainTP` a list of filenames, or you can give it the name of a directory, in which case it will use all of the netCDF files it finds there. `trainTP` will automatically pair temperature (tas) amd precipitation ("pr") annual average netcdf files based on the file name (CMIP5 convention) and only train the emulator on paired files.
 
@@ -77,6 +79,32 @@ griddataP <- read.general(filenameP,
                           timevar='time')
 ```
 Here, we have read in the temperature netCDF data and used the global average operator to compute a time series of global mean temperatures. We have also read in the precipitation netCDF data. These variables will be used as input to the functions that analyze the ESM data and produce the joint temperature and precipitation fields. 
+For the fldgen method to work, each ESM variable must be able to accept residuals of between infinity and -infinity. This is already the case for temperature and no transformation is needed. Because precipitation cannot be less than 0, either the generated residuals have to be constrained to avoid negative precipitation while preserving the ESM spatiotemporal statistics, or the method must operate on a transformation of precipitation that can accept residuals between -infinity and infinity. The latter is more straightforward, and so residuals are generated for log(precipitation) rather than precipitation. Any function that is continuous, invertible, and monotonic and results in a transformed variable supported on (-infinity, infinity) will preserve the ESM spatiotemporal statistical properties as desired. 
+
+```{r transform}
+
+tvarconvert_fcn <- NULL
+pvarconvert_fcn <- log
+
+    # make sure supported on -infinity to infinity, add some output data to
+    # facilitate the reversing later
+    if(!is.null(tvarconvert_fcn)){
+        griddataT$vardata_raw <- griddataT$vardata
+        griddataT$vardata <- tvarconvert_fcn(griddataT$vardata)
+    } else {
+        griddataT$vardata_raw <- NULL
+    }
+    griddataT$tvarconvert_fcn <- tvarconvert_fcn
+
+
+    if(!is.null(pvarconvert_fcn)){
+        griddataP$vardata_raw <- griddataP$vardata
+        griddataP$vardata <- pvarconvert_fcn(griddataP$vardata)
+    } else {
+        griddataP$vardata_raw <- NULL
+    }
+    griddataP$pvarconvert_fcn <- pvarconvert_fcn
+```
 
 ```{r numbergrids}
 # the temperature and precipitation data must be on the same grid size:
@@ -163,7 +191,7 @@ You can generate any number of residual fields in a single command (shown for ge
 residgrids <- generate.TP.resids(emulator, ngen = 3)
 ```
 
-`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization.
+`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization. The residuals will be generated in temperature, log(precipitation) space.
 
 ### Generating fields - more detail
 
@@ -199,19 +227,58 @@ residgrids <- lapply(newgrids, function(g) {
 ```
 
 ### Creating a full field from residuals
-Whether you get your list of generated residual matrices from calling `generate.tp.resids()` or doing manually in more detail, the mean field is reconstructed and added to each residual field to create new, full global gridded temperature and precipitation realizations. 
+Whether you get your list of generated residual matrices from calling `generate.tp.resids()` or doing manually in more detail, the mean field is reconstructed and added to each residual field and transformed back to the native ESM variable where relevant (i.e. precipiation rather than log(precipitation)) to create new, full global gridded temperature and precipitation realizations. 
 
 ```{r fullfield}
 ## Here tgav is the same as the input, but that doesn't have to be the case
 meanfieldT <- pscl_apply(psclT, tgav)
 meanfieldP <- pscl_apply(psclP, tgav)
 
-fullgrids <- lapply(residgrids, function(g){
-    g[, 1:Ngrid] <- g[, 1:Ngrid] + meanfieldT
-    g[, (Ngrid+1):(2*Ngrid)] <- g[, (Ngrid+1):(2*Ngrid)] + meanfieldP
 
-    return(g)}
-)
+tvarunconvert_fcn <- NULL
+pvarunconvert_fcn <- exp
+
+   lapply(residgrids, function(matrix, gridcells = Ngrid){
+
+        # Separate the tas and pr data from one another.
+        tas <- matrix[ , 1:Ngrid]
+        pr  <- matrix[ , (Ngrid + 1):(2 * Ngrid)]
+
+        # Add the meanfield to the data
+        tas[ , 1:Ngrid] <- tas[ , 1:Ngrid] + meanfieldT
+        pr[ , 1:Ngrid]  <- pr[ , 1:Ngrid] + meanfieldP
+
+
+
+        # convert from (-inf, inf) support to natural support.
+        if( !is.null(emulator$griddataT$tvarconvert_fcn)){
+
+            tas <- tvarunconvert_fcn(tas)
+
+        } 
+
+        if(!is.null(emulator$griddataP$pvarconvert_fcn)){
+
+            pr <- pvarunconvert_fcn(pr)
+
+        } 
+
+        # Return output
+        return(list(tas = tas, pr = pr))
+
+
+    }) ->
+        fullgrids
+
+```
+
+
+This can also be accomplished in one command:
+``` 
+fullgrids <- generate.TP.fullgrids(emulator, residgrids,
+                                   tgav = tgav,
+                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = pvarunconvert_fcn,
+                                   reconstruction_function = pscl_apply)
 ```
 
 ### Plotting the fields
@@ -233,7 +300,7 @@ plotglobalfieldsT <- function(fieldlist, sequencenum, minval=-3.5, maxval=3.5, l
     })
 }
 
-plotglobalfieldsP <- function(fieldlist, sequencenum, minval=-5e-5, maxval=5e-5, legendstr) {
+plotglobalfieldsP <- function(fieldlist, sequencenum, minval=-1.5, maxval= 1.5, legendstr) {
     ## Extract a single example field from each series (sequencenum determines which one) and create a plot
     lapply(fieldlist, function(g) {
         suppressWarnings(
@@ -247,7 +314,7 @@ plotglobalfieldsP <- function(fieldlist, sequencenum, minval=-5e-5, maxval=5e-5,
 
 
 residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], exfld, legendstr='delta-T (K)')
-residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], exfld, legendstr='delta-P (flux)')
+residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], exfld, legendstr='delta-logP (log(kg/m2/s))')
 
 ## Display the plots
 for (i in 1:length(residfieldplotsT)) {
@@ -336,7 +403,7 @@ if(dofieldplots) {
         suppressWarnings(plot_field(eofvis[i, (Ngrid + 1): (2 * Ngrid)], emulator$griddataP, 14, -0.5, 0.5)) + 
             ggtitle(title) +
             guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                      title="P-portion(relative to max of P portion", title.position='top', 
+                                                      title="P-portion (relative to max of P portion)", title.position='top', 
                                                 title.hjust=0.5))
     })
         
