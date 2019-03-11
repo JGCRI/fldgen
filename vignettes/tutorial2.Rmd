@@ -1,5 +1,5 @@
 ---
-title: "Fldgen v2 Tutorial - Joint Temperature and Precipitation"
+title: "Fldgen v2 Tutorial - Joint Temperature and Precipitation emulation and function how to"
 author: "Abigail Snyder"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -60,6 +60,44 @@ emulator <- trainTP(c(infileT, infileP),
 If you want to use multiple ESM runs for the training (recommended), you can either pass `trainTP` a list of filenames, or you can give it the name of a directory, in which case it will use all of the netCDF files it finds there. `trainTP` will automatically pair temperature (tas) amd precipitation ("pr") annual average netcdf files based on the file name (CMIP5 convention) and only train the emulator on paired files.
 
 If you use this (recommended) method, then you can skip directly to [Generating fields].  For users that wish to customize the training process, the next two sections describe what is happening inside the `train` function and show how to recreate those steps manually.
+
+
+### One-step residual field generation
+
+You can generate any number of residual fields in a single command (shown for generating 3 fields):
+```
+residgrids <- generate.TP.resids(emulator, ngen = 3)
+```
+
+`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization. The residuals will be generated in temperature, log(precipitation) space.
+
+### One-step full field construction
+This can also be accomplished in one command:
+``` 
+fullgrids <- generate.TP.fullgrids(emulator, residgrids,
+                                   tgav = tgav,
+                                   tvarunconvert_fcn = NULL, 
+                                   pvarunconvert_fcn = pvarunconvert_fcn,
+                                   reconstruction_function = pscl_apply)
+```
+
+## The science of each step
+
+### Setup (repeated)
+
+```{r paramsrepeat}
+## parameters for the code below.
+ngen <- 4             # number of fields to generate
+nplt <- ngen          # number of fields to plot
+exfld <- 20           # example field to plot from the time series
+set.seed(8675309)     # Set RNG seed so results will be reproducible
+```
+
+All of the data needed for this tutorial is installed with the package.
+```{r datadirrepeat}
+library('fldgen')
+datadir <- system.file('extdata', package='fldgen')
+```
 
 ### Reading the ESM data
 
@@ -184,16 +222,7 @@ emulator <- fldgen_object_TP(griddataT, griddataP,
 ```
 
 
-### One-step residual field generation
-
-You can generate any number of residual fields in a single command (shown for generating 3 fields):
-```
-residgrids <- generate.TP.resids(emulator, ngen = 3)
-```
-
-`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization. The residuals will be generated in temperature, log(precipitation) space.
-
-### Generating fields - more detail
+### Generating residual fields - more detail
 
 Now we're ready to generate fields.  We'll do `r ngen` fields in this example. The first one will be a reconstruction of the original input.  The other three will be new fields with random phases. The two steps used here to generate these new fields with random phases make up the interior of `generate.TP.resids()` and could be replaced with a call to that function (see `tests/testthat/test_varfield.R` lines 199-230 for an example). Because the EOF analysis was performed on a joint matrix of _transformed_ T and P residuals,  each grid cell in a generated field follows $N(0,1)$.
 
@@ -273,13 +302,6 @@ pvarunconvert_fcn <- exp
 ```
 
 
-This can also be accomplished in one command:
-``` 
-fullgrids <- generate.TP.fullgrids(emulator, residgrids,
-                                   tgav = tgav,
-                                   tvarunconvert_fcn = NULL, pvarunconvert_fcn = pvarunconvert_fcn,
-                                   reconstruction_function = pscl_apply)
-```
 
 ### Plotting the fields
 
