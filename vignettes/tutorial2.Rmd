@@ -59,7 +59,9 @@ emulator <- trainTP(c(infileT, infileP),
 ```
 If you want to use multiple ESM runs for the training (recommended), you can either pass `trainTP` a list of filenames, or you can give it the name of a directory, in which case it will use all of the netCDF files it finds there. `trainTP` will automatically pair temperature (tas) amd precipitation ("pr") annual average netcdf files based on the file name (CMIP5 convention) and only train the emulator on paired files.
 
-If you use this (recommended) method, then you can skip directly to [Generating fields].  For users that wish to customize the training process, the next two sections describe what is happening inside the `train` function and show how to recreate those steps manually.
+For the fldgen method to work, each ESM variable must be able to accept residuals of between infinity and -infinity. This is already the case for temperature and no transformation is needed (`tvarconvert_fcn = NULL`). Because precipitation cannot be less than 0, either the generated residuals have to be constrained to avoid negative precipitation while preserving the ESM spatiotemporal statistics, or the method must operate on a transformation of precipitation that can accept residuals between -infinity and infinity. The latter is more straightforward, and so residuals are generated for log(precipitation) rather than precipitation (`pvarconvert_fcn = log`). Any function that is continuous, invertible, and monotonic and results in a transformed variable supported on (-infinity, infinity) will preserve the ESM spatiotemporal statistical properties as desired. 
+
+For users that wish to customize the training process, a detailed explanation of the science in each step is included in this vignette.
 
 
 ### One-step residual field generation
@@ -69,7 +71,10 @@ You can generate any number of residual fields in a single command (shown for ge
 residgrids <- generate.TP.resids(emulator, ngen = 3)
 ```
 
-`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization. The residuals will be generated in temperature, log(precipitation) space.
+`residgrids` is a list of `ngen` entries, each containing a matrix of residuals [Ntime X 2Ngrid] for a single realization. Columns 1:Ngrid contain the temperature residuals for the realization. Columns (Ngrid+1):2Ngrid contain the precipitation residuals for the realization. 
+
+
+With the default inputs to `trainTP`, `tvarconvert_fcn = NULL` and `pvarconvert_fcn = log`, the residuals will be generated in `(temperature, log(precipitation))` space. 
 
 ### One-step full field construction
 This can also be accomplished in one command:
@@ -77,9 +82,12 @@ This can also be accomplished in one command:
 fullgrids <- generate.TP.fullgrids(emulator, residgrids,
                                    tgav = tgav,
                                    tvarunconvert_fcn = NULL, 
-                                   pvarunconvert_fcn = pvarunconvert_fcn,
+                                   pvarunconvert_fcn = exp,
                                    reconstruction_function = pscl_apply)
 ```
+
+Note that the inclusion of the argument `pvarunconvert_fcn = exp` means that the full grids are provided in `(temperature, precipitation)` space. The log(precipitation) transformation has been undone.
+
 
 ## The science of each step
 
