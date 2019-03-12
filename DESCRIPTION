@@ -2,8 +2,8 @@ Package: fldgen
 Type: Package
 Title: Generate Temperature Fields with Spatial and Temporal Correlation
 Version: 2.0.0
-Authors@R: c(person("Robert", "Link", email = "robert.link@pnnl.gov", role = c("aut", "cre")),
-		   person("Abigail", "Snyder", email = "abigail.snyder@pnnl.gov", role = c("aut")))
+Authors@R: c(person("Robert", "Link", email = "robert.link@pnnl.gov", role = c("aut", "cre", "ard")),
+		   person("Abigail", "Snyder", email = "abigail.snyder@pnnl.gov", role = c("aut", "lyr")))
 Description: Provides functions to learn the spatial and temporal correlation of the
     variability in an ESM and generate random temperature fields or random joint temperature
 	and precipitation fields with equivalent properties.
