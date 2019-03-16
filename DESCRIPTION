@@ -20,7 +20,6 @@ Imports:
 	reshape2 (>= 1.4.2),
 	ncdf4 (>= 1.16),
 	rlang (>= 0.1.2),
-	stringr (>= 1.2.0)
 Suggests:
     testthat,
     gcammaptools (>= 0.4),
@@ -29,7 +28,7 @@ Suggests:
     readr (>= 1.1.0),
     knitr,
     rmarkdown
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Remotes:
     JGCRI/gcammaptools

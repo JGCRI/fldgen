@@ -5,7 +5,8 @@
 \title{Read ESM netCDF data for arbitrary variables}
 \usage{
 read.general(filename, len = NULL, tag = basename(filename),
-  varname = "tas", latvar = "lat", lonvar = "lon", timevar = "time")
+  varname = "tas", latvar = "lat", lonvar = "lon",
+  timevar = "time")
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}

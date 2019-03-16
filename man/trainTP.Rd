@@ -6,8 +6,9 @@
 \usage{
 trainTP(dat, tvarname = "tas", tlatvar = "lat", tlonvar = "lon",
   tvarconvert_fcn = NULL, pvarname = "pr", platvar = "lat",
-  plonvar = "lon", pvarconvert_fcn = logPfloor, meanfield = pscl_analyze,
-  globalAvg_file = NULL, record_absolute = FALSE)
+  plonvar = "lon", pvarconvert_fcn = logPfloor,
+  meanfield = pscl_analyze, globalAvg_file = NULL,
+  record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a

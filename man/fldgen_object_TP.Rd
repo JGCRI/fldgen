@@ -4,8 +4,8 @@
 \alias{fldgen_object_TP}
 \title{Create a \code{fldgen} object from constituent parts}
 \usage{
-fldgen_object_TP(griddataT, griddataP, tgav, meanfldT, meanfldP, tfuns, pfuns,
-  reof, fxmag, fxphase, infiles)
+fldgen_object_TP(griddataT, griddataP, tgav, meanfldT, meanfldP, tfuns,
+  pfuns, reof, fxmag, fxphase, infiles)
 }
 \arguments{
 \item{griddataT}{An object returned from \code{\link{read.temperatures}} or
