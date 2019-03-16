@@ -13,6 +13,10 @@ addons:
     packages:
     - netcdf-bin
     - libnetcdf-dev
+    
+script:
+  - R CMD build .
+  - travis_wait R CMD check *.tar.gz
 
 after_success:
   - Rscript -e 'covr::codecov()'
