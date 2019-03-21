@@ -99,10 +99,10 @@ dat <- c(inputTfile, inputPfile,
          'extdata/pr_annual_esm_rcp_r1i1p1_2006-2100.nc')
 
 
-test_that('Files following CMIP5 naming convention pair correctly.',
-          {
-              paireddat <- file.pairer(dat, tvarname = 'tas', pvarname = 'pr')
-          })
+test_that('Files following CMIP5 naming convention pair correctly.', {
+    paireddat <- file.pairer(dat, tvarname = 'tas', pvarname = 'pr')
+    expect_equivalent(as.matrix(paireddat)[1,], c(inputTfile, inputPfile))
+})
 
 
 ## T first
