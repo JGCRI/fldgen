@@ -4,7 +4,7 @@ author: "Abigail Snyder"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Fldgen Tutorial}
+  %\VignetteIndexEntry{Fldgen v.2 Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

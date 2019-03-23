@@ -4,7 +4,7 @@ author: "Robert Link"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Fldgen Tutorial}
+  %\VignetteIndexEntry{Fldgen v.1 Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

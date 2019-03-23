@@ -10,18 +10,26 @@
 #'
 #' \verb{
 #' library(fldgen)
+#' datadir <- system.file('extdata', package='fldgen')
 #'
-#' emulator <- train('extdata/tann1.nc')
 #'
-#' tempgrids <- list()                     # Empty list to hold the temperature
-#'                                        # realizations we are about to create.
-#' length(tempgrids) <- 4
+#' infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_2006-2100.nc')
+#' infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_2006-2100.nc')
+#' emulator <- trainTP(c(infileT, infileP),
+#'                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
+#'                     tvarconvert_fcn = NULL,
+#'                     pvarname = "pr", platvar='lat', plonvar='lon',
+#'                     pvarconvert_fcn = log)
 #'
-#' ##  Run with the phases of the actual time series
-#' meanfield <- pscl_apply(emulator$pscl, emulator$tgav)
-#' tempgrids[[1]] <- reconst_fields(emulator$reof$rotation, mkcorrts(emulator) , meanfield)
-#' ## Run the rest with random phases
-#' for(i in 2:4)
-#'     tempgrids[[i]] <- reconst_fields(emulator$reof$rotation, mkcorrts(emulator), meanfield)
-#'}
+#'
+#' residgrids <- generate.TP.resids(emulator, ngen = 3)
+#'
+#' fullgrids <- generate.TP.fullgrids(emulator, residgrids,
+#'                                    tgav = tgav,
+#'                                    tvarunconvert_fcn = NULL,
+#'                                    pvarunconvert_fcn = exp,
+#'                                    reconstruction_function = pscl_apply)
+#' }
+#'
+#' For more examples, see the tutorial vignette (\code{vigentte('tutorial2', 'fldgen')}).
 "_PACKAGE"
