@@ -109,7 +109,10 @@ datadir <- system.file('extdata', package='fldgen')
 
 ### Reading the ESM data
 
-The ESM temperature and precipitation fields should be in netCDF filea.  The function that reads it returns a "griddata" structure that contains the data, as well as some information about the grid, such as the latitude, longitude, and time coordinates and the vector of area weights needed to compute grid averages.
+The ESM temperature and precipitation fields should be in netCDF files.  The function that reads 
+it returns a `griddata` structure that contains the data, as well as some information about the 
+grid, such as the latitude, longitude, and time coordinates and the vector of area weights needed 
+to compute grid averages.
 
 ```{r readdata}
 filenameT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_2006-2100.nc')
@@ -125,7 +128,8 @@ griddataP <- read.general(filenameP,
                           timevar='time')
 ```
 Here, we have read in the temperature netCDF data and used the global average operator to compute a time series of global mean temperatures. We have also read in the precipitation netCDF data. These variables will be used as input to the functions that analyze the ESM data and produce the joint temperature and precipitation fields. 
-For the fldgen method to work, each ESM variable must be able to accept residuals of between infinity and -infinity. This is already the case for temperature and no transformation is needed. Because precipitation cannot be less than 0, either the generated residuals have to be constrained to avoid negative precipitation while preserving the ESM spatiotemporal statistics, or the method must operate on a transformation of precipitation that can accept residuals between -infinity and infinity. The latter is more straightforward, and so residuals are generated for log(precipitation) rather than precipitation. Any function that is continuous, invertible, and monotonic and results in a transformed variable supported on (-infinity, infinity) will preserve the ESM spatiotemporal statistical properties as desired. 
+Next we must define the transformation functions, as described above.  Temperature doesn't need one,
+but for precipitation we will use a log transformation so that we can ensure that output precipitation values are >= 0.
 
 ```{r transform}
 
