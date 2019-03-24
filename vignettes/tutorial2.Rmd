@@ -1,7 +1,7 @@
 ---
 title: "Fldgen v2 Tutorial - Joint Temperature and Precipitation emulation and function how to"
 author: "Abigail Snyder"
-date: "`r Sys.Date()`"
+date: "2019-03-23"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Fldgen v.2 Tutorial}
