@@ -1,0 +1,26 @@
+c(bibentry('Article',
+           header =
+             'When using fldgen in your research, please cite the following documentation papers:',
+           key = 'link2019fldgenv1',
+           title =
+             'Fldgen v1.0: An Emulator with Internal Variability and Space-Time Correlation for Earth System Models',
+           author =
+             'Robert Link and Abigail Snyder and Cary Lynch and Corinne Hartin and Ben Kravitz and Ben Bond-Lamberty',
+           journal = 'Geoscientific Model Development',
+           year = '2019',
+           volume = 'in press',
+           url = 'https://doi.org/10.5194/gmd-2018-60',
+           doi = '10.5194/gmd-2018-60'),
+
+  bibentry('Article',
+           key = 'snyder2019fldgenv2',
+           title =
+             'Joint emulation of Earth System Model temperature-precipitation realizations with internal variability and space-time and cross-variable correlation : fldgen v2.0 software description',
+           author =
+             'Abigail Snyder and Robert Link and Kalyn Dorheim and Ben Kravitz and Ben Bond-Lamberty and Corinne Hartin',
+           journal = 'PLOS One',
+           year = '2019',
+           volume = 'submitted')
+  )
+
+
