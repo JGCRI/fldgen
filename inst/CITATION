@@ -20,7 +20,11 @@ c(bibentry('Article',
              'Abigail Snyder and Robert Link and Kalyn Dorheim and Ben Kravitz and Ben Bond-Lamberty and Corinne Hartin',
            journal = 'PLOS One',
            year = '2019',
-           volume = 'submitted')
+           volume = 'submitted',
+           footer =
+             c('Development of fldgen was supported by the US Department of Energy, Office of Science, as part of research in the Multi-Sector Dynamics, Earth and Environmental System Modeling Program. The Pacific Northwest National Laboratory is operated for DOE by Battelle Memorial Institute under contract DE-AC05-76RL01830.',
+               '\nAdditional support was provided by the Indiana University Environmental Resilience Institute and the Prepared for Environmental 10 Change grand challenge initiative.',
+               '\nDevelopment for fldgen v2.0 was supported by Pacific Northwest National Laboratory through the Laboratory Directed Research and Development program.'))
   )
 
 
