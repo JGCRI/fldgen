@@ -1,7 +1,8 @@
-#' Generate temperature fields with spatial and temporal correlation
+#' Climate variable field generator with internal variability and spatial, temporal, and inter-variable correlation
 #'
-#' Provides functions to learn the spatial and temporal correlation of the
-#' variability in an ESM and generate random temperature fields with equivalent
+#' Provides functions to learn the spatial, temporal, and inter-variable correlation of the
+#' variability in an earth system model (ESM) and generate random two-variable fields (\emph{e.g.}
+#' temperature and precipitation) with equivalent
 #' properties.
 #'
 #' @section Example:
