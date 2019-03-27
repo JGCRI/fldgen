@@ -32,8 +32,6 @@ latitude and longitude values as required.  These functions convert the
 matrix representation of fields into a data frame with variables suitable for
 plotting.  \code{fld2df} operates on a single time slice, while
 \code{fldts2df} works on an entire time sequence.
-
-Reorganize a time sequence of spatial fields into a data frame
 }
 \details{
 In addition to reformatting the data as a data frame, these functions remap

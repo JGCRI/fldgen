@@ -7,6 +7,13 @@
 #' normalized global mean temperature operator.  This convention isolates the
 #' time variability of the global mean in a single components and ensures that
 #' the remaining components describe variability that is purely spatial.
+#' This method also works when the state vector is grid cell temperature and
+#' grid cell precipitation (or other variable that patters with temperature)
+#' at time t - the state vector is 2Ngrid instead of Ngrid long.
+#' However, the two variable extension assumes that the first component is the
+#' normalized global mean temperature operator, concatenated with a 0 operator.
+#' This corresponds to the idea that the the global average value of
+#' precipitation (or other variable) is not relevant.
 #'
 #' @section Value:
 #'
@@ -23,23 +30,35 @@
 #'   slice.  Thus, \eqn{r(t) = \sum_{i=1}^{N} x[t,i] * rotation[:,i]}.}
 #' }
 #'
-#' @param resids A matrix [ntime x ngrid] of residuals from the mean field
-#' @param tgop A column vector [ngrid x 1] containing the global mean operator.
-#' This is produced as the \code{tgop} field of the structure returned by
-#' \code{\link{read.temperatures}}.
+#' @param resids A matrix [ntime x ngrid] or [ntime x 2ngrid] of residuals from
+#' the mean field. Temperature residuals must always occupy the first ngrid
+#' columns.
+#' @param Ngrid The number of spatial grid cells for each variable in data in
+#' dat. Defaults to 55296, a half degree grid.
+#' @param globop A column vector [ngrid x 1] containing the global mean operator.
+#' This is produced as the \code{globop} field of the structure returned by
+#' \code{\link{read.general}}.
 #' @importFrom stats prcomp sd
 #' @export
 #' @keywords internal
-eof_analyze <- function(resids, tgop)
+eof_analyze <- function(resids, Ngrid,  globop)
 {
-    ## pull the residuals from the pattern scaling.  Also, set xh0 to be the
-    ## tgop, divided by a normalization factor
-    xh0 <- tgop / sqrt(sum(tgop*tgop))
 
-    ## Project resids onto xh0, and subtract that projection from the original
-    ## residuals.  This is the same as calculating:
-    ##   resids - resids %*% xh0 %*% t(xh0)
+    Nvars <- ncol(resids) / Ngrid
+    if(Nvars != round(Nvars)){
+        stop("The number of columns in your residual matrix (observations of
+             all variables at a given time) is not an integer multiple of the
+             number of grid cells. This method only works when  all variables
+             have observations at the same grid resolution.")
+    }
+
+    ## set xh0 to be the globop, repeated for each variable, and divided by a
+    ## normalization factor.
     ##
+    ## This is the 0'th basis vector of the
+    xh0 <- rep(globop, Nvars)
+    xh0 <- xh0 / sqrt(sum(xh0 * xh0))
+
     ## First calculate projection coefficients.  We will need them again later.
     proj0 <- resids %*% xh0
 
@@ -50,13 +69,18 @@ eof_analyze <- function(resids, tgop)
     ## Now all of the remaining residuals are in the subspace where the global
     ## mean is zero.  We can compute principal components on those, and the PCs
     ## will all have zero global mean.
+    #### expand this comment with notes from the paper + 8/14/18 proofs.
+    #### esp relevant because area weighted precip fluxes is kind of weird (but
+    #### not a problem).
 
-    ## I'm not sure whether we want to scale to unit variance or not.  The
-    ## prototype version says we want to do this because there is higher
-    ## variance at high latitudes, and the man page for this function says it is
-    ## "advisable", but to me it seems like it adds a lot of effort without much
-    ## payoff.  We'll try it sans scaling for now.
+
+
+
+
+    ## Note all residuals are pre-mapped to a normal dist so each column of
+    ## the input matrix resids comes from N(0,1).
     pcs <- prcomp(resids, retx=TRUE, center=FALSE, scale=FALSE)
+
 
     ## It's pretty common to get some degenerate basis vectors.  The signature
     ## of these is having very low singular values (stored in sdev).  We check
@@ -68,6 +92,7 @@ eof_analyze <- function(resids, tgop)
     pcs$rotation <- pcs$rotation[,pckeep]
     pcs$x <- pcs$x[,pckeep]
 
+
     ## next we want to graft the zeroth basis vector onto our EOF results.
     pcnames <- c('PC0', colnames(pcs$rotation))
     pcs$rotation <- cbind(xh0, pcs$rotation)
@@ -77,14 +102,17 @@ eof_analyze <- function(resids, tgop)
     pcs$x <- cbind(proj0, pcs$x)
     colnames(pcs$x) <- pcnames
 
+
     ## We also need to add the sdev of the zeroth components to the sdev vector
     pcs$sdev <- c(sd(proj0), pcs$sdev)
+
 
     ## If we decide to use scaling in the future, we will need to graft onto
     ## that one as well.  For now it just contains the scalar FALSE, so nothing
     ## needs to be done.
 
     pcs
+
 }
 
 #' Reconstitute temperature fields
