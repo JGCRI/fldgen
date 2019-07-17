@@ -52,7 +52,7 @@ You can do the read and analyze steps below in a single command by running:
 infileT <- file.path(datadir, 'tas_annual_esm_rcp_r2i1p1_2006-2100.nc')
 infileP <- file.path(datadir, 'pr_annual_esm_rcp_r2i1p1_2006-2100.nc')
 emulator <- trainTP(c(infileT, infileP), 
-                    tvarname = "tas", tlatvar='lat', tlonvar='lon',
+                    tvarname = "tas", tlatvar='lat_2', tlonvar='lon_2',
                     tvarconvert_fcn = NULL,
                     pvarname = "pr", platvar='lat', plonvar='lon',
                     pvarconvert_fcn = log)
