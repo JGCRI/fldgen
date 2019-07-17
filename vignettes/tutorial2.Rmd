@@ -80,13 +80,16 @@ With the default inputs to `trainTP`, `tvarconvert_fcn = NULL` and `pvarconvert_
 This can also be accomplished in one command:
 ``` 
 fullgrids <- generate.TP.fullgrids(emulator, residgrids,
-                                   tgav = tgav,
+                                   tgav = emulator$tgav,
                                    tvarunconvert_fcn = NULL, 
                                    pvarunconvert_fcn = exp,
                                    reconstruction_function = pscl_apply)
 ```
 
 Note that the inclusion of the argument `pvarunconvert_fcn = exp` means that the full grids are provided in `(temperature, precipitation)` space. The log(precipitation) transformation has been undone.
+Also note that for the `tgav` argument we have passed in the `tgav` stored in the emulator structure;
+however, we could just as readily have passed in any future pathway for global mean temperature that
+we wanted to investigate.
 
 
 ## The science of each step
