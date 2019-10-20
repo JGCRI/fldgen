@@ -247,55 +247,58 @@ file.pairer <- function(dat, tvarname = 'tas', pvarname = 'pr')
     # separate dat into list of precip files and temperature files. Relies on
     # CMIP5 naming conventions.
     pdat <- dat[grep(paste0(pvarname, "_"), dat)]
-    if(any(grepl("aclim", tolower(pdat)) == FALSE) &
-       any(grepl("annual", tolower(pdat)) == FALSE)){
-        stop(paste("At least one precipitation file in", dat, "is not annual"))
+    if(any(grepl("aclim", tolower(pdat) == FALSE) &
+           grepl("annual", tolower(pdat)) == FALSE)) {
+      stop(paste("At least one precipitation file in", dat, "is not annual"))
     }
+    pdirs <- dirname(pdat)
+    pdat <- basename(pdat)
 
     tdat <- dat[grep(paste0(tvarname, "_"), dat)]
-    if(any(grepl("aclim", tolower(tdat)) == FALSE) &
-       any(grepl("annual", tolower(tdat)) == FALSE)){
-        stop(paste("At least one temperature file in", dat, "is not annual"))
+    if(any(grepl("aclim", tolower(tdat)) == FALSE &
+           grepl("annual", tolower(tdat)) == FALSE)) {
+      stop(paste("At least one temperature file in", dat, "is not annual"))
+    }
+    tdirs <- dirname(tdat)
+    tdat <- basename(tdat)
+
+    ## This pattern extracts the metadata from the filenames of the input files.  In order,
+    ## the fields are variable, realm/resolution, model, scenario, runid, time range.
+    ## The model name can have '-' characters, and the time range has the pattern NNNN-NNNN
+    ## (where the number of digits is arbitrary).  All the others have to be alphanumeric.
+    ptrn <- "([[:alnum:]]+)_([[:alnum:]]+)_([-[:alnum:]]+)_([[:alnum:]]+)_?(.*)_([0-9]+-[0-9]+)\\.nc"
+    pmeta <- stringr::str_match(pdat, ptrn)
+    tmeta <- stringr::str_match(tdat, ptrn)
+    if(any(is.na(pmeta[,1])) || any(is.na(tmeta[,1]))) {
+      ## One or more of the files doesn't conform to the naming convention, throw an error
+      bad <- function(m,d) {d[is.na(m[,1])]}
+      badp <- bad(pmeta, pdat)
+      badt <- bad(tmeta, tdat)
+      flist <- paste(paste(badp, collapse='\n'), paste(badt, collapse='\n'), sep='\n')
+      stop('The following files had malformed filenames:\n', flist)
+    }
+    fields <- c('pfilename','var','realmres', 'model','scenario','runid','time')
+    ptbl <- structure(as.data.frame(pmeta, stringsAsFactors=FALSE), names=fields)
+    ptbl$pfilename <- file.path(pdirs, ptbl$pfilename)            # restore full path
+    fields[1] <- 'tfilename'
+    ttbl <- structure(as.data.frame(tmeta, stringsAsFactors=FALSE), names=fields)
+    ttbl$tfilename <- file.path(tdirs, ttbl$tfilename)
+    paireddat <- dplyr::full_join(ttbl, ptbl, by=fields[c(-1,-2)])
+
+    ## Check for failed matches
+    fail <- is.na(paireddat$tfilename) | is.na(paireddat$pfilename)
+    if(all(fail)) {
+      stop('None of the input files had matches.\ntfilenames:\n',
+           paste(tmeta, collapse='\n'), '\npfilenames:\n', paste(pmeta, collapse='\n'))
+    }
+    if(any(fail)) {
+      paireddat <- paireddat[!fail,]
+      ngood <- nrow(paireddat)
+      warning('Some temperature files had no match in precipitation, or vice versa.  ',
+              'Proceeding with matched data (', ngood, ' pairs.)')
     }
 
-
-    # get to scenario identifying info
-    pdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(pfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file, c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-                      stopyr = substr(stopyr, 1,4)) ->
-        ptbl
-
-    tdat %>%
-        tibble::as_tibble() %>%
-        dplyr::mutate(tfilename = value) %>%
-        dplyr::mutate(file = basename(value)) %>%
-        tidyr::separate(file,  c("var", "timestep", "esm", "rcp", "run", "time"), sep = "_") %>%
-        dplyr::select(-var, -timestep)  %>%
-        tidyr::separate(time, c("startyr", "stopyr"), sep = "-") %>%
-        dplyr::mutate(startyr = substr(startyr, 1, 4),
-                      stopyr = substr(stopyr, 1,4)) ->
-        ttbl
-
-    ttbl %>%
-        dplyr::left_join(ptbl, by = c("esm", "rcp", "run", "startyr", "stopyr")) %>%
-        dplyr::select(tfilename, pfilename) %>%
-        na.omit ->
-        paireddat
-
-    if(nrow(paireddat) < 1){
-        stop("You have no paired temperature and precipitation files in this
-             directory. Use the function `train` to work on temperature files
-             only. Or ensure that your temperature and precipitation netCDFs
-             follow CMIP5 naming conventions.")
-    }
-
-    return(paireddat)
+    return(paireddat[c('tfilename','pfilename')])
 
 }
 

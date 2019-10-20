@@ -130,15 +130,10 @@ trainTP <- function(dat,
 
 
     ## Prepare the list of input files that contribute to the training for output
+    infiles <- as.vector(as.matrix(paireddat))
     if(record_absolute) {
-        dat1 <- as.vector(as.matrix(paireddat))
-        infiles <- normalizePath(dat1)
+        infiles <- normalizePath(infiles)
     }
-    else {
-        dat1 <- as.vector(as.matrix(paireddat))
-        infiles <- dat1
-    }
-
 
     ### Train
 

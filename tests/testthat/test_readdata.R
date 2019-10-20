@@ -100,10 +100,24 @@ dat <- c(inputTfile, inputPfile,
 
 
 test_that('Files following CMIP5 naming convention pair correctly.', {
-    paireddat <- file.pairer(dat, tvarname = 'tas', pvarname = 'pr')
+    expect_warning({paireddat <- file.pairer(dat, tvarname = 'tas', pvarname = 'pr')},
+                   'Some temperature files had no match')
     expect_equivalent(as.matrix(paireddat)[1,], c(inputTfile, inputPfile))
 })
 
+test_that('Various edge cases for file naming pair correctly.', {
+    ## no runid
+    fnrid <- c('./tas_annual_esm_rcp_2006-2100.nc', './pr_annual_esm_rcp_2006-2100.nc')
+    ## ISIMIP conventions
+    fnisi <- c('./tasAdjust_annual_MIROC5_rcp85_r1i1p1_EWEMBI_landonly_20060101-20991231.nc',
+               './prAdjust_annual_MIROC5_rcp85_r1i1p1_EWEMBI_landonly_20060101-20991231.nc')
+
+    pd <- file.pairer(fnrid, tvarname='tas', pvarname='pr')
+    expect_equivalent(as.matrix(pd)[1,], fnrid)
+
+    pd <- file.pairer(fnisi, tvarname='tasAdjust', pvarname='prAdjust')
+    expect_equivalent(as.matrix(pd)[1,], fnisi)
+})
 
 ## T first
 ## This will be used in two tests below
