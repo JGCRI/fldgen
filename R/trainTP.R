@@ -79,10 +79,6 @@
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
-#' @importFrom tibble as_tibble
-#' @importFrom stats na.omit
-#' @importFrom dplyr mutate select left_join %>%
-#' @importFrom tidyr separate
 #' @export
 trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',

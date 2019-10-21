@@ -232,10 +232,6 @@ splitGrids.general <- function(griddata)
 #' @param varname The name of the precipitation variable in CMIP5 ('pr' default).
 #' @return A tibble of paired file names in two columns: tfilename, pfilename.
 #' Each row of the tibble is a single scenario.
-#' @importFrom tibble as_tibble
-#' @importFrom stats na.omit
-#' @importFrom dplyr mutate select left_join %>%
-#' @importFrom tidyr separate
 #' @export
 #' @keywords internal
 file.pairer <- function(dat, tvarname = 'tas', pvarname = 'pr')
