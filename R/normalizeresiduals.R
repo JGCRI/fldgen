@@ -1,4 +1,4 @@
-#' characterize empirical distributions
+#' Characterize empirical distributions
 #'
 #' Given a vector of residuals in a single grid cell that empirically
 #' characterizes the distribution of residuals, return a CDF and
@@ -156,7 +156,7 @@ characterize.emp.dist <- function(inputresids, len=NULL){
         probabilities <- (order.vector - 1) * offset
 
         # return the ecdf for the function
-        approxfun(x = column.resids, y = probabilities)
+        approxfun(x = column.resids, y = probabilities, rule=2)
     }
 
     # define a function that can create the inverse of an empirical cdf
@@ -182,7 +182,7 @@ characterize.emp.dist <- function(inputresids, len=NULL){
         probabilities <- (order.vector - 1) * offset
 
         # return the ecdf for the function
-        approxfun(x = probabilities, y = column.resids)
+        approxfun(x = probabilities, y = column.resids, rule=2)
 
     }
 
