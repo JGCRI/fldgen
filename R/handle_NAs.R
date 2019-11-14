@@ -51,8 +51,9 @@ drop_NAs <- function(griddata){
     valid_cells <- which(nmiss == 0)
 
     ## Drop missing cells from vardata and globalop
-    griddata$vardata <- griddata$vardata[ , valid_cells]
-    griddata$globalop <- griddata$globalop[valid_cells, ]
+    griddata$vardata <- griddata$vardata[ , valid_cells, drop=FALSE]
+    griddata$globalop <- griddata$globalop[valid_cells, , drop=FALSE]
+    griddata$globalop <- griddata$globalop / sum(griddata$globalop)
     ## Need to drop missing cells from the coordinate arrays too.
     coord <- coord_full[valid_cells , ]
 
