@@ -1,7 +1,7 @@
 Package: fldgen
 Type: Package
 Title: Generate Temperature Fields with Spatial and Temporal Correlation
-Version: 2.0.0.9100
+Version: 2.0.1
 Authors@R: c(person("Robert", "Link", email = "robert.link@pnnl.gov", role = c("aut", "cre", "ard")),
 	     person("Abigail", "Snyder", email = "abigail.snyder@pnnl.gov", role = c("aut", "lyr")),
 	     person("Kalyn", "Dorheim", email = "kalyn.dorheim@pnnl.gov", role = c("ctg")))
