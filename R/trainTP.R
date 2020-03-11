@@ -79,10 +79,6 @@
 #' @param record_absolute If \code{TRUE}, record absolute paths for the input
 #' files; otherwise, record relative paths.
 #' @return A \code{fldgen} object.
-#' @importFrom tibble as_tibble
-#' @importFrom stats na.omit
-#' @importFrom dplyr mutate select left_join %>%
-#' @importFrom tidyr separate
 #' @export
 trainTP <- function(dat,
                     tvarname = "tas", tlatvar='lat', tlonvar='lon',
@@ -130,15 +126,10 @@ trainTP <- function(dat,
 
 
     ## Prepare the list of input files that contribute to the training for output
+    infiles <- as.vector(as.matrix(paireddat))
     if(record_absolute) {
-        dat1 <- as.vector(as.matrix(paireddat))
-        infiles <- normalizePath(dat1)
+        infiles <- normalizePath(infiles)
     }
-    else {
-        dat1 <- as.vector(as.matrix(paireddat))
-        infiles <- dat1
-    }
-
 
     ### Train
 

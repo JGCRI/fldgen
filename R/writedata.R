@@ -67,12 +67,14 @@ write.temperature <- function(fld, file, griddata, varname='tas', varunit='K',
 #' \code{\link{train}} or \code{\link{fldgen_object}}.
 #' @param file Name of the file to write the data to.
 #' @param clobber Flag indicating whether it's ok to overwrite an existing file
+#' @param oldfmt Flag indicating that we should try to load the old (.rda) format from
+#' pre-2.1 versions of fldgen.
 #' @name saving_and_restoring
 NULL
 
 #' @rdname saving_and_restoring
 #' @export
-savemodel <- function(modeldata, file, clobber=FALSE)
+savemodel <- function(modeldata, file, clobber=FALSE, compress='xz')
 {
     if(!inherits(modeldata, 'fldgen')) {
         stop('modeldata must be a fldgen object.')
@@ -81,5 +83,5 @@ savemodel <- function(modeldata, file, clobber=FALSE)
     if(!clobber && file.exists(file)) {
         stop('File ', file, ' exists, and noclobber is set.')
     }
-    save(modeldata, file=file, compress='bzip2', compression_level=9)
+    saveRDS(modeldata, file=file, compress=compress)
 }

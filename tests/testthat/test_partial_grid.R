@@ -31,6 +31,10 @@ fullgrids <- generate.TP.fullgrids(emu, resids, tgav, NULL, pvarunconvertfn)
 coord_ref <- readr::read_csv(coordfile)
 
 test_that('Emulator was trained correctly.', {
+    ## Check that the global mean operator is properly normalized
+    expect_equal(sum(emu$griddataT$globalop), 1)
+    expect_equal(sum(emu$griddataP$globalop), 1)
+
     ## Check tgav values are a ntime x 1 matrix
     expect_true(is.matrix(emu$tgav))
     expect_equal(dim(emu$tgav), c(ntime,1))
