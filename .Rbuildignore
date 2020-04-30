@@ -6,3 +6,4 @@
 ^.covrignore$
 README.md
 LICENSE
+^.\.github\*
