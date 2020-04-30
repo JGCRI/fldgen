@@ -20,7 +20,8 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-dofieldplots <- require('gcammaptools')
+#dofieldplots <- require('gcammaptools')
+dofieldplots <- FALSE
 ```
 
 The fldgen package allows you to ingest temperature output from an earth system
