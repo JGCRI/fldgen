@@ -74,8 +74,10 @@ NULL
 
 #' @rdname saving_and_restoring
 #' @export
-savemodel <- function(modeldata, file, clobber=FALSE, compress='xz')
+savemodel <- function(modeldata, file, clobber=FALSE)
 {
+    compress='xz'
+
     if(!inherits(modeldata, 'fldgen')) {
         stop('modeldata must be a fldgen object.')
     }

@@ -8,7 +8,7 @@
 \usage{
 loadmodel(file, oldfmt = FALSE)
 
-savemodel(modeldata, file, clobber = FALSE, compress = "xz")
+savemodel(modeldata, file, clobber = FALSE)
 }
 \arguments{
 \item{file}{Name of the file to write the data to.}

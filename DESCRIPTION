@@ -31,5 +31,3 @@ Suggests:
     rmarkdown
 RoxygenNote: 7.0.2
 VignetteBuilder: knitr
-Remotes:
-    JGCRI/gcammaptools
