@@ -29,7 +29,7 @@ Suggests:
     readr (>= 1.1.0),
     knitr,
     rmarkdown
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 Remotes:
     JGCRI/gcammaptools
