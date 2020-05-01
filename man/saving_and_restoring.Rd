@@ -6,12 +6,15 @@
 \alias{savemodel}
 \title{Load and save emulator training data}
 \usage{
-loadmodel(file)
+loadmodel(file, oldfmt = FALSE)
 
 savemodel(modeldata, file, clobber = FALSE)
 }
 \arguments{
 \item{file}{Name of the file to write the data to.}
+
+\item{oldfmt}{Flag indicating that we should try to load the old (.rda) format from
+pre-2.1 versions of fldgen.}
 
 \item{modeldata}{A \code{fldgen} object returned by either
 \code{\link{train}} or \code{\link{fldgen_object}}.}

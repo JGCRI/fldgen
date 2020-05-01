@@ -23,13 +23,10 @@ Imports:
 	stringr (>= 1.4.0),
 Suggests:
     testthat,
-    gcammaptools (>= 0.4),
     covr,
     gridExtra,
     readr (>= 1.1.0),
     knitr,
     rmarkdown
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
-Remotes:
-    JGCRI/gcammaptools

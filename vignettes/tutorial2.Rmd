@@ -20,7 +20,8 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-dofieldplots <- require('gcammaptools')
+#dofieldplots <- require('gcammaptools')
+dofieldplots <- FALSE
 ```
 
 The fldgen package allows you to ingest temperature and precipitation output from an earth system model (ESM) and generate randomized temperature fields that have the same space and time correlation properties as the original ESM data.  This tutorial focuses on how to use the functions in the package to generate and analyze joint temperature and precipitation fields.  The details of how the method works are covered in a companion paper.  

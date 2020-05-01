@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalizeresiduals.R
 \name{characterize.emp.dist}
 \alias{characterize.emp.dist}
-\title{characterize empirical distributions}
+\title{Characterize empirical distributions}
 \usage{
 characterize.emp.dist(inputresids, len = NULL)
 }

@@ -42,35 +42,35 @@ test_that('clobber argument to write.temperature works',
 ## than writing data, but it's a lot more convenient to test these things
 ## together.
 
-test_that('reading and writing models works',
-{
-    ## These tests are kind of long, since the fldgen objects are rather large.
-    ## Therefore, skip them on the CI environments, which are somewhat
-    ## time-sensitive.  And since we're skipping them on the CI, I also haven't
-    ## included the data file in the repository (it is quite large for the time
-    ## being).  We can revisit this once we find a way to shrink the memory
-    ## footprint of the fldgen objects.
-    skip_on_travis()
-    skip_on_appveyor()
-    skip_on_covr()
-
-    ## read data in legacy format
-    oldfile <- 'data/testmodel-oldfmt.rda'
-    expect_silent(testmodel1 <- loadmodel(oldfile, oldfmt=TRUE))
-    expect_is(testmodel1, 'fldgen')
-
-    ## write in new format
-    newfile <- tempfile(fileext='.rds')
-    expect_silent(savemodel(testmodel1, newfile, compress=FALSE))
-    expect_true(file.exists(newfile))
-
-    ## read in new format
-    expect_silent(testmodel2 <- loadmodel(newfile))
-    expect_is(testmodel2, 'fldgen')
-    expect_equal(testmodel1, testmodel2)
-
-    ## trying to read with mismatched formats won't work
-    expect_error(suppressWarnings(tm1 <- loadmodel(newfile, oldfmt=TRUE), 'magic number'))
-    expect_error(tm2 <- loadmodel(oldfile, oldfmt=FALSE), 'unknown input format')
-    unlink(newfile)
-})
+# test_that('reading and writing models works',
+# {
+#     ## These tests are kind of long, since the fldgen objects are rather large.
+#     ## Therefore, skip them on the CI environments, which are somewhat
+#     ## time-sensitive.  And since we're skipping them on the CI, I also haven't
+#     ## included the data file in the repository (it is quite large for the time
+#     ## being).  We can revisit this once we find a way to shrink the memory
+#     ## footprint of the fldgen objects.
+#     skip_on_travis()
+#     skip_on_appveyor()
+#     skip_on_covr()
+#
+#     ## read data in legacy format
+#     oldfile <- 'data/testmodel-oldfmt.rda'
+#     expect_silent(testmodel1 <- loadmodel(oldfile, oldfmt=TRUE))
+#     expect_is(testmodel1, 'fldgen')
+#
+#     ## write in new format
+#     newfile <- tempfile(fileext='.rds')
+#     expect_silent(savemodel(testmodel1, newfile, compress=FALSE))
+#     expect_true(file.exists(newfile))
+#
+#     ## read in new format
+#     expect_silent(testmodel2 <- loadmodel(newfile))
+#     expect_is(testmodel2, 'fldgen')
+#     expect_equal(testmodel1, testmodel2)
+#
+#     ## trying to read with mismatched formats won't work
+#     expect_error(suppressWarnings(tm1 <- loadmodel(newfile, oldfmt=TRUE), 'magic number'))
+#     expect_error(tm2 <- loadmodel(oldfile, oldfmt=FALSE), 'unknown input format')
+#     unlink(newfile)
+# })
