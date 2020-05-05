@@ -72,7 +72,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="tutorial2_files/header-attrs-2.1/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Fldgen v2 Tutorial - Joint Temperature and Precipitation emulation and function how to</h1>
@@ -95,13 +95,13 @@
 <div id="setup" class="section level3">
 <h3 class="hasAnchor">
 <a href="#setup" class="anchor"></a>Setup</h3>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
 <span class="no">ngen</span> <span class="kw">&lt;-</span> <span class="fl">4</span>             <span class="co"># number of fields to generate</span>
 <span class="no">nplt</span> <span class="kw">&lt;-</span> <span class="no">ngen</span>          <span class="co"># number of fields to plot</span>
 <span class="no">exfld</span> <span class="kw">&lt;-</span> <span class="fl">20</span>           <span class="co"># example field to plot from the time series</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">8675309</span>)     <span class="co"># Set RNG seed so results will be reproducible</span></pre></body></html></div>
 <p>All of the data needed for this tutorial is installed with the package.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
 <span class="no">datadir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">'extdata'</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">'fldgen'</span>)</pre></body></html></div>
 </div>
 <div id="one-step-emulator-training" class="section level3">
@@ -145,20 +145,20 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <div id="setup-repeated" class="section level3">
 <h3 class="hasAnchor">
 <a href="#setup-repeated" class="anchor"></a>Setup (repeated)</h3>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
 <span class="no">ngen</span> <span class="kw">&lt;-</span> <span class="fl">4</span>             <span class="co"># number of fields to generate</span>
 <span class="no">nplt</span> <span class="kw">&lt;-</span> <span class="no">ngen</span>          <span class="co"># number of fields to plot</span>
 <span class="no">exfld</span> <span class="kw">&lt;-</span> <span class="fl">20</span>           <span class="co"># example field to plot from the time series</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">8675309</span>)     <span class="co"># Set RNG seed so results will be reproducible</span></pre></body></html></div>
 <p>All of the data needed for this tutorial is installed with the package.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
 <span class="no">datadir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">'extdata'</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">'fldgen'</span>)</pre></body></html></div>
 </div>
 <div id="reading-the-esm-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#reading-the-esm-data" class="anchor"></a>Reading the ESM data</h3>
 <p>The ESM temperature and precipitation fields should be in netCDF files. The function that reads it returns a <code>griddata</code> structure that contains the data, as well as some information about the grid, such as the latitude, longitude, and time coordinates and the vector of area weights needed to compute grid averages.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">filenameT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">datadir</span>, <span class="st">'tas_annual_esm_rcp_r2i1p1_2006-2100.nc'</span>)
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">filenameT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">datadir</span>, <span class="st">'tas_annual_esm_rcp_r2i1p1_2006-2100.nc'</span>)
 <span class="no">griddataT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/read.general.html">read.general</a></span>(<span class="no">filenameT</span>,
                           <span class="kw">varname</span><span class="kw">=</span><span class="st">'tas'</span>, <span class="kw">latvar</span><span class="kw">=</span><span class="st">'lat_2'</span>, <span class="kw">lonvar</span><span class="kw">=</span><span class="st">'lon_2'</span>,
                           <span class="kw">timevar</span><span class="kw">=</span><span class="st">'time'</span>)
@@ -170,7 +170,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
                           <span class="kw">varname</span><span class="kw">=</span><span class="st">'pr'</span>, <span class="kw">latvar</span><span class="kw">=</span><span class="st">'lat'</span>, <span class="kw">lonvar</span><span class="kw">=</span><span class="st">'lon'</span>,
                           <span class="kw">timevar</span><span class="kw">=</span><span class="st">'time'</span>)</pre></body></html></div>
 <p>Here, we have read in the temperature netCDF data and used the global average operator to compute a time series of global mean temperatures. We have also read in the precipitation netCDF data. These variables will be used as input to the functions that analyze the ESM data and produce the joint temperature and precipitation fields. Next we must define the transformation functions, as described above. Temperature doesn’t need one, but for precipitation we will use a log transformation so that we can ensure that output precipitation values are &gt;= 0.</p>
-<div class="sourceCode"><html><body><pre class="r">
+<div class="sourceCode" id="cb9"><html><body><pre class="r">
 <span class="no">tvarconvert_fcn</span> <span class="kw">&lt;-</span> <span class="kw">NULL</span>
 <span class="no">pvarconvert_fcn</span> <span class="kw">&lt;-</span> <span class="no">log</span>
 
@@ -191,7 +191,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
         <span class="no">griddataP</span>$<span class="no">vardata_raw</span> <span class="kw">&lt;-</span> <span class="kw">NULL</span>
     }
     <span class="no">griddataP</span>$<span class="no">pvarconvert_fcn</span> <span class="kw">&lt;-</span> <span class="no">pvarconvert_fcn</span></pre></body></html></div>
-<div class="sourceCode"><html><body><pre class="r"><span class="co"># the temperature and precipitation data must be on the same grid size:</span>
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="co"># the temperature and precipitation data must be on the same grid size:</span>
 <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">griddataT</span>$<span class="no">vardata</span>) <span class="kw">==</span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">griddataT</span>$<span class="no">vardata</span>)
 <span class="co">#&gt; [1] TRUE</span>
 
@@ -202,32 +202,32 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <a href="#analyzing-the-input-data" class="anchor"></a>Analyzing the input data</h3>
 <p>The first thing we need is a model for the mean temperature response in each grid cell and a model for the mean precipitation response in each grid cell. That is, for each grid cell, what is the mean temperature of that cell as a function of global mean temperature. For each grid cell, what is the mean precipitation in that grid cell as a function of global mean <em>temperature</em>. You can use whatever model you want for this. We will use a simple linear pattern scaling model, which is implemented in the <code>pscl_analyze</code> function.</p>
 <p>This package could subsititute any variable that scales with global mean temperature for precipitaiton, to generate joint temperature and (arbitrary variable) fields. Some labels remaining to precipitation may persist though, and this is currently considered an unsupported use of the package.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">psclT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_analyze.html">pscl_analyze</a></span>(<span class="no">griddataT</span>$<span class="no">vardata</span>, <span class="no">tgav</span>)
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="no">psclT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_analyze.html">pscl_analyze</a></span>(<span class="no">griddataT</span>$<span class="no">vardata</span>, <span class="no">tgav</span>)
 
 <span class="no">psclP</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_analyze.html">pscl_analyze</a></span>(<span class="no">griddataP</span>$<span class="no">vardata</span>, <span class="no">tgav</span>)</pre></body></html></div>
 <p>The mean response analysis should return the model coefficients (called <code>w</code> and <code>b</code> in our linear model) and a time series of gridded residuals. These residuals encode all of the information about the spatial variability of the ESM.</p>
 <p>One key feature of the method used in fldgen is that, due to the Central Limit Theorem, any residuals that it generates for a grid cell will be normally distributed. While temperature residuals are approximately normally distributed in each grid cell, this is not the case for precipitation residuals. Further, principal component analysis, a key step of the the empirical orthogonal functions (EOF) analysis, has the nicest properties when it is provided with normally distributed inputs.</p>
 <p>Therefore, we empirically characterize the distribution of residals in each grid cell with a custom empirical cdf and its inverse (custom empirical quantile function).</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">tfuns</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/characterize.emp.dist.html">characterize.emp.dist</a></span>(<span class="no">psclT</span>$<span class="no">r</span>)
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">tfuns</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/characterize.emp.dist.html">characterize.emp.dist</a></span>(<span class="no">psclT</span>$<span class="no">r</span>)
 <span class="no">pfuns</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/characterize.emp.dist.html">characterize.emp.dist</a></span>(<span class="no">psclP</span>$<span class="no">r</span>)</pre></body></html></div>
 <p>A custom empirical cdf is constructed for each grid cell because the R function for producing an empirical cdf, <code>ecdf</code>, produces a step function that is, by definition, neither continuous nor invertible. The custom empirical cdf in each grid cell produced by <code>characterize.emp.dist</code> is instead piecewise linear, creating a continous invertible function, <code>tfuns$cdf</code>. For convenience, <code>characterize.emp.dist</code> also pre-computes the inverse <code>tfuns$quant</code>.</p>
 <p>These empirical distributions in each grid cell are then used to map the residuals from their <em>native</em> (ESM) distribution to <span class="math inline">\(N(0,1)\)</span> via quantiles. Consider a temperature residual value, <span class="math inline">\(r\)</span> in grid cell <span class="math inline">\(n\)</span>. Then <code>tfuns$cdf[[n]](r)</code> will map the temperature residual value to the its quantile value. This quantile value is then input to <code>qnorm</code> to give a corresponding normal residual value from <span class="math inline">\(N(0,1)\)</span>.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">normresidsT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/normalize.resids.html">normalize.resids</a></span>(<span class="kw">inputresids</span> <span class="kw">=</span> <span class="no">psclT</span>$<span class="no">r</span>,
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">normresidsT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/normalize.resids.html">normalize.resids</a></span>(<span class="kw">inputresids</span> <span class="kw">=</span> <span class="no">psclT</span>$<span class="no">r</span>,
                                 <span class="kw">empiricalcdf</span> <span class="kw">=</span> <span class="no">tfuns</span>$<span class="no">cdf</span>)$<span class="no">rn</span>
 <span class="no">normresidsP</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/normalize.resids.html">normalize.resids</a></span>(<span class="kw">inputresids</span> <span class="kw">=</span> <span class="no">psclP</span>$<span class="no">r</span>,
                                 <span class="kw">empiricalcdf</span> <span class="kw">=</span> <span class="no">pfuns</span>$<span class="no">cdf</span>)$<span class="no">rn</span></pre></body></html></div>
 <p>This transformation from native to normal space is continuous, invertible, and monotonic. Therefore, in additionn to being reversible (so that we can transform generated fields back to the native space), this transformation preserves the rank (first place = largest, last place = smallest) of residuals within a grid cell. Because the rank of residuals in any grid cell <span class="math inline">\(n\)</span> is the same in the native space as it is in the normal space, the Spearman correlation coefficient between any pair of grid cells <span class="math inline">\(m,n\)</span> is the same in the native space as the normal space. Therefore, the transformation from native to normal space (or normal to native space) preserves the spatial structure of residuals. In particular, this works for comparing the spatial structure of temperature residuals with temperature residuals, temperature residuals with precipitation residuals, and precipitation residuals with precipitation residuals. The transformation performed by <code>normalize.resids</code> (and the inverse process <code>unnormalize.resids</code>) is constructed to truly preserve the joint spatial structure of temperature and precipitation.</p>
 <p>These normally distributed residuals are passed to the empirical orthogonal functions (EOF) analysis. Specifically, they are passed as a <em>joint</em> matrix of (transformed) temperature and preciptiation residuals. Therefore, the EOFs are each vectors with 2Ngrid entries, forming an orthonormal basis for the space of joint temperature and precipitation residuals. Essentially, this is the state of the system at some particular time - a large vector that contains every temperature residual in every grid cell, followed by every precipitation residual in every grid cell.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">reof</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/eof_analyze.html">eof_analyze</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">normresidsT</span>, <span class="no">normresidsP</span>)),
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">reof</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/eof_analyze.html">eof_analyze</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">normresidsT</span>, <span class="no">normresidsP</span>)),
                     <span class="kw">Ngrid</span> <span class="kw">=</span> <span class="no">Ngrid</span>, <span class="kw">globop</span> <span class="kw">=</span> <span class="no">griddataT</span>$<span class="no">globalop</span>)</pre></body></html></div>
 <p>The next thing we need to generate our fields is the temporal structure of the EOF coefficients. We get this from the Fourier transform of the coordinates of the residuals in the coordinate system defined by the EOF basis vectors.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Fx</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fft.html">mvfft</a></span>(<span class="no">reof</span>$<span class="no">x</span>)
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="no">Fx</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fft.html">mvfft</a></span>(<span class="no">reof</span>$<span class="no">x</span>)
 <span class="no">Fxmag</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="no">Fx</span>)
 <span class="no">Fxphase</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">atan2</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/complex.html">Im</a></span>(<span class="no">Fx</span>), <span class="fu"><a href="https://rdrr.io/r/base/complex.html">Re</a></span>(<span class="no">Fx</span>))</pre></body></html></div>
 <p>Finally, we need to create an array of coefficients for some constraint equations that our generated fields need to satisfy.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">phasecoef</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/phase_eqn_coef.html">phase_eqn_coef</a></span>(<span class="no">Fx</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb16"><html><body><pre class="r"><span class="no">phasecoef</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/phase_eqn_coef.html">phase_eqn_coef</a></span>(<span class="no">Fx</span>)</pre></body></html></div>
 <p>The functions for generating fields will expect the results of these calculations to be packaged in an object like the one returned from <code>trainTP</code>. There is a function for taking our hand generated results and turning them into an object.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">infiles</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">filenameT</span>, <span class="no">filenameP</span>)
+<div class="sourceCode" id="cb17"><html><body><pre class="r"><span class="no">infiles</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">filenameT</span>, <span class="no">filenameP</span>)
 <span class="no">emulator</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/fldgen_object_TP.html">fldgen_object_TP</a></span>(<span class="no">griddataT</span>, <span class="no">griddataP</span>,
                              <span class="no">tgav</span>, <span class="no">psclT</span>, <span class="no">psclP</span>,
                              <span class="no">tfuns</span>, <span class="no">pfuns</span>,
@@ -238,7 +238,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <h3 class="hasAnchor">
 <a href="#generating-residual-fields---more-detail" class="anchor"></a>Generating residual fields - more detail</h3>
 <p>Now we’re ready to generate fields. We’ll do 4 fields in this example. The first one will be a reconstruction of the original input. The other three will be new fields with random phases. The two steps used here to generate these new fields with random phases make up the interior of <code><a href="../reference/generate.TP.resids.html">generate.TP.resids()</a></code> and could be replaced with a call to that function (see <code>tests/testthat/test_varfield.R</code> lines 199-230 for an example). Because the EOF analysis was performed on a joint matrix of <em>transformed</em> T and P residuals, each grid cell in a generated field follows <span class="math inline">\(N(0,1)\)</span>.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">newgrids</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>()
+<div class="sourceCode" id="cb18"><html><body><pre class="r"><span class="no">newgrids</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>()
 <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">newgrids</span>) <span class="kw">&lt;-</span> <span class="no">ngen</span>
 
 
@@ -250,7 +250,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
   <span class="no">newgrids</span><span class="kw">[[</span><span class="no">i</span>]] <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/reconst_fields.html">reconst_fields</a></span>(<span class="no">reof</span>$<span class="no">rotation</span>, <span class="fu"><a href="../reference/mkcorrts.html">mkcorrts</a></span>(<span class="no">emulator</span>))
 }</pre></body></html></div>
 <p>The generated residual fields are transformed back to the native space:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## Subtract off the mean field.  Save these because we will want to use them later</span>
+<div class="sourceCode" id="cb19"><html><body><pre class="r"><span class="co">## Subtract off the mean field.  Save these because we will want to use them later</span>
 <span class="no">residgrids</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">newgrids</span>, <span class="kw">function</span>(<span class="no">g</span>) {
     <span class="no">g</span>[, <span class="fl">1</span>:<span class="no">Ngrid</span>] <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/unnormalize.resids.html">unnormalize.resids</a></span>(<span class="kw">empiricalquant</span> <span class="kw">=</span> <span class="no">emulator</span>$<span class="no">tfuns</span>$<span class="no">quant</span>,
                                        <span class="kw">rn</span> <span class="kw">=</span> <span class="no">g</span>[ ,<span class="fl">1</span>:<span class="no">Ngrid</span>])$<span class="no">rnew</span>
@@ -265,7 +265,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <h3 class="hasAnchor">
 <a href="#creating-a-full-field-from-residuals" class="anchor"></a>Creating a full field from residuals</h3>
 <p>Whether you get your list of generated residual matrices from calling <code>generate.tp.resids()</code> or doing manually in more detail, the mean field is reconstructed and added to each residual field and transformed back to the native ESM variable where relevant (i.e. precipiation rather than log(precipitation)) to create new, full global gridded temperature and precipitation realizations.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## Here tgav is the same as the input, but that doesn't have to be the case</span>
+<div class="sourceCode" id="cb20"><html><body><pre class="r"><span class="co">## Here tgav is the same as the input, but that doesn't have to be the case</span>
 <span class="no">meanfieldT</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_apply.html">pscl_apply</a></span>(<span class="no">psclT</span>, <span class="no">tgav</span>)
 <span class="no">meanfieldP</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_apply.html">pscl_apply</a></span>(<span class="no">psclP</span>, <span class="no">tgav</span>)
 
@@ -306,7 +306,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <h3 class="hasAnchor">
 <a href="#plotting-the-fields" class="anchor"></a>Plotting the fields</h3>
 <p>We can extract a single field from each time series and plot them all for comparision. We will be able to see a lot more detail if we subtract out the mean field from each one, so that’s what we will do.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## Extract a single example field from each series and create a plot</span>
+<div class="sourceCode" id="cb21"><html><body><pre class="r"><span class="co">## Extract a single example field from each series and create a plot</span>
 <span class="kw">if</span>(<span class="no">dofieldplots</span>) {
 <span class="no">plotglobalfieldsT</span> <span class="kw">&lt;-</span> <span class="kw">function</span>(<span class="no">fieldlist</span>, <span class="no">sequencenum</span>, <span class="no">minval</span><span class="kw">=</span>-<span class="fl">3.5</span>, <span class="no">maxval</span><span class="kw">=</span><span class="fl">3.5</span>, <span class="no">legendstr</span>) {
     <span class="co">## Extract a single example field from each series (sequencenum determines which one) and create a plot</span>
@@ -354,7 +354,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <h3 class="hasAnchor">
 <a href="#time-behavior" class="anchor"></a>Time behavior</h3>
 <p>Start by constructing a heatmap of the power spectrum for the EOFs. Technically we will be plotting the square root of the power spectrum, which is fine for getting a sense of what trends exist in the data, but we’ll need to keep that in mind if we decide to do anything quantitative with the power.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">nt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">griddataT</span>$<span class="no">time</span>)
+<div class="sourceCode" id="cb22"><html><body><pre class="r"><span class="no">nt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">griddataT</span>$<span class="no">time</span>)
 <span class="co">## There is no additional information in the negative frequencies, so keep only</span>
 <span class="co">## the positive ones.</span>
 <span class="no">np</span> <span class="kw">&lt;-</span>
@@ -377,11 +377,11 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">hmplt</span>)</pre></body></html></div>
 <p><img src="tutorial2_files/figure-html/heatmap-1.png" width="768"></p>
 <p>Evidently, the power drops off quite a bit after the first few EOFs.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">eofpwr</span> <span class="kw">&lt;-</span> <span class="fu">group_by</span>(<span class="no">hmdata</span>, <span class="no">EOF</span>) <span class="kw">%&gt;%</span> <span class="fu">summarise</span>(<span class="kw">totpwr</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="no">value</span>*<span class="no">value</span>)) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">relpwr</span><span class="kw">=</span><span class="no">totpwr</span>/<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">totpwr</span>)) <span class="kw">%&gt;%</span> <span class="fu">select</span>(<span class="no">EOF</span>, <span class="no">relpwr</span>)
+<div class="sourceCode" id="cb23"><html><body><pre class="r"><span class="no">eofpwr</span> <span class="kw">&lt;-</span> <span class="fu">group_by</span>(<span class="no">hmdata</span>, <span class="no">EOF</span>) <span class="kw">%&gt;%</span> <span class="fu">summarise</span>(<span class="kw">totpwr</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="no">value</span>*<span class="no">value</span>)) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">relpwr</span><span class="kw">=</span><span class="no">totpwr</span>/<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">totpwr</span>)) <span class="kw">%&gt;%</span> <span class="fu">select</span>(<span class="no">EOF</span>, <span class="no">relpwr</span>)
 <span class="no">eofpwrplt</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">eofpwr</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">EOF</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">relpwr</span>)) + <span class="fu">geom_col</span>() + <span class="fu">ylab</span>(<span class="st">'Relative Power'</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">eofpwrplt</span>)</pre></body></html></div>
 <p><img src="tutorial2_files/figure-html/eofpwr-1.png" width="768"> More importantly, the power spectrum whitens after the first few EOFs, so those early EOFs represent periodic signals, while the later ones don’t. Here are the smoothed power spectra for the first 9 EOFs.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">eofspectra</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">hmdata</span>, <span class="no">EOF</span><span class="kw">&gt;</span><span class="fl">0</span>, <span class="no">EOF</span><span class="kw">&lt;</span><span class="fl">10</span>) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">EOF</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="no">EOF</span>))
+<div class="sourceCode" id="cb24"><html><body><pre class="r"><span class="no">eofspectra</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">hmdata</span>, <span class="no">EOF</span><span class="kw">&gt;</span><span class="fl">0</span>, <span class="no">EOF</span><span class="kw">&lt;</span><span class="fl">10</span>) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">EOF</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="no">EOF</span>))
 <span class="no">eofspectraplt</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">eofspectra</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">freq</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">value</span>, <span class="kw">color</span><span class="kw">=</span><span class="no">EOF</span>)) + <span class="fu">geom_smooth</span>(<span class="kw">se</span><span class="kw">=</span><span class="fl">FALSE</span>) + <span class="fu">scale_color_brewer</span>(<span class="kw">palette</span><span class="kw">=</span><span class="st">'Set1'</span>) + <span class="fu">ylab</span>(<span class="st">'freq (1/yr)'</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">eofspectraplt</span>)
 <span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></pre></body></html></div>
@@ -391,7 +391,7 @@ emulator &lt;- trainTP(c(infileT, infileP),
 <h3 class="hasAnchor">
 <a href="#spatial-behavior" class="anchor"></a>Spatial behavior</h3>
 <p>We will make spatial plots of the 9 EOFs shown in the plot above. We’ll also plot EOFs 25 and 50, just to get an idea of what’s happening in those lower power modes. Note that a single EOF contains both temperature and precipitation information. We represent that information in a pair of maps - the spatial structure of the temperature EOF and the spatial structure of the precipitation EOF.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">### Plotting global maps is still a little slow, so expect this to take some time.</span>
+<div class="sourceCode" id="cb25"><html><body><pre class="r"><span class="co">### Plotting global maps is still a little slow, so expect this to take some time.</span>
 <span class="co">## The EOFs are in reof$rotation.  Each column is the grid cell values for an EOF.</span>
 <span class="co">## Also, the EOFs are scaled to unit norm.  We'll rescale them to unit max value</span>
 

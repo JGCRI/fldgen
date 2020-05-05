@@ -1,8 +1,8 @@
-pandoc: 1.19.2.1
+pandoc: 2.9.2.1
 pkgdown: 1.5.1
 pkgdown_sha: ~
 articles:
   tutorial1: tutorial1.html
   tutorial2: tutorial2.html
-last_built: 2020-05-05T20:40Z
+last_built: 2020-05-05T22:15Z
 

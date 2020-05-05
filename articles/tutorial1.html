@@ -72,7 +72,7 @@
 
       
 
-      </header><div class="row">
+      </header><script src="tutorial1_files/header-attrs-2.1/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Fldgen v1 Tutorial - Temperatures only</h1>
@@ -95,12 +95,12 @@
 <div id="setup" class="section level3">
 <h3 class="hasAnchor">
 <a href="#setup" class="anchor"></a>Setup</h3>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="co">## parameters for the code below.</span>
 <span class="no">ngen</span> <span class="kw">&lt;-</span> <span class="fl">4</span>             <span class="co"># number of fields to generate</span>
 <span class="no">exfld</span> <span class="kw">&lt;-</span> <span class="fl">20</span>           <span class="co"># example field to plot from the time series</span>
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">8675309</span>)     <span class="co"># Set RNG seed so results will be reproducible</span></pre></body></html></div>
 <p>All of the data needed for this tutorial is installed with the package.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">'fldgen'</span>)
 <span class="no">datadir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">'extdata'</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">'fldgen'</span>)</pre></body></html></div>
 </div>
 <div id="one-step-emulator-training" class="section level3">
@@ -116,7 +116,7 @@ emulator &lt;- train(infile)</code></pre>
 <h3 class="hasAnchor">
 <a href="#reading-the-esm-data" class="anchor"></a>Reading the ESM data</h3>
 <p>The ESM temperature field should be in a netCDF file. The function that reads it returns a “griddata” structure that contains the data, as well as some information about the grid, such as the latitude, longitude, and time coordinates and the vector of area weights needed to compute grid averages.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">filename</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">datadir</span>, <span class="st">'tann1.nc'</span>)
+<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">filename</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">datadir</span>, <span class="st">'tann1.nc'</span>)
 <span class="no">griddata</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/read.temperatures.html">read.temperatures</a></span>(<span class="no">filename</span>)
 <span class="no">tgav</span> <span class="kw">&lt;-</span> <span class="no">griddata</span>$<span class="no">tas</span> <span class="kw">%*%</span> <span class="no">griddata</span>$<span class="no">tgop</span></pre></body></html></div>
 <p>Here, we have read in the netCDF data and used the global average operator to compute a time series of global mean temperatures. These variables will be used as input to the functions that analyze the ESM data and produce the temperature fields.</p>
@@ -125,23 +125,23 @@ emulator &lt;- train(infile)</code></pre>
 <h3 class="hasAnchor">
 <a href="#analyzing-the-input-data" class="anchor"></a>Analyzing the input data</h3>
 <p>The first thing we need is a model for the mean temperature response in each grid cell. That is, for each grid cell, what is the mean temperature of that cell as a function of global mean temperature. You can use whatever model you want for this. We will use a simple linear pattern scaling model, which is implemented in the <code>pscl_analyze</code> function.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">pscl</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_analyze.html">pscl_analyze</a></span>(<span class="no">griddata</span>$<span class="no">tas</span>, <span class="no">tgav</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">pscl</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/pscl_analyze.html">pscl_analyze</a></span>(<span class="no">griddata</span>$<span class="no">tas</span>, <span class="no">tgav</span>)</pre></body></html></div>
 <p>The mean response analysis should return the model coefficients (called <code>w</code> and <code>b</code> in our linear model) and a time series of gridded residuals. These residuals encode all of the information about the spatial variability of the ESM, so it is these we will pass to the empirical orthogonal functions (EOF) analysis.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">reof</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/eof_analyze.html">eof_analyze</a></span>(<span class="no">pscl</span>$<span class="no">r</span>, <span class="kw">Ngrid</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">pscl</span>$<span class="no">r</span>), <span class="kw">globop</span> <span class="kw">=</span> <span class="no">griddata</span>$<span class="no">tgop</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">reof</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/eof_analyze.html">eof_analyze</a></span>(<span class="no">pscl</span>$<span class="no">r</span>, <span class="kw">Ngrid</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">pscl</span>$<span class="no">r</span>), <span class="kw">globop</span> <span class="kw">=</span> <span class="no">griddata</span>$<span class="no">tgop</span>)</pre></body></html></div>
 <p>The next thing we need to generate our fields is the temporal structure of the EOF coefficients. We get this from the Fourier transform of the coordinates of the residuals in the coordinate system defined by the EOF basis vectors.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Fx</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fft.html">mvfft</a></span>(<span class="no">reof</span>$<span class="no">x</span>)
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">Fx</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fft.html">mvfft</a></span>(<span class="no">reof</span>$<span class="no">x</span>)
 <span class="no">Fxmag</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span>(<span class="no">Fx</span>)
 <span class="no">Fxphase</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">atan2</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/complex.html">Im</a></span>(<span class="no">Fx</span>), <span class="fu"><a href="https://rdrr.io/r/base/complex.html">Re</a></span>(<span class="no">Fx</span>))</pre></body></html></div>
 <p>Finally, we need to create an array of coefficients for some constraint equations that our generated fields need to satisfy.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">phasecoef</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/phase_eqn_coef.html">phase_eqn_coef</a></span>(<span class="no">Fx</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">phasecoef</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/phase_eqn_coef.html">phase_eqn_coef</a></span>(<span class="no">Fx</span>)</pre></body></html></div>
 <p>The functions for generating fields will expect the results of these calculations to be packaged in an object like the one returned from <code>train</code>. There is a function for taking our hand generated results and turning them into an object.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">emulator</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/fldgen_object.html">fldgen_object</a></span>(<span class="no">griddata</span>, <span class="no">tgav</span>, <span class="no">pscl</span>, <span class="no">reof</span>, <span class="no">Fx</span>, <span class="no">phasecoef</span>, <span class="no">filename</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">emulator</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/fldgen_object.html">fldgen_object</a></span>(<span class="no">griddata</span>, <span class="no">tgav</span>, <span class="no">pscl</span>, <span class="no">reof</span>, <span class="no">Fx</span>, <span class="no">phasecoef</span>, <span class="no">filename</span>)</pre></body></html></div>
 </div>
 <div id="generating-fields" class="section level3">
 <h3 class="hasAnchor">
 <a href="#generating-fields" class="anchor"></a>Generating fields</h3>
 <p>Now we’re ready to generate fields. We’ll do 4 fields in this example. The first one will be a reconstruction of the original input. The other three will be new fields.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">tempgrids</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>()
+<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">tempgrids</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>()
 <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">tempgrids</span>) <span class="kw">&lt;-</span> <span class="no">ngen</span>
 
 <span class="co">## Here tgav is the same as the input, but that doesn't have to be the case</span>
@@ -164,7 +164,7 @@ emulator &lt;- train(infile)</code></pre>
 <h3 class="hasAnchor">
 <a href="#plotting-the-fields" class="anchor"></a>Plotting the fields</h3>
 <p>We can extract a single field from each time series and plot them all for comparision. We will be able to see a lot more detail if we subtract out the mean field from each one, so that’s what we will do.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">## Extract a single example field from each series and create a plot</span>
+<div class="sourceCode" id="cb11"><html><body><pre class="r"><span class="co">## Extract a single example field from each series and create a plot</span>
 <span class="kw">if</span>(<span class="no">dofieldplots</span>) {
   <span class="no">fieldplots</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span>(<span class="no">residgrids</span>, <span class="kw">function</span>(<span class="no">g</span>) {
       <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span>(
@@ -189,7 +189,7 @@ emulator &lt;- train(infile)</code></pre>
 <h3 class="hasAnchor">
 <a href="#time-behavior" class="anchor"></a>Time behavior</h3>
 <p>Start by constructing a heatmap of the power spectrum for the EOFs. Technically we will be plotting the square root of the power spectrum, which is fine for getting a sense of what trends exist in the data, but we’ll need to keep that in mind if we decide to do anything quantitative with the power.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">nt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">griddata</span>$<span class="no">time</span>)
+<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">nt</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="no">griddata</span>$<span class="no">time</span>)
 <span class="co">## There is no additional information in the negative frequencies, so keep only</span>
 <span class="co">## the positive ones.</span>
 <span class="no">np</span> <span class="kw">&lt;-</span>
@@ -212,11 +212,11 @@ emulator &lt;- train(infile)</code></pre>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">hmplt</span>)</pre></body></html></div>
 <p><img src="tutorial1_files/figure-html/heatmap-1.png" width="768"></p>
 <p>Evidently, the power drops off quite a bit after the first few EOFs.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">eofpwr</span> <span class="kw">&lt;-</span> <span class="fu">group_by</span>(<span class="no">hmdata</span>, <span class="no">EOF</span>) <span class="kw">%&gt;%</span> <span class="fu">summarise</span>(<span class="kw">totpwr</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="no">value</span>*<span class="no">value</span>)) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">relpwr</span><span class="kw">=</span><span class="no">totpwr</span>/<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">totpwr</span>)) <span class="kw">%&gt;%</span> <span class="fu">select</span>(<span class="no">EOF</span>, <span class="no">relpwr</span>)
+<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">eofpwr</span> <span class="kw">&lt;-</span> <span class="fu">group_by</span>(<span class="no">hmdata</span>, <span class="no">EOF</span>) <span class="kw">%&gt;%</span> <span class="fu">summarise</span>(<span class="kw">totpwr</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="no">value</span>*<span class="no">value</span>)) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">relpwr</span><span class="kw">=</span><span class="no">totpwr</span>/<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span>(<span class="no">totpwr</span>)) <span class="kw">%&gt;%</span> <span class="fu">select</span>(<span class="no">EOF</span>, <span class="no">relpwr</span>)
 <span class="no">eofpwrplt</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">eofpwr</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">EOF</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">relpwr</span>)) + <span class="fu">geom_col</span>() + <span class="fu">ylab</span>(<span class="st">'Relative Power'</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">eofpwrplt</span>)</pre></body></html></div>
 <p><img src="tutorial1_files/figure-html/eofpwr-1.png" width="768"> More importantly, the power spectrum whitens after the first few EOFs, so those early EOFs represent periodic signals, while the later ones don’t. Here are the smoothed power spectra for the first 9 EOFs.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">eofspectra</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">hmdata</span>, <span class="no">EOF</span><span class="kw">&gt;</span><span class="fl">0</span>, <span class="no">EOF</span><span class="kw">&lt;</span><span class="fl">10</span>) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">EOF</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="no">EOF</span>))
+<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">eofspectra</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="no">hmdata</span>, <span class="no">EOF</span><span class="kw">&gt;</span><span class="fl">0</span>, <span class="no">EOF</span><span class="kw">&lt;</span><span class="fl">10</span>) <span class="kw">%&gt;%</span> <span class="fu">mutate</span>(<span class="kw">EOF</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span>(<span class="no">EOF</span>))
 <span class="no">eofspectraplt</span> <span class="kw">&lt;-</span> <span class="fu">ggplot</span>(<span class="no">eofspectra</span>, <span class="fu">aes</span>(<span class="kw">x</span><span class="kw">=</span><span class="no">freq</span>, <span class="kw">y</span><span class="kw">=</span><span class="no">value</span>, <span class="kw">color</span><span class="kw">=</span><span class="no">EOF</span>)) + <span class="fu">geom_smooth</span>(<span class="kw">se</span><span class="kw">=</span><span class="fl">FALSE</span>) + <span class="fu">scale_color_brewer</span>(<span class="kw">palette</span><span class="kw">=</span><span class="st">'Set1'</span>) + <span class="fu">ylab</span>(<span class="st">'freq (1/yr)'</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span>(<span class="no">eofspectraplt</span>)
 <span class="co">#&gt; `geom_smooth()` using method = 'loess' and formula 'y ~ x'</span></pre></body></html></div>
@@ -226,7 +226,7 @@ emulator &lt;- train(infile)</code></pre>
 <h3 class="hasAnchor">
 <a href="#spatial-behavior" class="anchor"></a>Spatial behavior</h3>
 <p>We will make spatial plots of the 9 EOFs shown in the plot above. We’ll also plot EOFs 25 and 50, just to get an idea of what’s happening in those lower power modes.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="co">### Plotting global maps is still a little slow, so expect this to take some time.</span>
+<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="co">### Plotting global maps is still a little slow, so expect this to take some time.</span>
 <span class="co">## The EOFs are in reof$rotation.  Each column is the grid cell values for an EOF.</span>
 <span class="co">## Also, the EOFs are scaled to unit norm.  We'll rescale them to unit max value</span>
 

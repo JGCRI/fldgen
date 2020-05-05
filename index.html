@@ -76,16 +76,16 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="fldgen-2-0-climate-variable-field-generator-with-internal-variability-and-spatial-temporal-and-inter-variable-correlation-" class="section level1">
+<div id="fldgen-20-climate-variable-field-generator-with-internal-variability-and-spatial-temporal-and-inter-variable-correlation" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#fldgen-2-0-climate-variable-field-generator-with-internal-variability-and-spatial-temporal-and-inter-variable-correlation-" class="anchor"></a>fldgen 2.0: Climate variable field generator with internal variability and spatial, temporal, and inter-variable correlation.</h1></div>
+<a href="#fldgen-20-climate-variable-field-generator-with-internal-variability-and-spatial-temporal-and-inter-variable-correlation" class="anchor"></a>fldgen 2.0: Climate variable field generator with internal variability and spatial, temporal, and inter-variable correlation.</h1></div>
 
 <p>The <code>fldgen</code> package provides functions to learn the spatial, temporal, and inter-variable correlation of the variability in an earth system model (ESM) and generate random two-variable fields (<em>e.g.</em>, temperature and precipitation) with equivalent properties.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>The easiest way to install <code>fldgen</code> is using <code>install_github</code> from the <code>devtools</code> package.</p>
-<div class="sourceCode"><pre class="r"><span class="fu">install_github</span>(<span class="st">'JGCRI/fldgen'</span>, <span class="kw">build_vignettes</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></div>
+<div class="sourceCode" id="cb1"><pre class="r"><span class="fu">install_github</span>(<span class="st">'JGCRI/fldgen'</span>, <span class="kw">build_vignettes</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></div>
 <p>This will get you the latest stable development version of the model. If you wish to install a specific release, you can do so by specifying the desired release as the <code>ref</code> argument to this function call.<br>
 Current and past releases are listed in the <a href="https://github.com/JGCRI/fldgen/releases">release table</a> at our <a href="https://github.com/JGCRI/fldgen">GitHub repository</a>.</p>
 </div>
@@ -93,7 +93,7 @@ Current and past releases are listed in the <a href="https://github.com/JGCRI/fl
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>The data used in this example are installed with the package. They can be found in <code><a href="https://rdrr.io/r/base/system.file.html">system.file('extdata', package='fldgen')</a></code>.</p>
-<div class="sourceCode"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">fldgen</span>)
+<div class="sourceCode" id="cb2"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">fldgen</span>)
 <span class="no">datadir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">'extdata'</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">'fldgen'</span>)
 
 
@@ -114,7 +114,7 @@ Current and past releases are listed in the <a href="https://github.com/JGCRI/fl
                                    <span class="kw">pvarunconvert_fcn</span> <span class="kw">=</span> <span class="no">exp</span>,
                                    <span class="kw">reconstruction_function</span> <span class="kw">=</span> <span class="no">pscl_apply</span>)</pre></div>
 <p>A more detailed example can be found in the tutorial vignette included with the package.</p>
-<div class="sourceCode"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span>(<span class="st">'tutorial2'</span>,<span class="st">'fldgen'</span>)</pre></div>
+<div class="sourceCode" id="cb3"><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html">vignette</a></span>(<span class="st">'tutorial2'</span>,<span class="st">'fldgen'</span>)</pre></div>
 </div>
 </div>
   </div>
