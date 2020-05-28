@@ -4,15 +4,9 @@
 \alias{read.temperatures}
 \title{Read ESM temperature data}
 \usage{
-read.temperatures(
-  filename,
-  len = NULL,
-  tag = basename(filename),
-  varname = "tas",
-  latvar = "lat",
-  lonvar = "lon",
-  timevar = "time"
-)
+read.temperatures(filename, len = NULL, tag = basename(filename),
+  varname = "tas", latvar = "lat", lonvar = "lon",
+  timevar = "time")
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}

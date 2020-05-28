@@ -4,14 +4,9 @@
 \alias{generate.TP.fullgrids}
 \title{Using a trained emulator, generate new full fields.}
 \usage{
-generate.TP.fullgrids(
-  emulator,
-  residgrids,
-  tgav,
-  tvarunconvert_fcn = NULL,
-  pvarunconvert_fcn = exp,
-  reconstruction_function = pscl_apply
-)
+generate.TP.fullgrids(emulator, residgrids, tgav,
+  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp,
+  reconstruction_function = pscl_apply)
 }
 \arguments{
 \item{emulator}{A trained \code{fldgen} temperature precipitation joint

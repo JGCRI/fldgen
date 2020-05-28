@@ -4,13 +4,8 @@
 \alias{train}
 \title{Train the emulator on a set of input ESM data.}
 \usage{
-train(
-  dat,
-  latvar = "lat",
-  lonvar = "lon",
-  meanfield = pscl_analyze,
-  record_absolute = FALSE
-)
+train(dat, latvar = "lat", lonvar = "lon", meanfield = pscl_analyze,
+  record_absolute = FALSE)
 }
 \arguments{
 \item{dat}{A single directory name, or a list of netCDF files.  If a

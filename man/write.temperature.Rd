@@ -4,16 +4,9 @@
 \alias{write.temperature}
 \title{Write a temperature field as a netcdf file.}
 \usage{
-write.temperature(
-  fld,
-  file,
-  griddata,
-  varname = "tas",
-  varunit = "K",
-  vardesc = "2m air temperature",
-  tunit = "years since 2006",
-  clobber = FALSE
-)
+write.temperature(fld, file, griddata, varname = "tas", varunit = "K",
+  vardesc = "2m air temperature", tunit = "years since 2006",
+  clobber = FALSE)
 }
 \arguments{
 \item{fld}{A matrix [ntime x ngrid] containing the field to write out.}
