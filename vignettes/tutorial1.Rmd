@@ -20,8 +20,7 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-#dofieldplots <- require('gcammaptools')
-dofieldplots <- FALSE
+dofieldplots <- TRUE
 ```
 
 The fldgen package allows you to ingest temperature output from an earth system
@@ -169,18 +168,15 @@ mean field from each one, so that's what we will do.
 ```{r plotfields, fig.show='hold', eval=TRUE} 
 ## Extract a single example field from each series and create a plot
 if(dofieldplots) {
-  fieldplots <- lapply(residgrids, function(g) {
-      suppressWarnings(
-          plot_field(g[exfld,], griddata, 14, legendstr='delta-T (K)')
-      )
-  })
+
+  fieldplots <- plotglobalfieldsT(residgrids, yearindex = exfld, 
+                                  emulatorgriddata = emulator$griddata,
+                                  legendstr='delta-T (K)')
 
   ## Display the plots
   for (plt in fieldplots) {
       print(plt)
   }
-} else {
-  print('Unable to make plots: gcammaptools is not installed.')
 }
 ```
 

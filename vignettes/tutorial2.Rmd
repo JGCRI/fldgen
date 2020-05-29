@@ -20,8 +20,7 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-#dofieldplots <- require('gcammaptools')
-dofieldplots <- FALSE
+dofieldplots <- TRUE
 ```
 
 The fldgen package allows you to ingest temperature and precipitation output from an earth system model (ESM) and generate randomized temperature fields that have the same space and time correlation properties as the original ESM data.  This tutorial focuses on how to use the functions in the package to generate and analyze joint temperature and precipitation fields.  The details of how the method works are covered in a companion paper.  
@@ -326,41 +325,20 @@ We can extract a single field from each time series and plot them all for compar
 ```{r plotfields, fig.show='hold', eval=TRUE} 
 ## Extract a single example field from each series and create a plot
 if(dofieldplots) {
-plotglobalfieldsT <- function(fieldlist, sequencenum, minval=-3.5, maxval=3.5, legendstr) {
-    ## Extract a single example field from each series (sequencenum determines which one) and create a plot
-    lapply(fieldlist, function(g) {
-        suppressWarnings(
-            plot_field(g[sequencenum, 1:Ngrid], emulator$griddataT, 14,  # 14 is the number of color levels in the plot
-                       minval, maxval) +
-                guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                    title=legendstr, title.position='top', title.hjust=0.5))
-        )
-    })
-}
 
-plotglobalfieldsP <- function(fieldlist, sequencenum, minval=-1.5, maxval= 1.5, legendstr) {
-    ## Extract a single example field from each series (sequencenum determines which one) and create a plot
-    lapply(fieldlist, function(g) {
-        suppressWarnings(
-            plot_field(g[sequencenum, (Ngrid + 1):(2*Ngrid)], emulator$griddataP, 14,  # 14 is the number of color levels in the plot
-                       minval, maxval) +
-                guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                    title=legendstr, title.position='top', title.hjust=0.5))
-        )
-    })
-}
+residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], yearindex = exfld, 
+                                      emulatorgriddata = emulator$griddataT,
+                                      legendstr='delta-T (K)')
 
-
-residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], exfld, legendstr='delta-T (K)')
-residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], exfld, legendstr='delta-logP (log(kg/m2/s))')
+residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], yearindex = exfld,
+                                      emulatorgriddata = emulator$griddataP,
+                                      legendstr='delta-logP (log(kg/m2/s))')
 
 ## Display the plots
 for (i in 1:length(residfieldplotsT)) {
    gridExtra::grid.arrange(residfieldplotsT[[i]], residfieldplotsP[[i]], nrow = 1)
 }
-} else {
-  print('Unable to make plots: gcammaptools is not installed.')
-}
+} 
 ```
 
 ## EOF Characteristics
@@ -430,8 +408,7 @@ if(dofieldplots) {
     title <- paste0('EOF-', eofcols[i]-1)
     suppressWarnings(plot_field(eofvis[i, 1:Ngrid], emulator$griddataT, 14, -0.5, 0.5)) + 
         ggtitle(title) +
-        guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                      title="T-portion (relative to max of T portion)", title.position='top',
+        guides(fill=ggplot2::guide_colorbar(title="T-portion (relative to max of T portion)", title.position='top',
                                             title.hjust=0.5))
     })
     
@@ -440,8 +417,7 @@ if(dofieldplots) {
         title <- paste0('EOF-', eofcols[i]-1)
         suppressWarnings(plot_field(eofvis[i, (Ngrid + 1): (2 * Ngrid)], emulator$griddataP, 14, -0.5, 0.5)) + 
             ggtitle(title) +
-            guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                      title="P-portion (relative to max of P portion)", title.position='top', 
+            guides(fill=ggplot2::guide_colorbar( title="P-portion (relative to max of P portion)", title.position='top', 
                                                 title.hjust=0.5))
     })
         
@@ -449,7 +425,5 @@ if(dofieldplots) {
     for(i in seq_along(eofcols)) {
         gridExtra::grid.arrange(eofpltsT[[i]], eofpltsP[[i]], nrow = 1)
     }
-} else {
-  print('Unable to make plots:  gcammaptools is not installed.')
-}
+} 
 ```
