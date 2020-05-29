@@ -255,7 +255,5 @@ if(dofieldplots) {
       title <- paste0('EOF-', eofcols[i]-1)
       print(eofplts[[i]] + ggtitle(title))
   }
-} else {
-  print('Unable to make plots:  gcammaptools is not installed.')
-}
+} 
 ```
