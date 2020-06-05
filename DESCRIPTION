@@ -11,6 +11,8 @@ Description: Provides functions to learn the spatial and temporal correlation of
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 2.10)
 Imports:
 	assertthat (>= 0.2.0),
 	dplyr (>= 0.7), 
