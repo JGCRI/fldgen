@@ -100,41 +100,29 @@ fldts2df <- function(fldts, griddata)
 #' @export
 plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="Temperature (K)", palettestr = 'RdYlBu', palettedir = -1 )
 {
-    # silence package checks
-    lat <- lon <- long <- group <- value <- NULL
-
+        # silence package checks
+        lat <- lon <- long <- group <- value <- countries <- NULL
 
 
         # reshape data to be easier to plot
         tdf <- fld2df(fld, griddata)
 
         # # Get outlines of countries to add to map to make them easier to interpret.
-        # `countries` is the data from ggplot2::map_data('world')
-        # Including a call to map_data, however, threw test errors for github
-        # actions in the PR.
-        # Instead, we ran  the following offline to save this data:
-        #
-        # countries <- ggplot2::map_data('world')
-        # usethis::use_data(countries, overwrite = TRUE, compress = 'xz')
-        #
-        # This created a `data` directory with countries.rda saved.
-        # The object `countries` is then accessible in the package once
-        # the package is built.
         #
         # in order to plot correctly, the data frame of country outline
         # information needs a `value` column. Add one.
-        countries %>%
+        fldgen::pckg_country_outlines_ggplot %>%
             mutate(value = 0) ->
-            countries1
+            countries
 
         # Tweak the easter tip of Russia to get the map to break evenly across
         # longitudes.
-        maxgroup <- max(countries1$group)
+        maxgroup <- max(countries$group)
 
-        countries1 %>%
+        countries %>%
             mutate(group = if_else(long > 180, maxgroup + 1, group),
                    long = if_else(long > 180, long - 360, long)) ->
-            countries1
+            countries
 
 
         ## TODO: make these options a little more customizable
@@ -151,7 +139,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
                               axis.ticks=element_blank(),
                               legend.position = 'bottom') +
                 # black outlines of countries
-                ggplot2::geom_path(data = countries1,
+                ggplot2::geom_path(data = countries,
                                    aes(x = long, y = lat, group = group),
                                    size = 0.25, color = 'black')
 
@@ -180,7 +168,7 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
                                axis.ticks=element_blank(),
                                legend.position = 'bottom') +
                 # black outlines of countries
-                ggplot2::geom_path(data = countries1,
+                ggplot2::geom_path(data = countries,
                                    aes(x = long, y = lat, group = group),
                                    size = 0.25, color = 'black')
         }
