@@ -69,3 +69,6 @@ inst/doc
 
 # pkgdown output
 /docs/
+
+# ignore subdir for other project
+ge-emulator-testing/*
