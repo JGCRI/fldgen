@@ -24,11 +24,11 @@ Imports:
 	rlang (>= 0.1.2),
 	stringr (>= 1.4.0),
 Suggests:
-    testthat,
+    testthat (>= 2.0.1),
     covr,
-    gridExtra,
+    gridExtra (>= 2.3.0),
     readr (>= 1.1.0),
-    knitr,
-    rmarkdown
+    knitr (>= 1.21.0),
+    rmarkdown (>= 1.11.0)
 RoxygenNote: 7.0.2
 VignetteBuilder: knitr
