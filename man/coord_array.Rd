@@ -12,7 +12,7 @@ coord_array(lat, lon)
 \item{lon}{Longitude coordinate array for the full rectangular grid}
 }
 \value{
-Matrix [ngrid x 2], latitude in the first column, longitude in the
+Matrix \link{ngrid x 2}, latitude in the first column, longitude in the
 second.
 }
 \description{

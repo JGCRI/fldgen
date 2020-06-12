@@ -2,11 +2,19 @@
 % Please edit documentation in R/plot.R
 \name{plotglobalfieldsT}
 \alias{plotglobalfieldsT}
-\title{Plot a single year's temperature for every generated gridded time series
+\title{Plot a map of a single year's temperature for every generated gridded time series
 in a list.}
 \usage{
-plotglobalfieldsT(fieldlist, yearindex, emulatorgriddata, minval = -3.5,
-  maxval = 3.5, legendstr, palettestr = "RdYlBu", palettedir = -1)
+plotglobalfieldsT(
+  fieldlist,
+  yearindex,
+  emulatorgriddata,
+  minval = -3.5,
+  maxval = 3.5,
+  legendstr,
+  palettestr = "RdYlBu",
+  palettedir = -1
+)
 }
 \arguments{
 \item{fieldlist}{List of residual}
@@ -39,7 +47,19 @@ order of the color palette used. Defaults to -1.}
 \description{
 Takes in a list of temperature fields (residual or full data), a year
 index, and the underlying temperature gridded data from a trained
-emulator, as well as a few arguments relevant to plotting
+emulator, as well as a few arguments relevant to plotting.
+}
+\details{
+While the functions for plotting maps of temperature
+(\code{plotglobalfieldsT}) and precipitation (\code{plotglobalfieldsP})
+are very similar and both rely on a call to \code{plot_field}, they each
+select a different portion of the matrix of values to plot. fldgen operates
+on matrices that are of dimensions:
+rows = Nears X Nrealizations
+columns = Ngrid X Nvariables
+In particular, the first 1:Ngrid columns contain temperature information,
+and Ngrid+1:2Ngrid contain precipitation information. These functions parse
+out the appropriate columns for you.
 }
 \author{
 ACS May 2020

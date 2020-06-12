@@ -4,7 +4,8 @@
 \name{pckg_country_outlines_ggplot}
 \alias{pckg_country_outlines_ggplot}
 \title{pckg_country_outlines_ggplot}
-\format{A data frame with 99338 observations on the following 6 variables.
+\format{
+A data frame with 99338 observations on the following 6 variables.
 \describe{
 \item{\code{long}}{a numeric vector}
 \item{\code{lat}}{a numeric vector}
@@ -12,7 +13,8 @@
 \item{\code{order}}{a numeric vector}
 \item{\code{region}}{a character vector}
 \item{\code{subregion}}{a character vector}
-}}
+}
+}
 \usage{
 pckg_country_outlines_ggplot
 }

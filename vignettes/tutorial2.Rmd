@@ -20,7 +20,6 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-dofieldplots <- TRUE
 ```
 
 The fldgen package allows you to ingest temperature and precipitation output from an earth system model (ESM) and generate randomized temperature fields that have the same space and time correlation properties as the original ESM data.  This tutorial focuses on how to use the functions in the package to generate and analyze joint temperature and precipitation fields.  The details of how the method works are covered in a companion paper.  
@@ -322,9 +321,16 @@ pvarunconvert_fcn <- exp
 
 We can extract a single field from each time series and plot them all for comparision.  We will be able to see a lot more detail if we subtract out the mean field from each one, so that's what we will do.
 
+While the functions for plotting maps of temperature (`plotglobalfieldsT`) and precipitation (`plotglobalfieldsP`) are very similar and both rely on a call to `plot_field`, they each select a different portion of the matrix of values to plot. fldgen operates on matrices that have flattened the three dimensional space of (lat, lon, variable) into a single dimension. The matrices fldgen operates on are of dimensions:
+
+- rows = `Nears X Nrealizations`
+- columns = `Ngrid X Nvariables`
+
+In particulare, the first `1:Ngrid` columns contain temperature information, and `Ngrid+1:2Ngrid` contain precipitation information. These functions parse out the appropriate columns for you.
+
 ```{r plotfields, fig.show='hold', eval=TRUE} 
 ## Extract a single example field from each series and create a plot
-if(dofieldplots) {
+
 
 residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], yearindex = exfld, 
                                       emulatorgriddata = emulator$griddataT,
@@ -338,7 +344,7 @@ residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], yearindex = exfld,
 for (i in 1:length(residfieldplotsT)) {
    gridExtra::grid.arrange(residfieldplotsT[[i]], residfieldplotsP[[i]], nrow = 1)
 }
-} 
+
 ```
 
 ## EOF Characteristics
@@ -398,7 +404,6 @@ We will make spatial plots of the 9 EOFs shown in the plot above.  We'll also pl
 ## The EOFs are in reof$rotation.  Each column is the grid cell values for an EOF.
 ## Also, the EOFs are scaled to unit norm.  We'll rescale them to unit max value
 
-if(dofieldplots) {
   eofcols <- c(2:10, 26, 51)  # EOF numbering starts at 0, but array numbering starts at 1
   eofvis <- t(reof$rotation[,eofcols])   # EOFs are now in rows, not columns
   eofvis <- eofvis / max(abs(eofvis))
@@ -425,5 +430,4 @@ if(dofieldplots) {
     for(i in seq_along(eofcols)) {
         gridExtra::grid.arrange(eofpltsT[[i]], eofpltsP[[i]], nrow = 1)
     }
-} 
 ```

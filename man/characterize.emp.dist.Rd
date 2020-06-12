@@ -22,12 +22,10 @@ quantile function for that grid cell.
 \details{
 The output will be a list with two fields:
 \describe{
-  \item{\strong{cdf}}{List of empirical CDF functions for each grid cell}
-  \item{\strong{quant}}{List of empirical quantile functions for each grid
-  cell.}
+\item{\strong{cdf}}{List of empirical CDF functions for each grid cell}
+\item{\strong{quant}}{List of empirical quantile functions for each grid
+cell.}
 }
-
-
 
 Conventionally, we refer to the output list as \code{empiricaldistribution}.
 Notably, any other function with a \code{empiricaldistribution} argument is

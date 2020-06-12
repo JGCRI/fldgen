@@ -7,14 +7,14 @@
 eof_analyze(resids, Ngrid, globop)
 }
 \arguments{
-\item{resids}{A matrix [ntime x ngrid] or [ntime x 2ngrid] of residuals from
+\item{resids}{A matrix \link{ntime x ngrid} or \link{ntime x 2ngrid} of residuals from
 the mean field. Temperature residuals must always occupy the first ngrid
 columns.}
 
 \item{Ngrid}{The number of spatial grid cells for each variable in data in
 dat. Defaults to 55296, a half degree grid.}
 
-\item{globop}{A column vector [ngrid x 1] containing the global mean operator.
+\item{globop}{A column vector \link{ngrid x 1} containing the global mean operator.
 This is produced as the \code{globop} field of the structure returned by
 \code{\link{read.general}}.}
 }
@@ -39,13 +39,13 @@ The return value of this function is in the same format as the structure
 returned by \code{\link[stats]{princomp}}.  The most important fields are:
 
 \describe{
-  \item{rotation}{A matrix [ngrid x N] containing orthogonal basis vectors
-  for the residuals.  Each column is a basis vector.  The number of basis
-  vectors, N, will be less than or equal to the number of time slices in the
-  input.}
-  \item{x}{A matrix [ntime x N] containing the coordinates of the residuals
-  in the coordinate system defined by the basis vectors.  Each row is a time
-  slice.  Thus, \eqn{r(t) = \sum_{i=1}^{N} x[t,i] * rotation[:,i]}.}
+\item{rotation}{A matrix \link{ngrid x N} containing orthogonal basis vectors
+for the residuals.  Each column is a basis vector.  The number of basis
+vectors, N, will be less than or equal to the number of time slices in the
+input.}
+\item{x}{A matrix \link{ntime x N} containing the coordinates of the residuals
+in the coordinate system defined by the basis vectors.  Each row is a time
+slice.  Thus, \eqn{r(t) = \sum_{i=1}^{N} x[t,i] * rotation[:,i]}.}
 }
 }
 

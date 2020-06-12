@@ -4,8 +4,19 @@
 \alias{fldgen_object_TP}
 \title{Create a \code{fldgen} object from constituent parts}
 \usage{
-fldgen_object_TP(griddataT, griddataP, tgav, meanfldT, meanfldP, tfuns,
-  pfuns, reof, fxmag, fxphase, infiles)
+fldgen_object_TP(
+  griddataT,
+  griddataP,
+  tgav,
+  meanfldT,
+  meanfldP,
+  tfuns,
+  pfuns,
+  reof,
+  fxmag,
+  fxphase,
+  infiles
+)
 }
 \arguments{
 \item{griddataT}{An object returned from \code{\link{read.temperatures}} or
@@ -33,11 +44,11 @@ meanfldP.}
 \item{reof}{Object returned from \code{\link{eof_analyze}}.}
 
 \item{fxmag}{The magnitude of the Fourier transform of the EOF projection
-coefficients.  This should be a matrix [Ntime x NEOF].  If using
+coefficients.  This should be a matrix \link{Ntime x NEOF}.  If using
 \code{\link{psdest}}, note this is the square root of the power spectral
 density returned by that function.}
 
-\item{fxphase}{List of matrices [Ntime x NEOF] of phases of the Fourier
+\item{fxphase}{List of matrices \link{Ntime x NEOF} of phases of the Fourier
 transform.  There should be one element in the list for each input ESM run.}
 
 \item{infiles}{Names of input files used to construct the data.}

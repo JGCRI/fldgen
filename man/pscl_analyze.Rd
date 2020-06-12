@@ -23,7 +23,7 @@ regressor.
 The return value is a list with the residuals and pattern coefficients as r
 (resid), w (slope), and b (intercept).
 
-dim(r) == dim(tin) == ntime x nlat*nlon
-dim(w) == dim(b) == nlat*nlon
+dim(r) == dim(tin) == ntime x nlat\emph{nlon
+dim(w) == dim(b) == nlat}nlon
 }
 \keyword{internal}

@@ -4,9 +4,15 @@
 \alias{read.general}
 \title{Read ESM netCDF data for arbitrary variables}
 \usage{
-read.general(filename, len = NULL, tag = basename(filename),
-  varname = "tas", latvar = "lat", lonvar = "lon",
-  timevar = "time")
+read.general(
+  filename,
+  len = NULL,
+  tag = basename(filename),
+  varname = "tas",
+  latvar = "lat",
+  lonvar = "lon",
+  timevar = "time"
+)
 }
 \arguments{
 \item{filename}{Name of the input netCDF file}
@@ -37,18 +43,18 @@ rapidly varying index, and time is the least.
 \details{
 The output will be a list with six fields:
 \describe{
-  \item{\strong{vardata}}{Matrix of variable data.}
-  \item{\strong{globalop}}{Vector operator for global mean value of the variable.}
-  \item{\strong{lat}}{Vector of latitude values.  These are only replicated
+\item{\strong{vardata}}{Matrix of variable data.}
+\item{\strong{globalop}}{Vector operator for global mean value of the variable.}
+\item{\strong{lat}}{Vector of latitude values.  These are only replicated
 once, so their length is nlat, not ngrid.  You have to use \code{rep(lat,
 nlon)} to get latitudes for each grid cell.}
-  \item{\strong{lon}}{Vector of longitude values.  These are only replicated
+\item{\strong{lon}}{Vector of longitude values.  These are only replicated
 once, so their lingth is nlon, not ngrid.  Getting longitudes for each grid
 cell is tricksy.  Try \code{as.vector(matrix(rep(lon, nlat), nrow=nlat,
 byrow=TRUE))}.  Fortunately, you don't need them very often.}
-  \item{\strong{time}}{Vector of time values, given as years since the base
+\item{\strong{time}}{Vector of time values, given as years since the base
 year of the dataset.}
-  \item{\strong{tags}}{A list of datasets that were concatenated to get this
+\item{\strong{tags}}{A list of datasets that were concatenated to get this
 structure.  The names of the list are the tags given to the dataset, and the
 values are a vector of start-row, end-row pairs.}
 }

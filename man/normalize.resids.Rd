@@ -26,15 +26,13 @@ distribution.
 \details{
 The output will be a list with four fields:
 \describe{
-  \item{\strong{inputresids}}{Matrix of the original, input residuals for
-  each grid cell.}
-  \item{\strong{empiricalcdf}}{List of the empirical cdf functions for each
-  grid cell.}
-  \item{\strong{quants}}{Matrix of the quantiles of each input residual.}
-  \item{\strong{rn}}{Matrix of the new, normally distributed residuals.}
+\item{\strong{inputresids}}{Matrix of the original, input residuals for
+each grid cell.}
+\item{\strong{empiricalcdf}}{List of the empirical cdf functions for each
+grid cell.}
+\item{\strong{quants}}{Matrix of the quantiles of each input residual.}
+\item{\strong{rn}}{Matrix of the new, normally distributed residuals.}
 }
-
-
 
 Conventionally, we refer to the output list as \code{quantilemapping}.
 Notably, any other function with a \code{quantilemapping} argument is

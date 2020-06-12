@@ -71,9 +71,7 @@ fldts2df <- function(fldts, griddata)
 #' Plot a single field in matrix form
 #'
 #' Transform the field into a data frame using \code{\link{fld2df}} and plot
-#' using the \code{gcammaptools} package.  If \code{gcammaptools} isn't
-#' available, return \code{NULL}.  (TODO: make an ersatz plot if gcammaptools
-#' isn't there)
+#' using the \code{ggplot2} package.
 #'
 #' @param fld Vector of ngrid=nlat*nlon values: a single time slice of the
 #' field.
@@ -125,9 +123,8 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
             countries
 
 
-        ## TODO: make these options a little more customizable
         if(nb < 2) {
-            ggplot2::ggplot(tdf, aes(x=lon, y = lat, fill = value)) +
+            p <- ggplot2::ggplot(tdf, aes(x=lon, y = lat, fill = value)) +
                 ggplot2::geom_raster() +
                 ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir,
                                               limits=c(minval, maxval), oob=scales::squish,
@@ -143,22 +140,15 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
                                    aes(x = long, y = lat, group = group),
                                    size = 0.25, color = 'black')
 
-            # # Legacy code using gcammaptools
-            # gcammaptools::plot_GCAM_grid(tdf, col='value', extent=gcammaptools::EXTENT_WORLD,
-            #                              legend=TRUE) +
-            #     ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir,
-            #                                   limits=c(minval, maxval), oob=scales::squish,
-            #                                   guide=ggplot2::guide_colorbar(title=legendstr, title.position='top'))
-
         }
         else {
             ## Discretize the output values.
             tdf$value <- minval +
               findInterval(tdf$value, seq(minval, maxval, length.out=nb))/nb * (maxval-minval)
 
-            ggplot2::ggplot(tdf, aes(x=lon, y = lat, fill = value)) +
-                ggplot2::geom_raster() +
-                ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir,
+           p <-  ggplot2::ggplot(tdf, aes(x=lon, y = lat, fill = value)) +
+               ggplot2::geom_raster() +
+               ggplot2::scale_fill_distiller(palette=palettestr, direction=palettedir,
                                               limits=c(minval, maxval), oob=scales::squish,
                                               guide=ggplot2::guide_colorbar(title=legendstr, title.position='top')) +
                 ggplot2::scale_x_continuous(expand=c(0,0)) +
@@ -172,16 +162,28 @@ plot_field <- function(fld, griddata, nb=6, minval=-3.5, maxval=3.5, legendstr="
                                    aes(x = long, y = lat, group = group),
                                    size = 0.25, color = 'black')
         }
-
+return(p)
 }
 
 
-#' Plot a single year's temperature for every generated gridded time series
+#' Plot a map of a single year's temperature for every generated gridded time series
 #' in a list.
 #'
 #' Takes in a list of temperature fields (residual or full data), a year
 #' index, and the underlying temperature gridded data from a trained
-#' emulator, as well as a few arguments relevant to plotting
+#' emulator, as well as a few arguments relevant to plotting.
+#'
+#' While the functions for plotting maps of temperature
+#' (\code{plotglobalfieldsT}) and precipitation (\code{plotglobalfieldsP})
+#' are very similar and both rely on a call to \code{plot_field}, they each
+#' select a different portion of the matrix of values to plot. fldgen operates
+#' on matrices that are of dimensions:
+#' rows = Nears X Nrealizations
+#' columns = Ngrid X Nvariables
+#' In particular, the first 1:Ngrid columns contain temperature information,
+#' and Ngrid+1:2Ngrid contain precipitation information. These functions parse
+#' out the appropriate columns for you.
+#'
 #'
 #' @param fieldlist List of residual
 #' @param yearindex Index of the year to be plotted. For example, in data
@@ -215,22 +217,37 @@ plotglobalfieldsT <- function(fieldlist, yearindex, emulatorgriddata,
     ## Extract a single example field from each series (yearindex determines which one) and create a plot
     lapply(fieldlist, function(g) {
         suppressWarnings(
-            plot_field(g[yearindex, 1:Ngrid], emulatorgriddata, 14,  # 14 is the number of color levels in the plot
+            plot_field(g[yearindex, 1:Ngrid], emulatorgriddata,
+                       nb = 14,  # 14 is the number of color levels in the plot
                        minval, maxval,
                        legendstr = legendstr, palettestr = palettestr, palettedir = palettedir) +
                 ggplot2::guides(title=legendstr, title.position='top', title.hjust=0.5)
         )
-    })
+    }) ->
+        listplots
+
+    return(listplots)
 }
 
 
 
-#' Plot a single year's precipitation for every generated gridded time series
+#' Plot a map of a single year's precipitation for every generated gridded time series
 #' in a list.
 #'
 #' Takes in a list of precipitation fields (residual or full data), a year
 #' index, and the underlying precipitation gridded data from a trained
 #' emulator, as well as a few arguments relevant to plotting
+#'
+#' #' While the functions for plotting maps of temperature
+#' (\code{plotglobalfieldsT}) and precipitation (\code{plotglobalfieldsP})
+#' are very similar and both rely on a call to \code{plot_field}, they each
+#' select a different portion of the matrix of values to plot. fldgen operates
+#' on matrices that are of dimensions:
+#' rows = Nears X Nrealizations
+#' columns = Ngrid X Nvariables
+#' In particular, the first 1:Ngrid columns contain temperature information,
+#' and Ngrid+1:2Ngrid contain precipitation information. These functions parse
+#' out the appropriate columns for you.
 #'
 #' @param fieldlist List of residual
 #' @param yearindex Index of the year to be plotted. For example, in data
@@ -263,12 +280,16 @@ plotglobalfieldsP <- function(fieldlist, yearindex, emulatorgriddata,
     ## Extract a single example field from each series (yearindex determines which one) and create a plot
     lapply(fieldlist, function(g) {
         suppressWarnings(
-            plot_field(g[yearindex, (Ngrid + 1):(2*Ngrid)], emulatorgriddata, 14,  # 14 is the number of color levels in the plot
+            plot_field(g[yearindex, (Ngrid + 1):(2*Ngrid)], emulatorgriddata,
+                       nb = 14,  # 14 is the number of color levels in the plot
                        minval, maxval,
                        legendstr = legendstr, palettestr = palettestr, palettedir = palettedir) +
                 ggplot2::guides(title=legendstr, title.position='top', title.hjust=0.5)
         )
-    })
+    }) ->
+        listplots
+
+    return(listplots)
 }
 
 

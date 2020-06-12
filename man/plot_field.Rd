@@ -4,9 +4,16 @@
 \alias{plot_field}
 \title{Plot a single field in matrix form}
 \usage{
-plot_field(fld, griddata, nb = 6, minval = -3.5, maxval = 3.5,
-  legendstr = "Temperature (K)", palettestr = "RdYlBu",
-  palettedir = -1)
+plot_field(
+  fld,
+  griddata,
+  nb = 6,
+  minval = -3.5,
+  maxval = 3.5,
+  legendstr = "Temperature (K)",
+  palettestr = "RdYlBu",
+  palettedir = -1
+)
 }
 \arguments{
 \item{fld}{Vector of ngrid=nlat*nlon values: a single time slice of the
@@ -39,7 +46,5 @@ order of the color palette used. Defaults to -1.}
 }
 \description{
 Transform the field into a data frame using \code{\link{fld2df}} and plot
-using the \code{gcammaptools} package.  If \code{gcammaptools} isn't
-available, return \code{NULL}.  (TODO: make an ersatz plot if gcammaptools
-isn't there)
+using the \code{ggplot2} package.
 }

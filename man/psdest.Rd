@@ -11,7 +11,7 @@ psdest(prcomp_l)
 eof_analyze, or a single such structure.}
 }
 \value{
-A matrix [ntime, numPC] of PSD estimates (see details).
+A matrix \link{ntime, numPC} of PSD estimates (see details).
 }
 \description{
 This is a simplistic estimate of the PSD; it's just the mean of the
