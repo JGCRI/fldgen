@@ -18,7 +18,7 @@ generate.TP.fullgrids(
 emulator.}
 
 \item{residgrids}{A list of new residual fields, each entry in the list is a
-new realization, a matrix that is [Nyears x 2 * Ngrid]; the first 1:Ngrid
+new realization, a matrix that is \link{Nyears x 2 * Ngrid}; the first 1:Ngrid
 cols are the temperature residuals and columns (Ngrid + 1):(2*Ngrid) are the
 precipitation residuals.}
 
@@ -50,12 +50,14 @@ trained pattern scaling result + a vector of global annual mean temperatures.}
 }
 \value{
 A list of:
-1) fullgrids = A list of new full fields, each entry in
-the list is a new realization, a matrix that is [Nyears x 2 * Ngrid]; the
+\enumerate{
+\item fullgrids = A list of new full fields, each entry in
+the list is a new realization, a matrix that is \link{Nyears x 2 * Ngrid}; the
 first 1:Ngrid cols are the temperature field and columns
 (Ngrid + 1):(2*Ngrid) are the precipitation field.
-2) meanfieldT = the reconstructed, pattern scaled temperature mean field.
-3) meanfieldP = the reconstructed, pattern scaled precipitation mean field.
+\item meanfieldT = the reconstructed, pattern scaled temperature mean field.
+\item meanfieldP = the reconstructed, pattern scaled precipitation mean field.
+}
 }
 \description{
 This function takes in a trained emulator - a structure of class

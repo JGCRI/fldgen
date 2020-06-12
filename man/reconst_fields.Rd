@@ -7,17 +7,17 @@
 reconst_fields(basis, bcoord, meanfield = NULL)
 }
 \arguments{
-\item{basis}{A matrix [ngrid x N] of basis vectors, one vector per column.}
+\item{basis}{A matrix \link{ngrid x N} of basis vectors, one vector per column.}
 
-\item{bcoord}{A matrix [ntime x N] of basis coordinates, one time step in
+\item{bcoord}{A matrix \link{ntime x N} of basis coordinates, one time step in
 each row, with coordinates across the columns.}
 
-\item{meanfield}{An optional matrix [ntime x ngrid] of mean field values, one
+\item{meanfield}{An optional matrix \link{ntime x ngrid} of mean field values, one
 time slice per row. If supplied, it will be added to the residuals calculated
 from \code{basis} and \code{bcoord}.}
 }
 \value{
-A matrix [ntime x ngrid] of residual values (or temperature values,
+A matrix \link{ntime x ngrid} of residual values (or temperature values,
 if \code{meanfield} was supplied).
 }
 \description{

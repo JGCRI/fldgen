@@ -16,7 +16,7 @@ write.temperature(
 )
 }
 \arguments{
-\item{fld}{A matrix [ntime x ngrid] containing the field to write out.}
+\item{fld}{A matrix \link{ntime x ngrid} containing the field to write out.}
 
 \item{file}{Name of the output file.}
 

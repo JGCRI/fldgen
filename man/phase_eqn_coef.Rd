@@ -15,13 +15,13 @@ EOF-0 (i=1).}
 \description{
 The result will be a structure containing:
 \describe{
-  \item{A}{A matrix [Nf x Nb], where Nf is the number of
+\item{A}{A matrix \link{Nf x Nb}, where Nf is the number of
 nonnegative frequencies in the Fourier transform and Nb is the number of
-basis functions (i.e., EOFs).  A[k,j] = (a_k^i a_k^j), where i
+basis functions (i.e., EOFs).  A\link{k,j} = (a_k^i a_k^j), where i
 is the index of the basis function used for the reference (conventionally 2,
 which is the first spatial basis function.  Don't use the time-like basis
 function, i=1, since it will generally have small coefficients).}
-  \item{i}{The index of the reference basis function.}
+\item{i}{The index of the reference basis function.}
 }
 }
 \details{

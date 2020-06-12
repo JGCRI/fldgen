@@ -20,7 +20,7 @@ field.}
 \code{griddata$time[ti]}.  If the time index is omitted, then the time
 variable will be omitted from the output.}
 
-\item{fldts}{Matrix [ntime, ngrid] of spatial fields}
+\item{fldts}{Matrix \link{ntime, ngrid} of spatial fields}
 }
 \value{
 Data frame with variables lat, lon, value, and optionally t.

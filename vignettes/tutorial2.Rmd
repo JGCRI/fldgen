@@ -20,8 +20,6 @@ library('fldgen')
 library('dplyr')
 library('ggplot2')
 library('reshape2')
-#dofieldplots <- require('gcammaptools')
-dofieldplots <- FALSE
 ```
 
 The fldgen package allows you to ingest temperature and precipitation output from an earth system model (ESM) and generate randomized temperature fields that have the same space and time correlation properties as the original ESM data.  This tutorial focuses on how to use the functions in the package to generate and analyze joint temperature and precipitation fields.  The details of how the method works are covered in a companion paper.  
@@ -323,44 +321,30 @@ pvarunconvert_fcn <- exp
 
 We can extract a single field from each time series and plot them all for comparision.  We will be able to see a lot more detail if we subtract out the mean field from each one, so that's what we will do.
 
+While the functions for plotting maps of temperature (`plotglobalfieldsT`) and precipitation (`plotglobalfieldsP`) are very similar and both rely on a call to `plot_field`, they each select a different portion of the matrix of values to plot. fldgen operates on matrices that have flattened the three dimensional space of (lat, lon, variable) into a single dimension. The matrices fldgen operates on are of dimensions:
+
+- rows = `Nears X Nrealizations`
+- columns = `Ngrid X Nvariables`
+
+In particulare, the first `1:Ngrid` columns contain temperature information, and `Ngrid+1:2Ngrid` contain precipitation information. These functions parse out the appropriate columns for you.
+
 ```{r plotfields, fig.show='hold', eval=TRUE} 
 ## Extract a single example field from each series and create a plot
-if(dofieldplots) {
-plotglobalfieldsT <- function(fieldlist, sequencenum, minval=-3.5, maxval=3.5, legendstr) {
-    ## Extract a single example field from each series (sequencenum determines which one) and create a plot
-    lapply(fieldlist, function(g) {
-        suppressWarnings(
-            plot_field(g[sequencenum, 1:Ngrid], emulator$griddataT, 14,  # 14 is the number of color levels in the plot
-                       minval, maxval) +
-                guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                    title=legendstr, title.position='top', title.hjust=0.5))
-        )
-    })
-}
-
-plotglobalfieldsP <- function(fieldlist, sequencenum, minval=-1.5, maxval= 1.5, legendstr) {
-    ## Extract a single example field from each series (sequencenum determines which one) and create a plot
-    lapply(fieldlist, function(g) {
-        suppressWarnings(
-            plot_field(g[sequencenum, (Ngrid + 1):(2*Ngrid)], emulator$griddataP, 14,  # 14 is the number of color levels in the plot
-                       minval, maxval) +
-                guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                    title=legendstr, title.position='top', title.hjust=0.5))
-        )
-    })
-}
 
 
-residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], exfld, legendstr='delta-T (K)')
-residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], exfld, legendstr='delta-logP (log(kg/m2/s))')
+residfieldplotsT <- plotglobalfieldsT(residgrids[1:nplt], yearindex = exfld, 
+                                      emulatorgriddata = emulator$griddataT,
+                                      legendstr='delta-T (K)')
+
+residfieldplotsP <- plotglobalfieldsP(residgrids[1:nplt], yearindex = exfld,
+                                      emulatorgriddata = emulator$griddataP,
+                                      legendstr='delta-logP (log(kg/m2/s))')
 
 ## Display the plots
 for (i in 1:length(residfieldplotsT)) {
    gridExtra::grid.arrange(residfieldplotsT[[i]], residfieldplotsP[[i]], nrow = 1)
 }
-} else {
-  print('Unable to make plots: gcammaptools is not installed.')
-}
+
 ```
 
 ## EOF Characteristics
@@ -420,7 +404,6 @@ We will make spatial plots of the 9 EOFs shown in the plot above.  We'll also pl
 ## The EOFs are in reof$rotation.  Each column is the grid cell values for an EOF.
 ## Also, the EOFs are scaled to unit norm.  We'll rescale them to unit max value
 
-if(dofieldplots) {
   eofcols <- c(2:10, 26, 51)  # EOF numbering starts at 0, but array numbering starts at 1
   eofvis <- t(reof$rotation[,eofcols])   # EOFs are now in rows, not columns
   eofvis <- eofvis / max(abs(eofvis))
@@ -430,8 +413,7 @@ if(dofieldplots) {
     title <- paste0('EOF-', eofcols[i]-1)
     suppressWarnings(plot_field(eofvis[i, 1:Ngrid], emulator$griddataT, 14, -0.5, 0.5)) + 
         ggtitle(title) +
-        guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                      title="T-portion (relative to max of T portion)", title.position='top',
+        guides(fill=ggplot2::guide_colorbar(title="T-portion (relative to max of T portion)", title.position='top',
                                             title.hjust=0.5))
     })
     
@@ -440,8 +422,7 @@ if(dofieldplots) {
         title <- paste0('EOF-', eofcols[i]-1)
         suppressWarnings(plot_field(eofvis[i, (Ngrid + 1): (2 * Ngrid)], emulator$griddataP, 14, -0.5, 0.5)) + 
             ggtitle(title) +
-            guides(fill=ggplot2::guide_colorbar(barwidth=ggplot2::unit(4,'in'), barheight=ggplot2::unit(0.125,'in'),
-                                                      title="P-portion (relative to max of P portion)", title.position='top', 
+            guides(fill=ggplot2::guide_colorbar( title="P-portion (relative to max of P portion)", title.position='top', 
                                                 title.hjust=0.5))
     })
         
@@ -449,7 +430,4 @@ if(dofieldplots) {
     for(i in seq_along(eofcols)) {
         gridExtra::grid.arrange(eofpltsT[[i]], eofpltsP[[i]], nrow = 1)
     }
-} else {
-  print('Unable to make plots:  gcammaptools is not installed.')
-}
 ```

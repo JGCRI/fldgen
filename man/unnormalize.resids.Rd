@@ -31,13 +31,13 @@ of residuals.
 \details{
 The output will be a list with four fields:
 \describe{
-  \item{\strong{empiricalquant}}{List of the empirical quantile functions
-  for each grid cell.}
-  \item{\strong{rn}}{Matrix of the input, randomized, normally distributed
-  residuals.}
-  \item{\strong{rnew}}{Matrix of the new residuals, sampled from the
-  original distribution of residuals according to the quantiles of the
-  input normally distributed random residuals.}
+\item{\strong{empiricalquant}}{List of the empirical quantile functions
+for each grid cell.}
+\item{\strong{rn}}{Matrix of the input, randomized, normally distributed
+residuals.}
+\item{\strong{rnew}}{Matrix of the new residuals, sampled from the
+original distribution of residuals according to the quantiles of the
+input normally distributed random residuals.}
 }
 
 Conventionally, we refer to the output list as \code{invquantilemapping}.
