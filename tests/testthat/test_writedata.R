@@ -37,4 +37,3 @@ test_that('clobber argument to write.temperature works',
     unlink(file)
 })
 
-
