@@ -57,33 +57,3 @@ write.temperature <- function(fld, file, griddata, varname='tas', varunit='K',
     ncdf4::nc_close(ncout)
 }
 
-#' Load and save emulator training data
-#'
-#' \code{savemodel} saves the results of training an emulator in a portable
-#' format.  \code{loadmodel} loads a model from a file created this way and
-#' returns it as a \code{fldgen} object.
-#'
-#' @param modeldata A \code{fldgen} object returned by either
-#' \code{\link{train}} or \code{\link{fldgen_object}}.
-#' @param file Name of the file to write the data to.
-#' @param clobber Flag indicating whether it's ok to overwrite an existing file
-#' @param oldfmt Flag indicating that we should try to load the old (.rda) format from
-#' pre-2.1 versions of fldgen.
-#' @name saving_and_restoring
-NULL
-
-#' @rdname saving_and_restoring
-#' @export
-savemodel <- function(modeldata, file, clobber=FALSE)
-{
-    compress='xz'
-
-    if(!inherits(modeldata, 'fldgen')) {
-        stop('modeldata must be a fldgen object.')
-    }
-
-    if(!clobber && file.exists(file)) {
-        stop('File ', file, ' exists, and noclobber is set.')
-    }
-    saveRDS(modeldata, file=file, compress=compress)
-}
