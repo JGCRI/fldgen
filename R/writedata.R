@@ -72,9 +72,9 @@ emulator_reducer <- function(emulator){
          tgav = emulator$tgav,
          # not reconstructing training data, don't need residuals in the
          # mean fields
-         meanfieldT = list(w = emulator$meanfldT$w,
+         meanfldT = list(w = emulator$meanfldT$w,
                            b = emulator$meanfldT$b),
-         meanfieldP = list(w = emulator$meanfldP$w,
+         meanfldP = list(w = emulator$meanfldP$w,
                            b = emulator$meanfldP$b),
          tfuns = list(quant = emulator$tfuns$quant),
          pfuns = list(quant = emulator$pfuns$quant),
