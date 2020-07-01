@@ -17,8 +17,12 @@ train_models <- function(models, tasvar='tasAdjust', prvar='prAdjust',
         emu$griddataT$coord <- coord
         emu$griddataP$coord <- coord
 
-
         saveRDS(emu, outfilename)
+
+
+        reducedEmulator <- emulator_reducer(emu)
+        outfilename <- paste0('fldgen-',model, '_reducedEmulator.rds')
+        saveRDS(reducedEmulator, outfilename)
     }
 }
 
