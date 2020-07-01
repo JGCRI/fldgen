@@ -619,29 +619,6 @@ read.precipitations <- function(filename, len=NULL, tag=basename(filename), varn
 }
 
 
-#' @rdname saving_and_restoring
-#' @export
-loadmodel <- function(file, oldfmt=FALSE)
-{
-    if(oldfmt) {
-        load(file)
-        if(!exists('modeldata', inherits=FALSE)) {
-            modeldata <- NULL               # silence check notes.
-            stop('No model data in file.')
-        }
-    }
-    else {
-        modeldata <- readRDS(file)
-    }
-
-    if(!inherits(modeldata, 'fldgen')) {
-        stop('Object loaded from file is not of type "fldgen".')
-    }
-
-    modeldata
-}
-
-
 #' Read and format global mean temperature
 #'
 #' Read global mean temperature from an input netCDF file and format for use
