@@ -197,7 +197,6 @@ Fx <- mvfft(reof$x)
 Fxphase <- atan2(Im(Fx), Re(Fx))
 
 
-
 ## Run with one realization using the phases of the actual time series
 ## and the rest with random phases.
 ## First, the actual phases.
@@ -415,3 +414,62 @@ test_that('psdest produces equivalent results to manual calculation.',
               psd2 <- psdest(list(reof, reof))
               expect_equal(sqrt(psd2$psd), Fxmag)
           })
+
+
+test_that('reducedEmulator object agrees with original emulator.',
+          {
+              reducedEmulator <- emulator_reducer(emulator)
+
+              # current approach to emulator_reducer will see
+              # the reducedEmulator have the same names as the
+              # original
+              expect_equal(names(reducedEmulator),
+                           names(emulator))
+
+
+              # Generate new residuals using the reducedEmulator
+              # have to set seed to compare
+              set.seed(11)
+              resids_reduced <- generate.TP.resids(reducedEmulator, ngen = 2)
+
+
+              # Generate new residuals using the full emulator
+              # have to set seed to compare
+              set.seed(11)
+              resids_fullemulator <- generate.TP.resids(emulator, ngen = 2)
+
+
+              # Compare the residuals
+              expect_equal(resids_reduced[[1]], resids_fullemulator[[1]])
+              expect_equal(resids_reduced[[2]], resids_fullemulator[[2]])
+
+
+              # And compare the reconstructed full grids
+              fullgrids_reduced <- generate.TP.fullgrids(reducedEmulator,
+                                                         resids_reduced,
+                                                 tgav = reducedEmulator$tgav,
+                                                 tvarunconvert_fcn = NULL,
+                                                 pvarunconvert_fcn = exp,
+                                                 reconstruction_function = pscl_apply)
+              fullgrids_reduced <- lapply(fullgrids_reduced$fullgrids,
+                                  function(g){
+                                      return(cbind(g[[1]], g[[2]]))
+                                  })
+
+
+              fullgrids_fullemulator <- generate.TP.fullgrids(emulator,
+                                                         resids_fullemulator,
+                                                         tgav = emulator$tgav,
+                                                         tvarunconvert_fcn = NULL,
+                                                         pvarunconvert_fcn = exp,
+                                                         reconstruction_function = pscl_apply)
+              fullgrids_fullemulator <- lapply(fullgrids_fullemulator$fullgrids,
+                                          function(g){
+                                              return(cbind(g[[1]], g[[2]]))
+                                          })
+
+              expect_equal(fullgrids_reduced[[1]], fullgrids_fullemulator[[1]])
+              expect_equal(fullgrids_reduced[[2]], fullgrids_fullemulator[[2]])
+
+          }
+          )
