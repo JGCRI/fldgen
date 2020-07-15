@@ -14,7 +14,24 @@ quality of the trained emulator}
 \value{
 reducedEmulator A trained fldgen emulator with only the list
 entries needed by generate.TP.resids and generate.TP.fullgrids for
-generating new fields
+generating new fields:
+\describe{
+\item{griddataT}{Only the coordinate ids and set information.}
+\item{griddataP}{Only the coordinate ids and set information, and the
+function to convert from logP to P.}\
+\item{tgav}{The Tgav data from training.}
+\item{meanfldT}{the slope (w) and intercept (b) terms from the mean field
+fit.}
+\item{meanfldP}{the slope (w) and intercept (b) terms from the mean field
+fit.}
+\item{tfuns}{The empirical quantile functions for temperature, mapping
+N(0,1) to the native distribution in each grid cell.}
+\item{pfuns}{The empirical quantile functions for logP, mapping
+N(0,1) to the native distribution in each grid cell.}
+\item{reof}{The EOFs.}
+\item{fx}{Time coefficients for each EOF from training data.}
+\item{infiles}{The names of the files used for training the emulator.}
+}
 }
 \description{
 A trained fldgen emulator features a large amount of data for both

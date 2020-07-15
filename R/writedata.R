@@ -39,31 +39,36 @@
 #'
 #' @return reducedEmulator A trained fldgen emulator with only the list
 #' entries needed by generate.TP.resids and generate.TP.fullgrids for
-#' generating new fields
+#' generating new fields:
+#' \describe{
+#' \item{griddataT}{Only the coordinate ids and set information.}
+#' \item{griddataP}{Only the coordinate ids and set information, and the
+#' function to convert from logP to P.}\
+#' \item{tgav}{The Tgav data from training.}
+#' \item{meanfldT}{the slope (w) and intercept (b) terms from the mean field
+#' fit.}
+#' \item{meanfldP}{the slope (w) and intercept (b) terms from the mean field
+#' fit.}
+#'\item{tfuns}{The empirical quantile functions for temperature, mapping
+#'N(0,1) to the native distribution in each grid cell.}
+#'\item{pfuns}{The empirical quantile functions for logP, mapping
+#'N(0,1) to the native distribution in each grid cell.}
+#'\item{reof}{The EOFs.}
+#'\item{fx}{Time coefficients for each EOF from training data.}
+#'\item{infiles}{The names of the files used for training the emulator.}
+#' }
 #'
 #' @author ACS July 2020
 #' @export
 emulator_reducer <- function(emulator){
 
-    if(length(names(emulator)) < 10){
+    if(length(names(emulator)) < 10){  # a full emulator has 10 list entries, check
+        # to make sure that's showing up.
         stop('Your emulator is already reduced (missing at least one list entry)')
     }
 
-    # There _is_ some weirdness to this structure, but it is intentional.
-    # We designed generate.TP.resids and generate.TP.fullgrids to just take
-    # a trained emulator because it was cleaner for the user. That means we need
-    # emulator$griddataP$pvarconvert_fcn to still exist so that calls in
-    # generate.TP.fullgrids still behave. But we can strip out everything
-    # else in emulator$griddataP.
-    # The alternative was to write  generate.TP.fullgrids
-    # with arguments that expect a user to provide
-    # p_convert = emulator$griddataP$pvarconvert_fcn from a stored emulator
-    # or to give p_convert = log. This basically opens up the option for
-    # users to make more errors.
-    # If anything, I'm inclined to remove the arguments
-    #  tvarunconvert_fcn = NULL, pvarunconvert_fcn = exp
-    # from generate.TP.fullgrids. We initially included things that way
-    # so that a user could experiment with variables other than T and P.
+    # This function reduces the size of the object while preserving the structure
+    # expected by generate.TP.resids and generate.TP.fullgrids.
     list(griddataT = list(gridid_full = emulator$griddataT$gridid_full,
                           coord = emulator$griddataT$coord),
          griddataP = list(gridid_full = emulator$griddataP$gridid_full,
