@@ -20,7 +20,7 @@ train_models <- function(models, tasvar='tasAdjust', prvar='prAdjust',
         saveRDS(emu, outfilename)
 
 
-        reducedEmulator <- emulator_reducer(emu)
+        emulator <- emulator_reducer(emu)
         outfilename <- paste0('fldgen-',model, '_reducedEmulator.rds')
         saveRDS(reducedEmulator, outfilename)
     }
