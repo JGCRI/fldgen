@@ -23,7 +23,7 @@
 #' @export
 generate.TP.resids <- function(emulator, ngen, method = 1){
 
-    Ngrid <- ncol(emulator$meanfldT$r)
+    Ngrid <- nrow(emulator$meanfldT$w)
 
     newgrids <- lapply(1:ngen,
                        function(x) {
